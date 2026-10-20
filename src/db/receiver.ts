@@ -12,13 +12,15 @@ const RETENTION_COLUMNS = {
   otlp_metrics_exp_histogram: "time_unix_nano",
 };
 
+// Auth is off because this is a local dev viewer, so stay on loopback.
+const HOST = "localhost";
+/** Max age of buffered rows before they are committed to the tables. */
+const SEAL_MAX_AGE_MS = 500;
+const PRUNE_INTERVAL_MS = 30 * 1000;
+
 export interface ReceiverOptions {
-  host?: string;
   port?: number;
-  /** Max age of buffered rows before they are committed to the tables. */
-  sealMaxAgeMs?: number;
   retentionMs?: number;
-  pruneIntervalMs?: number;
 }
 
 export interface Receiver {
@@ -33,14 +35,11 @@ export interface Receiver {
 
 /**
  * Opens an in-memory DuckDB and lets its `otlp` extension receive OTLP/HTTP
- * on `host:port`. Data lands in the `otlp_*` tables.
+ * on `localhost:port`. Data lands in the `otlp_*` tables.
  */
 export async function startReceiver({
-  host = "localhost",
   port = 4318,
-  sealMaxAgeMs = 500,
   retentionMs = 60 * 60 * 1000,
-  pruneIntervalMs = 30 * 1000,
 }: ReceiverOptions = {}): Promise<Receiver> {
   const instance = await DuckDBInstance.create(":memory:");
   const connection = await instance.connect();
@@ -50,11 +49,10 @@ export async function startReceiver({
   await connection.run("LOAD otlp");
 
   // The uri doubles as the handle for otlp_flush/otlp_stop.
-  const uri = `otlp:${host}:${port}`;
-  // Auth is off because this is a local dev viewer; keep `host` on loopback.
+  const uri = `otlp:${HOST}:${port}`;
   const reader = await connection.runAndReadAll(
     `SELECT listen_url FROM otlp_serve($uri, disable_auth := true, seal_max_age_ms := $sealMaxAgeMs)`,
-    { uri, sealMaxAgeMs },
+    { uri, sealMaxAgeMs: SEAL_MAX_AGE_MS },
   );
   const rowObjects = reader.getRowObjects();
   const { listen_url: url } = otlpServeRowSchema.parse(rowObjects[0]);
@@ -75,7 +73,7 @@ export async function startReceiver({
     pruning ??= prune()
       .catch((error) => console.error("Pruning old data failed:", error))
       .finally(() => (pruning = undefined));
-  }, pruneIntervalMs);
+  }, PRUNE_INTERVAL_MS);
   pruneTimer.unref();
 
   return {
