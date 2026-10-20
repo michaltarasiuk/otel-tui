@@ -1,0 +1,46 @@
+{
+  "name": "otel-tui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/main.ts",
+    "start": "bun src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "check": "bun run lint && bun run format:check && bun run typecheck",
+    "check:fix": "bun run lint:fix && bun run format",
+    "gen:traces": "telemetrygen traces --otlp-http --otlp-insecure --traces 10",
+    "gen:metrics": "telemetrygen metrics --otlp-http --otlp-insecure --metrics 10",
+    "gen:logs": "telemetrygen logs --otlp-http --otlp-insecure --logs 10"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "1.5.6-r.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.3",
+    "oxfmt": "^0.73.0",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "bun",
+      "version": ">=1.3",
+      "onFail": "error"
+    },
+    "runtime": {
+      "name": "bun",
+      "version": ">=1.3",
+      "onFail": "error"
+    }
+  },
+  "engines": {
+    "bun": ">=1.3"
+  }
+}
