@@ -21,7 +21,7 @@ export interface ReceiverOptions {
   retentionMs?: number;
 }
 
-export interface Receiver {
+export interface Receiver extends AsyncDisposable {
   readonly connection: DuckDBConnection;
   readonly url: string;
   flush(): Promise<void>;
@@ -64,19 +64,24 @@ export async function startReceiver({
   }, PRUNE_INTERVAL_MS);
   pruneTimer.unref();
 
+  async function flush() {
+    await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
+  }
+
+  async function close() {
+    clearInterval(pruneTimer);
+    await pruning;
+    await connection.run("SELECT * FROM otlp_stop($uri)", { uri });
+    connection.closeSync();
+    instance.closeSync();
+  }
+
   return {
     connection,
     url,
-    async flush() {
-      await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
-    },
     prune,
-    async close() {
-      clearInterval(pruneTimer);
-      await pruning;
-      await connection.run("SELECT * FROM otlp_stop($uri)", { uri });
-      connection.closeSync();
-      instance.closeSync();
-    },
+    flush,
+    close,
+    [Symbol.asyncDispose]: close,
   };
 }

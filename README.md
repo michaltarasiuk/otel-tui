@@ -35,7 +35,6 @@ the results.
 
 ## Next steps
 
-1. Install OpenTUI, and check that it and DuckDB work together on Bun.
 1. Build the Logs, Traces, and Metrics views.
 
 ## Development
