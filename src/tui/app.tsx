@@ -19,7 +19,7 @@ export function App({ receiverUrl }: AppProps) {
   );
 }
 
-export interface LayoutProps {
+interface LayoutProps {
   children: React.ReactNode;
   tabs: React.ReactNode;
   footer: React.ReactNode;
