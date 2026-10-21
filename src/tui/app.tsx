@@ -66,6 +66,9 @@ function TabView({ tab }: TabViewProps) {
       return <Placeholder text="Waiting for metrics..." />;
     case "logs":
       return <Placeholder text="Waiting for logs..." />;
+    default:
+      tab satisfies never;
+      throw new Error(`Unknown tab: ${String(tab)}`);
   }
 }
 
