@@ -17,6 +17,12 @@ export async function startTui({ receiverUrl }: TuiOptions): Promise<Tui> {
   const { promise: exited, resolve } = Promise.withResolvers<void>();
   renderer.once("destroy", () => resolve(renderer.closed));
 
+  renderer.keyInput.on("keypress", (key) => {
+    if (key.name === "`") {
+      renderer.console.toggle();
+    }
+  });
+
   createRoot(renderer).render(<App receiverUrl={receiverUrl} />);
 
   return {
