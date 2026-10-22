@@ -11,6 +11,11 @@
 
 - Don't pass a function as a callback unless it was designed for it; wrap it in an arrow that forwards only the arguments you mean (`items.map((item) => format(item))`, not `items.map(format)`). If either side later gains a parameter, the extra arguments flow in silently and change behavior. See https://jakearchibald.com/2021/function-callback-risks/.
 
+## Components
+
+- Keep a component's props type private to its file; don't export it.
+- When another module needs a component's props, derive them with `React.ComponentProps<typeof Component>`.
+
 ## Commits
 
 - Use Conventional Commits: `<type>: <subject>`, with types `feat`, `fix`, `refactor`, `test`, `docs`, or `chore`. No scope.
