@@ -8,7 +8,16 @@
 
 ## Callbacks
 
-- Don't pass a function as a callback unless it was designed for it; wrap it in an arrow that forwards only the arguments you mean (`items.map((item) => format(item))`, not `items.map(format)`). If either side later gains a parameter, the extra arguments flow in silently and change behavior. See https://jakearchibald.com/2021/function-callback-risks/.
+- Don't pass a function as a callback unless it was designed for it; wrap it in an arrow that forwards only the arguments you mean (`items.map((item) => format(item))`, not `items.map(format)`). If either side later gains a parameter, the extra arguments flow in silently and change behavior. See https://jakearchibald.com/2021/function-callback-risks/
+
+## React naming
+
+- Name a state updater's argument by the first letters of the state variable: `setSort((s) => nextSort(s))`, `setErrorsOnly((eo) => !eo)`. See https://react.dev/learn/queueing-a-series-of-state-updates#naming-conventions
+
+## Null and undefined
+
+- Use `undefined` for a missing value: optional fields, "not found" results, cleared state (`setSelectedKey(undefined)`, `Promise<Trace | undefined>`). Check it with `=== undefined`, not truthiness.
+- Use `null` only where an API demands it: DuckDB columns, `useRef<Renderable>(null)` for element refs, and `null` to render nothing in JSX. Convert `null` to `undefined` at the boundary so it doesn't spread through the code. See https://github.com/sindresorhus/meta/discussions/7
 
 ## Commits
 

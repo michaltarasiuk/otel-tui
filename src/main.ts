@@ -6,8 +6,12 @@ await using receiver = await startReceiver({
   port: env.OTEL_TUI_PORT,
   retentionMs: env.OTEL_TUI_RETENTION_MINUTES * 60 * 1000,
 });
-const tui = await startTui({
-  receiverUrl: receiver.url,
-});
+using connection = await receiver.connect();
 
-await tui.exited;
+const tui = await startTui({
+  receiver: {
+    url: receiver.url,
+    connection,
+  },
+});
+await tui.renderer.closed;

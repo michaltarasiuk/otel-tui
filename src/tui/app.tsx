@@ -1,103 +1,88 @@
-import type { TabSelectOption } from "@opentui/core";
-import { useState } from "react";
+import type { DuckDBConnection } from "@duckdb/node-api";
+import { Activity, useState } from "react";
+
+import { KeyHints } from "./keymap/key-hints.tsx";
+import { StatusProvider, useStatusMessage } from "./status/status.tsx";
 import { THEME } from "./theme.ts";
+import { DuckDbTraceStoreProvider } from "./traces/store/duckdb-store.tsx";
+import { TracesView } from "./traces/traces-view.tsx";
+import { TabSelect } from "./ui/tab-select.tsx";
+
+type TabId = (typeof TABS)[number]["id"];
+
+const TABS = [
+  { id: "traces", title: "Traces" },
+  { id: "metrics", title: "Metrics" },
+  { id: "logs", title: "Logs" },
+] as const;
 
 export interface AppProps {
-  receiverUrl: string;
+  receiver: {
+    url: string;
+    connection: DuckDBConnection;
+  };
 }
 
-export function App({ receiverUrl }: AppProps) {
-  const [tab, setTab] = useState<Tab>("traces");
-
+export function App({ receiver }: AppProps) {
   return (
-    <Layout
-      tabs={<Tabs onChange={(tab) => setTab(tab)} />}
-      footer={<Footer receiverUrl={receiverUrl} />}
-    >
-      <TabView tab={tab} />
-    </Layout>
+    <StatusProvider>
+      <DuckDbTraceStoreProvider connection={receiver.connection}>
+        <Screen receiverUrl={receiver.url} />
+      </DuckDbTraceStoreProvider>
+    </StatusProvider>
   );
 }
 
-interface LayoutProps {
-  children: React.ReactNode;
-  tabs: React.ReactNode;
-  footer: React.ReactNode;
-}
+function Screen({ receiverUrl }: { receiverUrl: string }) {
+  const [activeTab, setActiveTab] = useState<TabId>("traces");
 
-function Layout({ children, tabs, footer }: LayoutProps) {
   return (
-    <box flexGrow={1}>
-      {tabs}
-      <box flexGrow={1}>{children}</box>
-      {footer}
+    <box flexGrow={1} paddingX={1}>
+      <box flexShrink={0} marginBottom={1}>
+        <TabSelect tabs={TABS} onChange={(id) => setActiveTab(id)} />
+      </box>
+      <box flexGrow={1}>
+        {TABS.map(({ id }) => (
+          <Activity key={id} mode={id === activeTab ? "visible" : "hidden"}>
+            <TabView tab={id} />
+          </Activity>
+        ))}
+      </box>
+      <Footer receiverUrl={receiverUrl} />
     </box>
   );
 }
 
-interface TabsProps {
-  onChange: (tab: Tab) => void;
-}
-
-function Tabs({ onChange }: TabsProps) {
-  return (
-    <tab-select
-      focused
-      options={TABS}
-      tabWidth={20}
-      textColor={THEME.textMuted}
-      selectedTextColor={THEME.text}
-      selectedBackgroundColor={THEME.backgroundSelected}
-      showDescription={false}
-      onChange={(_index, option) => option && onChange(option.value)}
-    />
-  );
-}
-
-interface TabViewProps {
-  tab: Tab;
-}
-
-function TabView({ tab }: TabViewProps) {
+function TabView({ tab }: { tab: TabId }) {
   switch (tab) {
     case "traces":
-      return <Placeholder text="Waiting for traces..." />;
+      return <TracesView />;
     case "metrics":
-      return <Placeholder text="Waiting for metrics..." />;
+      return null;
     case "logs":
-      return <Placeholder text="Waiting for logs..." />;
+      return null;
     default:
       tab satisfies never;
-      throw new Error(`Unknown tab: ${String(tab)}`);
+      throw new Error(`Unknown tab: ${tab}`);
   }
 }
 
-interface PlaceholderProps {
-  text: string;
-}
-
-function Placeholder({ text }: PlaceholderProps) {
+function Footer({ receiverUrl }: { receiverUrl: string }) {
+  const message = useStatusMessage();
   return (
-    <box flexGrow={1} justifyContent="center" alignItems="center">
-      <text fg={THEME.textMuted}>{text}</text>
+    <box flexDirection="row" height={1} flexShrink={0} gap={2} marginTop={1}>
+      <box flexGrow={1} flexShrink={1}>
+        {message === undefined ? (
+          <KeyHints />
+        ) : (
+          <text fg={THEME.success} wrapMode="none" truncate>
+            {message}
+          </text>
+        )}
+      </box>
+      <text flexShrink={0} fg={THEME.textMuted} wrapMode="none">
+        OTLP/HTTP {receiverUrl}
+      </text>
     </box>
   );
 }
-
-interface FooterProps {
-  receiverUrl: string;
-}
-
-function Footer({ receiverUrl }: FooterProps) {
-  return (
-    <text fg={THEME.textMuted}>Listening for OTLP/HTTP on {receiverUrl}</text>
-  );
-}
-
-type Tab = (typeof TABS)[number]["value"];
-
-const TABS = [
-  { name: "Traces", description: "", value: "traces" },
-  { name: "Metrics", description: "", value: "metrics" },
-  { name: "Logs", description: "", value: "logs" },
-] as const satisfies TabSelectOption[];

@@ -1,32 +1,35 @@
-import { createCliRenderer, type CliRenderer } from "@opentui/core";
+import type { DuckDBConnection } from "@duckdb/node-api";
+import { createCliRenderer } from "@opentui/core";
+import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
+import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot } from "@opentui/react";
+
 import { App } from "./app.tsx";
 
 export interface TuiOptions {
-  receiverUrl: string;
+  receiver: {
+    url: string;
+    connection: DuckDBConnection;
+  };
 }
 
-export interface Tui {
-  readonly renderer: CliRenderer;
-  readonly exited: Promise<void>;
-}
-
-export async function startTui({ receiverUrl }: TuiOptions): Promise<Tui> {
+export async function startTui({ receiver }: TuiOptions) {
   const renderer = await createCliRenderer();
+  const keymap = createDefaultOpenTuiKeymap(renderer);
 
-  const { promise: exited, resolve } = Promise.withResolvers<void>();
-  renderer.once("destroy", () => resolve(renderer.closed));
-
-  renderer.keyInput.on("keypress", (key) => {
-    if (key.name === "`") {
+  renderer.keyInput.addListener("keypress", (event) => {
+    if (event.name === "`") {
       renderer.console.toggle();
     }
   });
 
-  createRoot(renderer).render(<App receiverUrl={receiverUrl} />);
+  createRoot(renderer).render(
+    <KeymapProvider keymap={keymap}>
+      <App receiver={receiver} />
+    </KeymapProvider>,
+  );
 
   return {
     renderer,
-    exited,
   };
 }
