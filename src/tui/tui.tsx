@@ -1,21 +1,43 @@
+import type { DuckDBConnection } from "@duckdb/node-api";
 import { createCliRenderer } from "@opentui/core";
 import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
 import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot } from "@opentui/react";
+import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { App } from "./app.tsx";
+import { DbContext } from "./db.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
+const KEEP_UNUSED_QUERIES = Infinity;
+
+function enableRefetchWithoutWindow() {
+  environmentManager.setIsServer(() => false);
+}
+
+enableRefetchWithoutWindow();
+
+async function waitForInFlightQueries(queryClient: QueryClient) {
+  const queries = queryClient.getQueryCache().findAll({ fetchStatus: "fetching" });
+  await Promise.allSettled(queries.map((query) => query.promise));
+}
 
 export interface TuiOptions {
+  connection: DuckDBConnection;
   receiverUrl: string;
 }
 
-export async function startTui({ receiverUrl }: TuiOptions) {
+export async function startTui({ connection, receiverUrl }: TuiOptions) {
   const renderer = await createCliRenderer({
     autoFocus: !FOCUS_CONTROLLED_BY_APP,
   });
   const keymap = createDefaultOpenTuiKeymap(renderer);
+
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: KEEP_UNUSED_QUERIES },
+    },
+  });
 
   renderer.keyInput.on("keypress", (key) => {
     if (key.name === "`") {
@@ -24,12 +46,16 @@ export async function startTui({ receiverUrl }: TuiOptions) {
   });
 
   createRoot(renderer).render(
-    <KeymapProvider keymap={keymap}>
-      <App receiverUrl={receiverUrl} />
-    </KeymapProvider>,
+    <QueryClientProvider client={queryClient}>
+      <DbContext value={connection}>
+        <KeymapProvider keymap={keymap}>
+          <App receiverUrl={receiverUrl} />
+        </KeymapProvider>
+      </DbContext>
+    </QueryClientProvider>,
   );
 
   return {
-    renderer,
+    closed: renderer.closed.then(() => waitForInFlightQueries(queryClient)),
   };
 }
