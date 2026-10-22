@@ -6,7 +6,7 @@ import { TabView } from "./tab-view.tsx";
 import { type Tab, Tabs } from "./tabs.tsx";
 import { useRegion } from "./use-region.ts";
 
-export interface AppProps {
+interface AppProps {
   receiverUrl: string;
 }
 
