@@ -1,7 +1,7 @@
 import { DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 import { z } from "zod";
 
-const otlpServeRowSchema = z.object({ listen_url: z.url() });
+const OtlpServeRow = z.object({ listen_url: z.url() });
 
 const RETENTION_COLUMNS = {
   otlp_traces: "start_time_unix_nano",
@@ -45,7 +45,7 @@ export async function startReceiver({
     { uri, sealMaxAgeMs: SEAL_MAX_AGE_MS },
   );
   const rowObjects = reader.getRowObjects();
-  const { listen_url: url } = otlpServeRowSchema.parse(rowObjects[0]);
+  const { listen_url: url } = OtlpServeRow.parse(rowObjects[0]);
 
   async function prune() {
     for (const [table, column] of Object.entries(RETENTION_COLUMNS)) {
