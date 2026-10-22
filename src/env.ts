@@ -5,8 +5,4 @@ const Env = z.object({
   OTEL_TUI_RETENTION_MINUTES: z.coerce.number().positive().default(60),
 });
 
-export function parseEnv(source: Record<string, string | undefined>) {
-  return Env.parse(source);
-}
-
-export const env = parseEnv(process.env);
+export const env = Env.parse(process.env);
