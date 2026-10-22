@@ -89,7 +89,9 @@ interface FooterProps {
 
 function Footer({ receiverUrl }: FooterProps) {
   return (
-    <text fg={THEME.textMuted}>Listening for OTLP/HTTP on {receiverUrl}</text>
+    <box alignItems="flex-end">
+      <text fg={THEME.textMuted}>Listening for OTLP/HTTP on {receiverUrl}</text>
+    </box>
   );
 }
 
