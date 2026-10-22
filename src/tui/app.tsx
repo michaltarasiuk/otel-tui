@@ -16,9 +16,7 @@ export function App({ receiverUrl }: AppProps) {
 
   return (
     <Layout
-      tabs={
-        <Tabs focused={region === "tabs"} onChange={(tab) => setTab(tab)} />
-      }
+      tabs={<Tabs focused={region === "tabs"} onChange={(tab) => setTab(tab)} />}
       footer={<Footer receiverUrl={receiverUrl} />}
     >
       <TabView tab={tab} focused={region === "content"} />
