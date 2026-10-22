@@ -3,9 +3,18 @@ import type { Tab } from "./tabs.tsx";
 
 interface TabViewProps {
   tab: Tab;
+  focused: boolean;
 }
 
-export function TabView({ tab }: TabViewProps) {
+export function TabView({ tab, focused }: TabViewProps) {
+  return (
+    <box flexGrow={1} focusable focused={focused}>
+      <TabContent tab={tab} />
+    </box>
+  );
+}
+
+function TabContent({ tab }: { tab: Tab }) {
   switch (tab) {
     case "traces":
       return <Placeholder text="Waiting for traces..." />;

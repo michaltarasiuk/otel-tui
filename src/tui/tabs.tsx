@@ -11,16 +11,18 @@ const TABS = [
 ] as const satisfies TabSelectOption[];
 
 interface TabsProps {
+  focused: boolean;
   onChange: (tab: Tab) => void;
 }
 
-export function Tabs({ onChange }: TabsProps) {
+export function Tabs({ focused, onChange }: TabsProps) {
   return (
     <tab-select
+      focused={focused}
       options={TABS}
       textColor={THEME.textMuted}
       selectedTextColor={THEME.text}
-      selectedBackgroundColor={THEME.backgroundSelected}
+      selectedBackgroundColor={focused ? THEME.backgroundSelected : "transparent"}
       showDescription={false}
       showUnderline={false}
       onChange={(_index, option) => option && onChange(option.value)}
