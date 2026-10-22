@@ -10,4 +10,4 @@ const tui = await startTui({
   receiverUrl: receiver.url,
 });
 
-await tui.exited;
+await tui.renderer.closed;
