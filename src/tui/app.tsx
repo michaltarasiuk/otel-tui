@@ -1,5 +1,6 @@
 import type { TabSelectOption } from "@opentui/core";
 import { useState } from "react";
+
 import { THEME } from "./theme.ts";
 
 export interface AppProps {
