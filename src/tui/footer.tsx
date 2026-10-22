@@ -1,3 +1,4 @@
+import { KeyHints } from "./key-hints.tsx";
 import { THEME } from "./theme.ts";
 
 interface FooterProps {
@@ -6,7 +7,8 @@ interface FooterProps {
 
 export function Footer({ receiverUrl }: FooterProps) {
   return (
-    <box alignItems="flex-end">
+    <box flexDirection="row" justifyContent="space-between">
+      <KeyHints />
       <text fg={THEME.textMuted}>Listening for OTLP/HTTP on {receiverUrl}</text>
     </box>
   );

@@ -14,12 +14,14 @@ export function useRegion() {
     commands: [
       {
         name: "focus.next",
+        desc: "next region",
         run() {
           setRegion((region) => REGIONS[wrapIndex(REGIONS.indexOf(region) + 1, REGIONS.length)]!);
         },
       },
       {
         name: "focus.previous",
+        desc: "previous region",
         run() {
           setRegion((region) => REGIONS[wrapIndex(REGIONS.indexOf(region) - 1, REGIONS.length)]!);
         },
