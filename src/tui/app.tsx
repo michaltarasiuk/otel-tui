@@ -42,13 +42,12 @@ interface TabsProps {
 function Tabs({ onChange }: TabsProps) {
   return (
     <tab-select
-      focused
       options={TABS}
-      tabWidth={20}
       textColor={THEME.textMuted}
       selectedTextColor={THEME.text}
       selectedBackgroundColor={THEME.backgroundSelected}
       showDescription={false}
+      showUnderline={false}
       onChange={(_index, option) => option && onChange(option.value)}
     />
   );
