@@ -5,13 +5,16 @@ import { createRoot } from "@opentui/react";
 
 import { App } from "./app.tsx";
 
+const FOCUS_CONTROLLED_BY_APP = true;
+
 export interface TuiOptions {
   receiverUrl: string;
 }
 
 export async function startTui({ receiverUrl }: TuiOptions) {
-  // Clicks would otherwise move focus behind the App's back and desync its focus state.
-  const renderer = await createCliRenderer({ autoFocus: false });
+  const renderer = await createCliRenderer({
+    autoFocus: !FOCUS_CONTROLLED_BY_APP,
+  });
   const keymap = createDefaultOpenTuiKeymap(renderer);
 
   renderer.keyInput.on("keypress", (key) => {

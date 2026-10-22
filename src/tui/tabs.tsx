@@ -22,7 +22,7 @@ export function Tabs({ focused, onChange }: TabsProps) {
       options={TABS}
       textColor={THEME.textMuted}
       selectedTextColor={THEME.text}
-      selectedBackgroundColor={focused ? THEME.backgroundSelected : "transparent"}
+      selectedBackgroundColor={focused ? THEME.backgroundSelected : THEME.background}
       showDescription={false}
       showUnderline={false}
       onChange={(_index, option) => option && onChange(option.value)}
