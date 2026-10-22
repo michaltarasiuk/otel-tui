@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}"
+      run: bunx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    format:
+      run: bunx oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    typecheck:
+      run: bun run typecheck
+
+commit-msg:
+  commands:
+    conventional:
+      run: |
+        head -n 1 {1} | grep -qE '^(feat|fix|refactor|test|docs|chore): [a-z].*[^.]$' || {
+          echo "Commit subject must follow AGENTS.md: '<type>: <lowercase subject>' without a scope or trailing period"
+          exit 1
+        }
