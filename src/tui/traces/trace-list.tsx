@@ -1,24 +1,13 @@
 import { useBindings } from "@opentui/keymap/react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { z } from "zod";
 
 import { wrapIndex } from "../../utils/wrap-index.ts";
-import { useConnection } from "../connection.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
-import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
-import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
+import { useTraceList, useTraceTotalCount } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
-import { TRACE_SORT_COLUMNS, Trace, type TraceSortColumn, type TraceSort } from "./trace.ts";
-
-const MAX_TRACES = 500;
-const POLL_INTERVAL_MS = 1000;
-
-const TraceCount = z.object({
-  total_count: z.number(),
-});
+import { TRACE_SORT_COLUMNS, type TraceSortColumn, type TraceSort } from "./trace.ts";
 
 const NEWEST_FIRST: TraceSort = {
   column: "start_time",
@@ -32,37 +21,13 @@ function nextSortColumn(column: TraceSortColumn) {
 }
 
 export function TraceList() {
-  const connection = useConnection();
   const focused = useFocused();
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [sort, setSort] = useState(NEWEST_FIRST);
-  const { status, data: traces = [] } = useQuery({
-    queryKey: ["traces", { search, errorsOnly, sort }],
-    queryFn: async () => {
-      const reader = await connection.runAndReadAll(TRACE_LIST_SQL, {
-        limit: MAX_TRACES,
-        pattern: `%${search}%`,
-        errorsOnly,
-        sortBy: sort.column,
-        direction: sort.descending ? -1 : 1,
-      });
-      const rows = reader.getRowObjectsJS();
-      return Trace.array().parse(rows);
-    },
-    refetchInterval: POLL_INTERVAL_MS,
-    placeholderData: keepPreviousData,
-  });
-  const { data: totalCount = 0 } = useQuery({
-    queryKey: ["traces", "count"],
-    queryFn: async () => {
-      const reader = await connection.runAndReadAll(TRACE_COUNT_SQL);
-      const [row] = reader.getRowObjectsJS();
-      return TraceCount.parse(row).total_count;
-    },
-    refetchInterval: POLL_INTERVAL_MS,
-  });
+  const { status, data: traces = [] } = useTraceList({ search, errorsOnly, sort });
+  const { data: totalCount = 0 } = useTraceTotalCount();
 
   useBindings(
     () => ({
