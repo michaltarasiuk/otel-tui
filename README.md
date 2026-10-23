@@ -5,6 +5,8 @@ A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 It receives data over OTLP/HTTP, stores it in DuckDB, and shows it in views that
 filter each other. [OpenTUI](https://opentui.com/) draws the screen.
 
+![Traces view listing root traces with service, span count, errors, and duration](docs/traces-view.png)
+
 ## How it works
 
 The app opens an in-memory DuckDB and starts the receiver of its
