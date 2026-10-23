@@ -65,8 +65,8 @@ export function TraceList() {
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });
-      const traces = reader.getRowObjectsJS();
-      return Trace.array().parse(traces);
+      const rows = reader.getRowObjectsJS();
+      return Trace.array().parse(rows);
     },
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
@@ -75,8 +75,8 @@ export function TraceList() {
     queryKey: ["traces", "count"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(TRACE_COUNT_SQL);
-      const [traceCount] = reader.getRowObjectsJS();
-      return TraceCount.parse(traceCount).total_count;
+      const [row] = reader.getRowObjectsJS();
+      return TraceCount.parse(row).total_count;
     },
     refetchInterval: POLL_INTERVAL_MS,
   });
