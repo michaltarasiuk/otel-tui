@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 
+import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useConnection } from "../connection.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
@@ -10,7 +11,7 @@ import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
 import { TraceTable } from "./trace-table.tsx";
-import { nextSortColumn, Trace, type TraceSort } from "./trace.ts";
+import { TRACE_SORT_COLUMNS, Trace, type TraceSortColumn, type TraceSort } from "./trace.ts";
 
 const MAX_TRACES = 500;
 const POLL_INTERVAL_MS = 1000;
@@ -23,6 +24,12 @@ const NEWEST_FIRST: TraceSort = {
   column: "start_time",
   descending: true,
 };
+
+function nextSortColumn(column: TraceSortColumn) {
+  return TRACE_SORT_COLUMNS[
+    wrapIndex(TRACE_SORT_COLUMNS.indexOf(column) + 1, TRACE_SORT_COLUMNS.length)
+  ]!;
+}
 
 export function TraceList() {
   const connection = useConnection();
