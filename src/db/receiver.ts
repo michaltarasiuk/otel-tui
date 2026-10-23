@@ -44,7 +44,7 @@ export async function startReceiver({
     `SELECT listen_url FROM otlp_serve($uri, disable_auth := true, seal_max_age_ms := $sealMaxAgeMs)`,
     { uri, sealMaxAgeMs: SEAL_MAX_AGE_MS },
   );
-  const rowObjects = reader.getRowObjects();
+  const rowObjects = reader.getRowObjectsJS();
   const { listen_url: url } = OtlpServeRow.parse(rowObjects[0]);
 
   const connections = new Set<DuckDBConnection>();
