@@ -25,9 +25,9 @@ const Trace = z.object({
 });
 export type Trace = z.infer<typeof Trace>;
 
-const TraceListRow = Trace.extend({
-  total_count: z.number(),
-});
+const TraceListResult = Trace.extend({ total_count: z.number() })
+  .array()
+  .transform((rows) => ({ traces: rows, totalCount: rows[0]?.total_count ?? 0 }));
 
 export type TraceSortColumn = (typeof SORT_COLUMNS)[number];
 
@@ -64,8 +64,7 @@ export function TraceList() {
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });
-      const rows = TraceListRow.array().parse(reader.getRowObjectsJS());
-      return { traces: rows, totalCount: rows[0]?.total_count ?? 0 };
+      return TraceListResult.parse(reader.getRowObjectsJS());
     },
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
