@@ -6,3 +6,7 @@ export const THEME = {
   backgroundSelected: "#444444",
   serviceColors: ["#3987E5", "#D95926", "#199E70", "#C98500", "#D55181", "#008300", "#9085E9"],
 } as const;
+
+export function serviceColor(serviceName: string) {
+  return THEME.serviceColors[Bun.hash.crc32(serviceName) % THEME.serviceColors.length]!;
+}

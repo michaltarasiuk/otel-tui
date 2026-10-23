@@ -2,8 +2,7 @@ import { TextAttributes } from "@opentui/core";
 import type { TextProps } from "@opentui/react";
 
 import { useFocused } from "../focus.tsx";
-import { serviceColor } from "../service-color.ts";
-import { THEME } from "../theme.ts";
+import { serviceColor, THEME } from "../theme.ts";
 import type { Trace, TraceSort, TraceSortColumn } from "./trace.ts";
 
 const COLUMN_GAP = 2;
