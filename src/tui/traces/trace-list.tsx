@@ -22,10 +22,12 @@ function nextSortColumn(column: TraceSortColumn) {
 
 export function TraceList() {
   const focused = useFocused();
+
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [sort, setSort] = useState(NEWEST_FIRST);
+
   const traceList = useTraceList({ search, errorsOnly, sort });
   const traceTotalCount = useTraceTotalCount();
 

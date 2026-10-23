@@ -17,8 +17,10 @@ interface TraceTableProps {
 
 export function TraceTable({ traces, sort }: TraceTableProps) {
   const focused = useFocused();
+
   const [selectedTraceId, setSelectedTraceId] = useState<string>();
   const [visibleRowCount, setVisibleRowCount] = useState(0);
+
   const rowsRef = useRef<BoxRenderable>(null);
 
   const selectedIndex = Math.max(
