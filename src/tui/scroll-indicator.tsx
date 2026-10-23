@@ -1,7 +1,5 @@
 import { THEME } from "./theme.ts";
 
-const ABOVE_ROWS = 1;
-
 interface ScrollIndicatorProps {
   firstVisibleIndex: number;
   visibleRowCount: number;
@@ -20,7 +18,7 @@ export function ScrollIndicator({
 
   const top = Math.round((firstVisibleIndex / hiddenRowCount) * (visibleRowCount - 1));
   return (
-    <text position="absolute" right={0} top={top} zIndex={ABOVE_ROWS} fg={THEME.textMuted}>
+    <text position="absolute" right={0} top={top} fg={THEME.textMuted}>
       █
     </text>
   );
