@@ -1,18 +1,51 @@
-import { useQuery } from "@tanstack/react-query";
+import { useBindings } from "@opentui/keymap/react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { z } from "zod";
 
+import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useDb } from "../db.ts";
 import { Placeholder } from "../placeholder.tsx";
 import { THEME } from "../theme.ts";
+import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
+import { TraceTable } from "./trace-table.tsx";
 
 const MAX_TRACES = 500;
 const POLL_INTERVAL_MS = 1000;
 
 const Trace = z.object({
   trace_id: z.string(),
+  start_time: z.date(),
+  service_name: z.string().nullable(),
   name: z.string(),
+  span_count: z.number(),
+  error_count: z.number(),
+  duration_ms: z.number(),
 });
+export type Trace = z.infer<typeof Trace>;
+
+const TraceListRow = Trace.extend({
+  total_count: z.number(),
+});
+
+export type TraceSortColumn = (typeof SORT_COLUMNS)[number];
+
+const SORT_COLUMNS = ["start_time", "span_count", "error_count", "duration_ms"] as const;
+
+export interface TraceSort {
+  column: TraceSortColumn;
+  descending: boolean;
+}
+
+const NEWEST_FIRST: TraceSort = {
+  column: "start_time",
+  descending: true,
+};
+
+function nextSortColumn(column: TraceSortColumn) {
+  return SORT_COLUMNS[wrapIndex(SORT_COLUMNS.indexOf(column) + 1, SORT_COLUMNS.length)]!;
+}
 
 interface TraceListProps {
   focused: boolean;
@@ -20,38 +53,117 @@ interface TraceListProps {
 
 export function TraceList({ focused }: TraceListProps) {
   const db = useDb();
-  const { status, data: traces } = useQuery({
-    queryKey: ["traces"],
+  const [search, setSearch] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [errorsOnly, setErrorsOnly] = useState(false);
+  const [sort, setSort] = useState(NEWEST_FIRST);
+  const { status, data } = useQuery({
+    queryKey: ["traces", { search, errorsOnly, sort }],
     queryFn: async () => {
-      const reader = await db.runAndReadAll(TRACE_LIST_SQL, { limit: MAX_TRACES });
-      return Trace.array().parse(reader.getRowObjectsJS());
+      const reader = await db.runAndReadAll(TRACE_LIST_SQL, {
+        limit: MAX_TRACES,
+        pattern: `%${search}%`,
+        errorsOnly,
+        sortBy: sort.column,
+        direction: sort.descending ? -1 : 1,
+      });
+      const rows = TraceListRow.array().parse(reader.getRowObjectsJS());
+      return { traces: rows, totalCount: rows[0]?.total_count ?? 0 };
     },
     refetchInterval: POLL_INTERVAL_MS,
+    placeholderData: keepPreviousData,
   });
 
-  if (status === "error") {
-    return <Placeholder text="Failed to load traces" fg={THEME.textError} />;
+  useBindings(
+    () => ({
+      enabled: focused,
+      commands: [
+        {
+          name: "traces.search",
+          desc: "search",
+          enabled: !searching,
+          run() {
+            setSearching(true);
+          },
+        },
+        {
+          name: "traces.apply-search",
+          desc: "apply",
+          enabled: searching,
+          run() {
+            setSearching(false);
+          },
+        },
+        {
+          name: "traces.clear-search",
+          desc: "clear",
+          enabled: searching || search !== "",
+          run() {
+            setSearch("");
+            setSearching(false);
+          },
+        },
+        {
+          name: "traces.toggle-errors-only",
+          desc: "errors",
+          enabled: !searching,
+          run() {
+            setErrorsOnly((errorsOnly) => !errorsOnly);
+          },
+        },
+        {
+          name: "traces.next-sort",
+          desc: "sort",
+          enabled: !searching,
+          run() {
+            setSort((sort) => ({ column: nextSortColumn(sort.column), descending: true }));
+          },
+        },
+        {
+          name: "traces.reverse-sort",
+          desc: "reverse",
+          enabled: !searching,
+          run() {
+            setSort((sort) => ({ ...sort, descending: !sort.descending }));
+          },
+        },
+      ],
+      bindings: [
+        { key: "/", cmd: "traces.search" },
+        { key: "return", cmd: "traces.apply-search" },
+        { key: "escape", cmd: "traces.clear-search" },
+        { key: "e", cmd: "traces.toggle-errors-only" },
+        { key: "o", cmd: "traces.next-sort" },
+        { key: "shift+o", cmd: "traces.reverse-sort" },
+      ],
+    }),
+    [focused, searching, search],
+  );
+
+  const filtered = search !== "" || errorsOnly;
+
+  function renderTraces() {
+    if (status === "error") {
+      return <Placeholder text="Failed to load traces" fg={THEME.textError} />;
+    }
+    if (status === "pending" || data.traces.length === 0) {
+      return <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />;
+    }
+    return <TraceTable traces={data.traces} sort={sort} focused={focused && !searching} />;
   }
-  if (status === "pending" || traces.length === 0) {
-    return <Placeholder text="Waiting for traces..." />;
-  }
+
   return (
-    <select
-      flexGrow={1}
-      focused={focused}
-      options={traces.map((trace) => ({
-        name: trace.name,
-        description: "",
-        value: trace.trace_id,
-      }))}
-      textColor={THEME.textMuted}
-      focusedTextColor={THEME.textMuted}
-      focusedBackgroundColor={THEME.background}
-      selectedTextColor={THEME.text}
-      selectedBackgroundColor={focused ? THEME.backgroundSelected : THEME.background}
-      showDescription={false}
-      showSelectionIndicator={false}
-      showScrollIndicator={true}
-    />
+    <box flexGrow={1}>
+      <TraceFilterBar
+        search={search}
+        searching={searching}
+        focused={focused}
+        errorsOnly={errorsOnly}
+        shownCount={data?.traces.length ?? 0}
+        totalCount={data?.totalCount ?? 0}
+        onSearchInput={(search) => setSearch(search)}
+      />
+      {renderTraces()}
+    </box>
   );
 }
