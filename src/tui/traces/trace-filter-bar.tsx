@@ -31,7 +31,11 @@ export function TraceFilterBar({
   return (
     <box flexDirection="row" gap={2} paddingX={1}>
       <box flexGrow={1} flexDirection="row">
-        {(searching || search !== "") && <text fg={THEME.textMuted}>/</text>}
+        {(searching || search !== "") && (
+          <text fg={THEME.textMuted} flexShrink={0}>
+            /
+          </text>
+        )}
         {searching ? (
           <input
             flexGrow={1}
@@ -43,11 +47,19 @@ export function TraceFilterBar({
             onInput={(search) => onSearchInput(search)}
           />
         ) : (
-          <text fg={THEME.text}>{search}</text>
+          <text fg={THEME.text} wrapMode="none" truncate>
+            {search}
+          </text>
         )}
       </box>
-      {errorsOnly && <text fg={THEME.textError}>errors only</text>}
-      <text fg={THEME.textMuted}>{formatTraceCount(shownCount, totalCount)}</text>
+      {errorsOnly && (
+        <text fg={THEME.textError} flexShrink={0}>
+          errors only
+        </text>
+      )}
+      <text fg={THEME.textMuted} flexShrink={0}>
+        {formatTraceCount(shownCount, totalCount)}
+      </text>
     </box>
   );
 }
