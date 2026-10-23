@@ -26,7 +26,7 @@ const Trace = z.object({
 });
 export type Trace = z.infer<typeof Trace>;
 
-const TraceCountRow = z.object({
+const TraceCount = z.object({
   total_count: z.number(),
 });
 
@@ -65,9 +65,8 @@ export function TraceList() {
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });
-      const rows = reader.getRowObjectsJS();
-      const traces = Trace.array().parse(rows);
-      return traces;
+      const traces = reader.getRowObjectsJS();
+      return Trace.array().parse(traces);
     },
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
@@ -76,9 +75,8 @@ export function TraceList() {
     queryKey: ["traces", "count"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(TRACE_COUNT_SQL);
-      const [row] = reader.getRowObjectsJS();
-      const { total_count: totalCount } = TraceCountRow.parse(row);
-      return totalCount;
+      const [traceCount] = reader.getRowObjectsJS();
+      return TraceCount.parse(traceCount).total_count;
     },
     refetchInterval: POLL_INTERVAL_MS,
   });
