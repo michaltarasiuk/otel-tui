@@ -1,14 +1,19 @@
 import { THEME } from "./theme.ts";
 
+const VARIANT_COLORS = {
+  muted: THEME.textMuted,
+  error: THEME.textError,
+};
+
 interface PlaceholderProps {
   text: string;
-  fg?: string;
+  variant?: keyof typeof VARIANT_COLORS;
 }
 
-export function Placeholder({ text, fg = THEME.textMuted }: PlaceholderProps) {
+export function Placeholder({ text, variant = "muted" }: PlaceholderProps) {
   return (
     <box flexGrow={1} justifyContent="center" alignItems="center">
-      <text fg={fg} textAlign="center">
+      <text fg={VARIANT_COLORS[variant]} textAlign="center">
         {text}
       </text>
     </box>

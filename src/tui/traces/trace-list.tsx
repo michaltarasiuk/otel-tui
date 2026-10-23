@@ -7,7 +7,6 @@ import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useDb } from "../db.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
-import { THEME } from "../theme.ts";
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
 import { TraceTable } from "./trace-table.tsx";
@@ -142,7 +141,7 @@ export function TraceList() {
 
   function renderTraces() {
     if (status === "error") {
-      return <Placeholder text="Failed to load traces" fg={THEME.textError} />;
+      return <Placeholder text="Failed to load traces" variant="error" />;
     }
     if (status === "pending" || data.traces.length === 0) {
       return <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />;
