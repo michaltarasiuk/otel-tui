@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { FocusScope } from "./focus.tsx";
 import { Footer } from "./footer.tsx";
 import { Layout } from "./layout.tsx";
 import { TabView } from "./tab-view.tsx";
@@ -16,10 +17,16 @@ export function App({ receiverUrl }: AppProps) {
 
   return (
     <Layout
-      tabs={<Tabs focused={region === "tabs"} onChange={(tab) => setTab(tab)} />}
+      tabs={
+        <FocusScope focused={region === "tabs"}>
+          <Tabs onChange={(tab) => setTab(tab)} />
+        </FocusScope>
+      }
       footer={<Footer receiverUrl={receiverUrl} />}
     >
-      <TabView tab={tab} focused={region === "content"} />
+      <FocusScope focused={region === "content"}>
+        <TabView tab={tab} />
+      </FocusScope>
     </Layout>
   );
 }

@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useDb } from "../db.ts";
+import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { THEME } from "../theme.ts";
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
@@ -47,12 +48,9 @@ function nextSortColumn(column: TraceSortColumn) {
   return SORT_COLUMNS[wrapIndex(SORT_COLUMNS.indexOf(column) + 1, SORT_COLUMNS.length)]!;
 }
 
-interface TraceListProps {
-  focused: boolean;
-}
-
-export function TraceList({ focused }: TraceListProps) {
+export function TraceList() {
   const db = useDb();
+  const focused = useFocused();
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [errorsOnly, setErrorsOnly] = useState(false);
@@ -149,7 +147,11 @@ export function TraceList({ focused }: TraceListProps) {
     if (status === "pending" || data.traces.length === 0) {
       return <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />;
     }
-    return <TraceTable traces={data.traces} sort={sort} focused={focused && !searching} />;
+    return (
+      <FocusScope focused={!searching}>
+        <TraceTable traces={data.traces} sort={sort} />
+      </FocusScope>
+    );
   }
 
   return (
@@ -157,7 +159,6 @@ export function TraceList({ focused }: TraceListProps) {
       <TraceFilterBar
         search={search}
         searching={searching}
-        focused={focused}
         errorsOnly={errorsOnly}
         shownCount={data?.traces.length ?? 0}
         totalCount={data?.totalCount ?? 0}

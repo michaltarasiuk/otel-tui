@@ -1,6 +1,7 @@
 import { TextAttributes } from "@opentui/core";
 import type { TextProps } from "@opentui/react";
 
+import { useFocused } from "../focus.tsx";
 import { serviceColor } from "../service-color.ts";
 import { THEME } from "../theme.ts";
 import type { Trace, TraceSort, TraceSortColumn } from "./trace-list.tsx";
@@ -75,10 +76,11 @@ export function TraceHeaderRow({ sort }: TraceHeaderRowProps) {
 interface TraceRowProps {
   trace: Trace;
   selected: boolean;
-  focused: boolean;
 }
 
-export function TraceRow({ trace, selected, focused }: TraceRowProps) {
+export function TraceRow({ trace, selected }: TraceRowProps) {
+  const focused = useFocused();
+
   const secondaryColor = selected ? THEME.text : THEME.textMuted;
 
   return (

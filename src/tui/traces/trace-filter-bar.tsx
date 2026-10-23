@@ -1,3 +1,4 @@
+import { useFocused } from "../focus.tsx";
 import { THEME } from "../theme.ts";
 
 function formatTraceCount(shownCount: number, totalCount: number) {
@@ -11,7 +12,6 @@ function formatTraceCount(shownCount: number, totalCount: number) {
 interface TraceFilterBarProps {
   search: string;
   searching: boolean;
-  focused: boolean;
   errorsOnly: boolean;
   shownCount: number;
   totalCount: number;
@@ -21,12 +21,13 @@ interface TraceFilterBarProps {
 export function TraceFilterBar({
   search,
   searching,
-  focused,
   errorsOnly,
   shownCount,
   totalCount,
   onSearchInput,
 }: TraceFilterBarProps) {
+  const focused = useFocused();
+
   return (
     <box flexDirection="row" gap={2} paddingX={1}>
       <box flexGrow={1} flexDirection="row">

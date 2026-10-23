@@ -3,6 +3,7 @@ import { useBindings } from "@opentui/keymap/react";
 import { useRef, useState } from "react";
 
 import { clamp } from "../../utils/clamp.ts";
+import { useFocused } from "../focus.tsx";
 import { ScrollIndicator } from "../scroll-indicator.tsx";
 import type { Trace, TraceSort } from "./trace-list.tsx";
 import { TraceHeaderRow, TraceRow } from "./trace-row.tsx";
@@ -12,10 +13,10 @@ const IGNORE_CONTENT_HEIGHT = 0;
 interface TraceTableProps {
   traces: Trace[];
   sort: TraceSort;
-  focused: boolean;
 }
 
-export function TraceTable({ traces, sort, focused }: TraceTableProps) {
+export function TraceTable({ traces, sort }: TraceTableProps) {
+  const focused = useFocused();
   const [selectedTraceId, setSelectedTraceId] = useState<string>();
   const [visibleRowCount, setVisibleRowCount] = useState(0);
   const rowsRef = useRef<BoxRenderable>(null);
@@ -102,12 +103,7 @@ export function TraceTable({ traces, sort, focused }: TraceTableProps) {
         onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
       >
         {traces.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount).map((trace) => (
-          <TraceRow
-            key={trace.trace_id}
-            trace={trace}
-            selected={trace === traces[selectedIndex]}
-            focused={focused}
-          />
+          <TraceRow key={trace.trace_id} trace={trace} selected={trace === traces[selectedIndex]} />
         ))}
         <ScrollIndicator
           firstVisibleIndex={firstVisibleIndex}

@@ -1,5 +1,6 @@
 import type { TabSelectOption } from "@opentui/core";
 
+import { useFocused } from "./focus.tsx";
 import { THEME } from "./theme.ts";
 
 export type Tab = (typeof TABS)[number]["value"];
@@ -11,11 +12,12 @@ const TABS = [
 ] as const satisfies TabSelectOption[];
 
 interface TabsProps {
-  focused: boolean;
   onChange: (tab: Tab) => void;
 }
 
-export function Tabs({ focused, onChange }: TabsProps) {
+export function Tabs({ onChange }: TabsProps) {
+  const focused = useFocused();
+
   return (
     <tab-select
       focused={focused}

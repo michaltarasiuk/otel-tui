@@ -4,13 +4,12 @@ import { TraceList } from "./traces/trace-list.tsx";
 
 interface TabViewProps {
   tab: Tab;
-  focused: boolean;
 }
 
-export function TabView({ tab, focused }: TabViewProps) {
+export function TabView({ tab }: TabViewProps) {
   switch (tab) {
     case "traces":
-      return <TraceList focused={focused} />;
+      return <TraceList />;
     case "metrics":
       return <Placeholder text="Waiting for metrics..." />;
     case "logs":
