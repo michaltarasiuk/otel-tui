@@ -5,8 +5,8 @@ import { useRef, useState } from "react";
 import { clamp } from "../../utils/clamp.ts";
 import { useFocused } from "../focus.tsx";
 import { ScrollIndicator } from "../scroll-indicator.tsx";
-import type { Trace, TraceSort } from "./trace-list.tsx";
 import { TraceHeaderRow, TraceRow } from "./trace-row.tsx";
+import type { Trace, TraceSort } from "./trace.ts";
 
 const IGNORE_CONTENT_HEIGHT = 0;
 

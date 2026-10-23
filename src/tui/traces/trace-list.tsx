@@ -3,7 +3,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useConnection } from "../connection.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
@@ -11,42 +10,19 @@ import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
 import { TraceTable } from "./trace-table.tsx";
+import { nextSortColumn, Trace, type TraceSort } from "./trace.ts";
 
 const MAX_TRACES = 500;
 const POLL_INTERVAL_MS = 1000;
-
-const Trace = z.object({
-  trace_id: z.string(),
-  start_time: z.date(),
-  service_name: z.string().nullable(),
-  name: z.string(),
-  span_count: z.number(),
-  error_count: z.number(),
-  duration_ms: z.number(),
-});
-export type Trace = z.infer<typeof Trace>;
 
 const TraceCount = z.object({
   total_count: z.number(),
 });
 
-export type TraceSortColumn = (typeof SORT_COLUMNS)[number];
-
-const SORT_COLUMNS = ["start_time", "span_count", "error_count", "duration_ms"] as const;
-
-export interface TraceSort {
-  column: TraceSortColumn;
-  descending: boolean;
-}
-
 const NEWEST_FIRST: TraceSort = {
   column: "start_time",
   descending: true,
 };
-
-function nextSortColumn(column: TraceSortColumn) {
-  return SORT_COLUMNS[wrapIndex(SORT_COLUMNS.indexOf(column) + 1, SORT_COLUMNS.length)]!;
-}
 
 export function TraceList() {
   const connection = useConnection();
