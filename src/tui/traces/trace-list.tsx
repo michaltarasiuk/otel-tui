@@ -26,8 +26,14 @@ export function TraceList() {
   const [searching, setSearching] = useState(false);
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [sort, setSort] = useState(NEWEST_FIRST);
-  const { status, data: traces = [] } = useTraceList({ search, errorsOnly, sort });
-  const { data: totalCount = 0 } = useTraceTotalCount();
+  const traceList = useTraceList({ search, errorsOnly, sort });
+  const traceTotalCount = useTraceTotalCount();
+
+  const { data: traces = [] } = traceList;
+  const { data: totalCount = 0 } = traceTotalCount;
+
+  const isPending = traceList.isPending || traceTotalCount.isPending;
+  const isError = traceList.isError || traceTotalCount.isError;
 
   useBindings(
     () => ({
@@ -98,10 +104,10 @@ export function TraceList() {
   const filtered = search !== "" || errorsOnly;
 
   function renderTraces() {
-    if (status === "error") {
+    if (isError) {
       return <Placeholder text="Failed to load traces" variant="error" />;
     }
-    if (status === "pending" || traces.length === 0) {
+    if (isPending || traces.length === 0) {
       return <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />;
     }
     return (
