@@ -6,7 +6,7 @@ import { createRoot } from "@opentui/react";
 import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { App } from "./app.tsx";
-import { DbContext } from "./db.ts";
+import { ConnectionContext } from "./connection.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
 const KEEP_UNUSED_QUERIES = Infinity;
@@ -47,11 +47,11 @@ export async function startTui({ connection, receiverUrl }: TuiOptions) {
 
   createRoot(renderer).render(
     <QueryClientProvider client={queryClient}>
-      <DbContext value={connection}>
+      <ConnectionContext value={connection}>
         <KeymapProvider keymap={keymap}>
           <App receiverUrl={receiverUrl} />
         </KeymapProvider>
-      </DbContext>
+      </ConnectionContext>
     </QueryClientProvider>,
   );
 

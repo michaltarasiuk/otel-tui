@@ -4,7 +4,7 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { wrapIndex } from "../../utils/wrap-index.ts";
-import { useDb } from "../db.ts";
+import { useConnection } from "../connection.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
@@ -49,7 +49,7 @@ function nextSortColumn(column: TraceSortColumn) {
 }
 
 export function TraceList() {
-  const db = useDb();
+  const connection = useConnection();
   const focused = useFocused();
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
@@ -58,7 +58,7 @@ export function TraceList() {
   const { status, data: traces = [] } = useQuery({
     queryKey: ["traces", { search, errorsOnly, sort }],
     queryFn: async () => {
-      const reader = await db.runAndReadAll(TRACE_LIST_SQL, {
+      const reader = await connection.runAndReadAll(TRACE_LIST_SQL, {
         limit: MAX_TRACES,
         pattern: `%${search}%`,
         errorsOnly,
@@ -75,7 +75,7 @@ export function TraceList() {
   const { data: totalCount = 0 } = useQuery({
     queryKey: ["traces", "count"],
     queryFn: async () => {
-      const reader = await db.runAndReadAll(TRACE_COUNT_SQL);
+      const reader = await connection.runAndReadAll(TRACE_COUNT_SQL);
       const [row] = reader.getRowObjectsJS();
       const { total_count: totalCount } = TraceCountRow.parse(row);
       return totalCount;
