@@ -7,6 +7,7 @@ import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useDb } from "../db.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
+import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
 import { TraceTable } from "./trace-table.tsx";
@@ -25,9 +26,9 @@ const Trace = z.object({
 });
 export type Trace = z.infer<typeof Trace>;
 
-const TraceListResult = Trace.extend({ total_count: z.number() })
-  .array()
-  .transform((rows) => ({ traces: rows, totalCount: rows[0]?.total_count ?? 0 }));
+const TraceCountRow = z.object({
+  total_count: z.number(),
+});
 
 export type TraceSortColumn = (typeof SORT_COLUMNS)[number];
 
@@ -54,7 +55,7 @@ export function TraceList() {
   const [searching, setSearching] = useState(false);
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [sort, setSort] = useState(NEWEST_FIRST);
-  const { status, data } = useQuery({
+  const { status, data: traces = [] } = useQuery({
     queryKey: ["traces", { search, errorsOnly, sort }],
     queryFn: async () => {
       const reader = await db.runAndReadAll(TRACE_LIST_SQL, {
@@ -64,10 +65,22 @@ export function TraceList() {
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });
-      return TraceListResult.parse(reader.getRowObjectsJS());
+      const rows = reader.getRowObjectsJS();
+      const traces = Trace.array().parse(rows);
+      return traces;
     },
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
+  });
+  const { data: totalCount = 0 } = useQuery({
+    queryKey: ["traces", "count"],
+    queryFn: async () => {
+      const reader = await db.runAndReadAll(TRACE_COUNT_SQL);
+      const [row] = reader.getRowObjectsJS();
+      const { total_count: totalCount } = TraceCountRow.parse(row);
+      return totalCount;
+    },
+    refetchInterval: POLL_INTERVAL_MS,
   });
 
   useBindings(
@@ -142,12 +155,12 @@ export function TraceList() {
     if (status === "error") {
       return <Placeholder text="Failed to load traces" variant="error" />;
     }
-    if (status === "pending" || data.traces.length === 0) {
+    if (status === "pending" || traces.length === 0) {
       return <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />;
     }
     return (
       <FocusScope focused={!searching}>
-        <TraceTable traces={data.traces} sort={sort} />
+        <TraceTable traces={traces} sort={sort} />
       </FocusScope>
     );
   }
@@ -158,8 +171,8 @@ export function TraceList() {
         search={search}
         searching={searching}
         errorsOnly={errorsOnly}
-        shownCount={data?.traces.length ?? 0}
-        totalCount={data?.totalCount ?? 0}
+        shownCount={traces.length}
+        totalCount={totalCount}
         onSearchInput={(search) => setSearch(search)}
       />
       {renderTraces()}

@@ -5,8 +5,7 @@ SELECT
   arg_min(name, start_time_unix_nano) FILTER (WHERE parent_span_id IS NULL) AS name,
   count(*)::INTEGER AS span_count,
   count(*) FILTER (WHERE status_code = 2)::INTEGER AS error_count,
-  (max(epoch_ns(start_time_unix_nano) + duration_time_unix_nano) - epoch_ns(start_time)) / 1e6 AS duration_ms,
-  count(*) OVER ()::INTEGER AS total_count
+  (max(epoch_ns(start_time_unix_nano) + duration_time_unix_nano) - epoch_ns(start_time)) / 1e6 AS duration_ms
 FROM otlp_traces
 GROUP BY trace_id
 HAVING bool_or(parent_span_id IS NULL)
