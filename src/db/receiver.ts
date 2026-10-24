@@ -63,15 +63,13 @@ export async function startReceiver({
   }
 
   let pruning: Promise<void> | undefined;
-  const pruneTimer = setInterval(() => {
-    pruning ??= prune()
-      .catch((error) => console.error("Pruning old data failed:", error))
-      .finally(() => (pruning = undefined));
+  const pruneInterval = setInterval(() => {
+    pruning ??= prune().finally(() => (pruning = undefined));
   }, PRUNE_INTERVAL_MS);
-  pruneTimer.unref();
+  pruneInterval.unref();
 
   async function close() {
-    clearInterval(pruneTimer);
+    clearInterval(pruneInterval);
     await pruning;
     await control.run("SELECT * FROM otlp_stop($uri)", { uri });
     for (const connection of connections) {
