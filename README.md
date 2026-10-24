@@ -2,42 +2,34 @@
 
 A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
-It receives data over OTLP/HTTP, stores it in DuckDB, and shows it in views that
-filter each other. [OpenTUI](https://opentui.com/) draws the screen.
+Send it data over OTLP/HTTP and browse it in your terminal. Picking a service
+or time range in one view filters the others.
 
 ![Traces view listing root traces with service, span count, errors, and duration](docs/traces-view.png)
 
-## How it works
-
-The app opens an in-memory DuckDB and starts the receiver of its
-[`otlp` community extension](https://duckdb.org/community_extensions/extensions/otlp)
-on port 4318 (`OTEL_TUI_PORT` overrides it). The data lands in the `otlp_traces`,
-`otlp_logs` and `otlp_metrics_*` tables. Views query DuckDB, and OpenTUI shows
-the results.
-
-- The extension commits rows in batches (every 500 ms here), so call `flush()`
-  from `src/db/receiver.ts` to see fresh data immediately.
-- Auth is disabled, so the receiver only suits local use.
-
-- A small store holds the shared filters (service, time range, search text).
-  Each view builds its SQL from the filters and re-queries when they change, so
-  choosing a service or time range in one view filters the others.
-- The runtime is Bun, because OpenTUI needs it.
-
 ## Views
 
-- Traces: span table, waterfall, duration histogram.
-- Metrics: line chart with a time brush.
-- Logs: table, severity histogram, text search.
+- Traces: trace list works today. Span table, waterfall, and duration
+  histogram are planned.
+- Metrics: planned (line chart with a time brush).
+- Logs: planned (table, severity histogram, text search).
 
-## Project layout
+## Usage
 
-- `src/db/`: DuckDB instance and OTLP receiver.
-- `src/tui/`: views and charts.
+Requires [Bun](https://bun.sh).
 
-## Next steps
+```shell
+bun install
+bun run start
+```
 
-1. Build the Logs, Traces, and Metrics views.
+Point your OTLP/HTTP exporter at `http://localhost:4318`. Data lives in memory
+and auth is off, so it only suits local use.
+
+| Variable                     | Default | Meaning                      |
+| ---------------------------- | ------- | ---------------------------- |
+| `OTEL_TUI_PORT`              | `4318`  | Port the receiver listens on |
+| `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept   |
 
 ## Development
 
@@ -54,3 +46,13 @@ bun run gen:traces   # in another (also gen:logs, gen:metrics)
 bun run check
 bun run test
 ```
+
+## How it works
+
+An in-memory DuckDB runs the receiver from its
+[`otlp` community extension](https://duckdb.org/community_extensions/extensions/otlp).
+Each view queries DuckDB with SQL built from the shared filters, and
+[OpenTUI](https://opentui.com/) draws the results.
+
+- `src/db/`: DuckDB instance and OTLP receiver.
+- `src/tui/`: views and charts.
