@@ -27,5 +27,5 @@
     "target": "ESNext",
     "skipLibCheck": true
   },
-  "include": ["src", "test"]
+  "include": ["src"]
 }
