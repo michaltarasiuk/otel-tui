@@ -2,8 +2,6 @@
 
 ## Comments
 
-- Write a comment only to explain what the code cannot: a hidden constraint, a workaround, or surprising behavior.
-- Don't restate what the code does. Fix unclear code with better names instead.
 - Prefer a name that carries the reason over a comment: a named constant for a value, a named function for a step.
 - Don't document default values or behavior that the signature and code already show.
 
