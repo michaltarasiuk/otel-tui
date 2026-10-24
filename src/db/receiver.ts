@@ -16,17 +16,14 @@ const HOST = "localhost";
 const SEAL_MAX_AGE_MS = 500;
 const PRUNE_INTERVAL_MS = 30 * 1000;
 
-export interface ReceiverOptions {
+interface ReceiverOptions {
   port?: number;
   retentionMs?: number;
 }
 
-export interface Receiver extends AsyncDisposable {
+interface Receiver extends AsyncDisposable {
   readonly url: string;
   connect(): Promise<DuckDBConnection>;
-  flush(): Promise<void>;
-  prune(): Promise<void>;
-  close(): Promise<void>;
 }
 
 export async function startReceiver({
@@ -73,10 +70,6 @@ export async function startReceiver({
   }, PRUNE_INTERVAL_MS);
   pruneTimer.unref();
 
-  async function flush() {
-    await control.run("SELECT * FROM otlp_flush($uri)", { uri });
-  }
-
   async function close() {
     clearInterval(pruneTimer);
     await pruning;
@@ -91,9 +84,6 @@ export async function startReceiver({
   return {
     url,
     connect,
-    prune,
-    flush,
-    close,
     [Symbol.asyncDispose]: close,
   };
 }

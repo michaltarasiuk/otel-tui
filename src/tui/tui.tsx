@@ -22,7 +22,7 @@ async function waitForInFlightQueries(queryClient: QueryClient) {
   await Promise.allSettled(queries.map((query) => query.promise));
 }
 
-export interface TuiOptions {
+interface TuiOptions {
   connection: DuckDBConnection;
   receiverUrl: string;
 }
