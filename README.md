@@ -11,12 +11,21 @@ or time range in one view filters the others.
 
 ![Logs view with severity, service, and body columns and the selected log's attributes and resource](docs/logs-view.png)
 
+![Metric details with a series table, a value chart, and the selected series' resource and scope](docs/metrics-view.png)
+
 ## Views
 
 - Traces: the trace list works today, and `return` opens a trace as a span
-  waterfall with each span's events, attributes, links, and resource. A
-  duration histogram is planned.
-- Metrics: planned (line chart with a time brush).
+  waterfall with each span's events, attributes, links, and resource. `e`
+  jumps to the next trace or span with errors, and `s` shows only traces
+  with errors. A duration histogram is planned.
+- Metrics: the metric list shows each metric's type, unit, and series count,
+  with a panel listing the values each attribute takes, so an attribute that
+  blows up cardinality stands out. `return` opens a metric's series with
+  their rates, last values, or percentiles, plus the selected series' chart,
+  histogram buckets, and exemplars. `o` sorts by name, series count, or last
+  update, and `/` searches names, descriptions, services, and attributes. A
+  time brush is planned.
 - Logs: the log table works today, with a panel for the selected log's body,
   attributes, resource, and trace ID. `e` jumps to the next error, `return`
   opens the selected log's trace, `t` shows only the logs in that trace, `s`

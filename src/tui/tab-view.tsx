@@ -1,21 +1,8 @@
 import { FocusScope } from "./focus.tsx";
 import { LogsView } from "./logs/logs-view.tsx";
-import { Placeholder } from "./placeholder.tsx";
+import { MetricsView } from "./metrics/metrics-view.tsx";
 import type { Tab } from "./tabs.tsx";
 import { TracesView } from "./traces/traces-view.tsx";
-
-function renderPlaceholder(tab: Tab) {
-  switch (tab) {
-    case "traces":
-    case "logs":
-      return null;
-    case "metrics":
-      return <Placeholder text="Waiting for metrics..." />;
-    default:
-      tab satisfies never;
-      throw new Error(`Unknown tab: ${tab}`);
-  }
-}
 
 interface TabViewProps {
   tab: Tab;
@@ -36,12 +23,16 @@ export function TabView({ tab, openTraceId, onOpenTrace, onCloseTrace }: TabView
           />
         </FocusScope>
       </box>
+      <box visible={tab === "metrics"} flexGrow={1}>
+        <FocusScope focused={tab === "metrics"}>
+          <MetricsView />
+        </FocusScope>
+      </box>
       <box visible={tab === "logs"} flexGrow={1}>
         <FocusScope focused={tab === "logs"}>
           <LogsView onOpenTrace={(traceId) => onOpenTrace(traceId)} />
         </FocusScope>
       </box>
-      {renderPlaceholder(tab)}
     </>
   );
 }
