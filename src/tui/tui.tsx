@@ -9,7 +9,6 @@ import { App } from "./app.tsx";
 import { ConnectionContext } from "./connection.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
-const KEEP_UNUSED_QUERIES = Infinity;
 
 function enableRefetchWithoutWindow() {
   environmentManager.setIsServer(() => false);
@@ -35,7 +34,7 @@ export async function startTui({ connection, receiverUrl }: TuiOptions) {
 
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: false, gcTime: KEEP_UNUSED_QUERIES },
+      queries: { retry: false },
     },
   });
 
