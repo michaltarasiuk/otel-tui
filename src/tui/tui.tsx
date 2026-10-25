@@ -39,7 +39,7 @@ export async function startTui({ connection, receiverUrl }: TuiOptions) {
   });
 
   renderer.keyInput.on("keypress", (key) => {
-    if (key.name === "`") {
+    if (key.name === "`" && renderer.currentFocusedEditor === null) {
       renderer.console.toggle();
     }
   });
