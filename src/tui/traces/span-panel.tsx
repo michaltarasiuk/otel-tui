@@ -4,53 +4,19 @@ import { useRef } from "react";
 
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
+import { COLUMN_GAP } from "../columns.ts";
+import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
 import { useFocused } from "../focus.tsx";
+import { Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
-import { COLUMN_GAP } from "./columns.ts";
 import type { Span, SpanDetails } from "./span.ts";
 import { useSpanDetails } from "./trace-queries.ts";
 
-const KEY_MAX_WIDTH = 32;
 const NESTED_INDENT = 2;
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
-
-interface EntryListProps {
-  entries: SpanDetails["attributes"];
-}
-
-function EntryList({ entries }: EntryListProps) {
-  const keyWidth = Math.min(KEY_MAX_WIDTH, Math.max(...entries.map(({ key }) => key.length)));
-
-  return entries.map(({ key, value }) => (
-    <box key={key} flexDirection="row" gap={COLUMN_GAP}>
-      <text width={keyWidth} fg={THEME.textMuted} wrapMode="none" truncate>
-        {key}
-      </text>
-      <text flexGrow={1} flexBasis={IGNORE_CONTENT_SIZE} fg={THEME.text}>
-        {value ?? "null"}
-      </text>
-    </box>
-  ));
-}
-
-interface SectionProps {
-  title: string;
-  children: React.ReactNode;
-}
-
-function Section({ title, children }: SectionProps) {
-  return (
-    <box>
-      <text fg={THEME.textMuted} attributes={TextAttributes.BOLD}>
-        {title}
-      </text>
-      {children}
-    </box>
-  );
-}
 
 interface SpanBodyProps {
   details: SpanDetails;

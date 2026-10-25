@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
 import SPAN_DETAILS_SQL from "./span-details.sql" with { type: "text" };
 import { Span, SpanDetails } from "./span.ts";
@@ -11,10 +12,6 @@ import { Trace, type TraceSort } from "./trace.ts";
 
 const POLL_INTERVAL_MS = 1000;
 const MAX_TRACES = 500;
-
-function containsPattern(search: string) {
-  return `%${search.replace(/[\\%_]/g, "\\$&")}%`;
-}
 
 interface TraceQuery {
   search: string;

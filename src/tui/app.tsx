@@ -13,19 +13,28 @@ interface AppProps {
 
 export function App({ receiverUrl }: AppProps) {
   const [tab, setTab] = useState<Tab>("traces");
+  const [openTraceId, setOpenTraceId] = useState<string>();
   const region = useRegion();
 
   return (
     <Layout
       tabs={
         <FocusScope focused={region === "tabs"}>
-          <Tabs onChange={(tab) => setTab(tab)} />
+          <Tabs tab={tab} onChange={(tab) => setTab(tab)} />
         </FocusScope>
       }
       footer={<Footer receiverUrl={receiverUrl} />}
     >
       <FocusScope focused={region === "content"}>
-        <TabView tab={tab} />
+        <TabView
+          tab={tab}
+          openTraceId={openTraceId}
+          onOpenTrace={(traceId) => {
+            setOpenTraceId(traceId);
+            setTab("traces");
+          }}
+          onCloseTrace={() => setOpenTraceId(undefined)}
+        />
       </FocusScope>
     </Layout>
   );

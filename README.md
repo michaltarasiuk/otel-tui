@@ -9,13 +9,19 @@ or time range in one view filters the others.
 
 ![Trace details with a span waterfall and the selected span's attributes, resource, and scope](docs/trace-details.png)
 
+![Logs view with severity, service, and body columns and the selected log's attributes and resource](docs/logs-view.png)
+
 ## Views
 
 - Traces: the trace list works today, and `return` opens a trace as a span
   waterfall with each span's events, attributes, links, and resource. A
   duration histogram is planned.
 - Metrics: planned (line chart with a time brush).
-- Logs: planned (table, severity histogram, text search).
+- Logs: the log table works today, with a panel for the selected log's body,
+  attributes, resource, and trace ID. `e` jumps to the next error, `return`
+  opens the selected log's trace, `t` shows only the logs in that trace, `s`
+  raises the minimum severity, and `/` searches bodies, attributes, services,
+  and trace IDs. A severity histogram is planned.
 
 ## Usage
 

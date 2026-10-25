@@ -1,13 +1,12 @@
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
+import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH, TIME_WIDTH } from "../columns.ts";
 import { useFocused } from "../focus.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
-import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH } from "./columns.ts";
 import type { Trace, TraceSort, TraceSortColumn } from "./trace.ts";
 
 const SORT_ARROW_WIDTH = 2;
-const TIME_WIDTH = 12;
 const SPANS_WIDTH = 5 + SORT_ARROW_WIDTH;
 const ERRORS_WIDTH = 6 + SORT_ARROW_WIDTH;
 const DURATION_WIDTH = 8 + SORT_ARROW_WIDTH;

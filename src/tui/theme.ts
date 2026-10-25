@@ -1,6 +1,7 @@
 export const THEME = {
   text: "#FFFFFF",
   textMuted: "#808080",
+  textWarning: "#FFD75F",
   textError: "#FF5F5F",
   background: "#00000000",
   backgroundSelected: "#444444",

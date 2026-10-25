@@ -2,9 +2,9 @@ import { TextAttributes } from "@opentui/core";
 
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
+import { COLUMN_GAP } from "../columns.ts";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
-import { COLUMN_GAP } from "./columns.ts";
 import type { Span } from "./span.ts";
 
 function formatCount(count: number, unit: string) {

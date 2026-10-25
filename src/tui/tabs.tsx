@@ -1,4 +1,5 @@
-import type { TabSelectOption } from "@opentui/core";
+import type { TabSelectOption, TabSelectRenderable } from "@opentui/core";
+import { useEffect, useRef } from "react";
 
 import { useFocused } from "./focus.tsx";
 import { THEME } from "./theme.ts";
@@ -12,14 +13,22 @@ const TABS = [
 ] as const satisfies TabSelectOption[];
 
 interface TabsProps {
+  tab: Tab;
   onChange: (tab: Tab) => void;
 }
 
-export function Tabs({ onChange }: TabsProps) {
+export function Tabs({ tab, onChange }: TabsProps) {
   const focused = useFocused();
+
+  const tabsRef = useRef<TabSelectRenderable>(null);
+
+  useEffect(() => {
+    tabsRef.current?.setSelectedIndex(TABS.findIndex((option) => option.value === tab));
+  }, [tab]);
 
   return (
     <tab-select
+      ref={tabsRef}
       focused={focused}
       options={TABS}
       textColor={THEME.textMuted}

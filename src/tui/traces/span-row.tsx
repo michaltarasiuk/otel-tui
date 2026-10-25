@@ -1,9 +1,9 @@
 import { formatDuration } from "../../utils/format-duration.ts";
+import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH } from "../columns.ts";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
 import { useFocused } from "../focus.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { serviceColor, THEME } from "../theme.ts";
-import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH } from "./columns.ts";
 import type { Span } from "./span.ts";
 
 const DURATION_WIDTH = 8;

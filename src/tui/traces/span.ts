@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { Attributes } from "../attributes.ts";
+
 const SPAN_KINDS = ["unspecified", "internal", "server", "client", "producer", "consumer"] as const;
 
 export const Span = z.object({
@@ -21,11 +23,6 @@ const NullableString = z
   .string()
   .nullish()
   .transform((value) => value ?? null);
-
-const Attributes = z
-  .array(z.object({ key: z.string(), value: z.string().nullable() }))
-  .nullish()
-  .transform((attributes) => attributes ?? []);
 
 export const SpanDetails = z.object({
   scope_name: NullableString,
