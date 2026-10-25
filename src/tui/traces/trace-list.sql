@@ -10,7 +10,7 @@ FROM otlp_traces
 GROUP BY trace_id
 HAVING bool_or(parent_span_id IS NULL)
   AND (NOT $errorsOnly OR error_count > 0)
-  AND (trace_id ILIKE $pattern OR bool_or(name ILIKE $pattern OR service_name ILIKE $pattern))
+  AND (trace_id ILIKE $pattern ESCAPE '\' OR bool_or(name ILIKE $pattern ESCAPE '\' OR service_name ILIKE $pattern ESCAPE '\'))
 ORDER BY
   CASE $sortBy
     WHEN 'start_time' THEN epoch_us(start_time)

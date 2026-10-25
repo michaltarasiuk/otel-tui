@@ -9,6 +9,10 @@ import { Trace, type TraceSort } from "./trace.ts";
 const POLL_INTERVAL_MS = 1000;
 const MAX_TRACES = 500;
 
+function containsPattern(search: string) {
+  return `%${search.replace(/[\\%_]/g, "\\$&")}%`;
+}
+
 interface TraceQuery {
   search: string;
   errorsOnly: boolean;
@@ -23,7 +27,7 @@ export function useTraceList({ search, errorsOnly, sort }: TraceQuery) {
     queryFn: async () => {
       const reader = await connection.runAndReadAll(TRACE_LIST_SQL, {
         limit: MAX_TRACES,
-        pattern: `%${search}%`,
+        pattern: containsPattern(search),
         errorsOnly,
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
