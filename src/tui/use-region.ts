@@ -21,7 +21,6 @@ export function useRegion() {
       },
       {
         name: "focus.previous",
-        desc: "previous region",
         run() {
           setRegion((region) => REGIONS[wrapIndex(REGIONS.indexOf(region) - 1, REGIONS.length)]!);
         },
