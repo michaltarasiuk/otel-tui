@@ -7,7 +7,7 @@ interface FooterProps {
 
 export function Footer({ receiverUrl }: FooterProps) {
   return (
-    <box flexDirection="row" justifyContent="space-between" gap={2}>
+    <box paddingX={1} flexDirection="row" justifyContent="space-between" gap={2}>
       <KeyHints />
       <text fg={THEME.textMuted} wrapMode="none" flexShrink={0}>
         Listening for OTLP/HTTP on {receiverUrl}
