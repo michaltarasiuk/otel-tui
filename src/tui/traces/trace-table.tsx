@@ -1,6 +1,7 @@
 import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
+import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
 import { WindowedRows } from "../windowed-rows.tsx";
@@ -23,9 +24,20 @@ export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
     traces.findIndex((trace) => trace.trace_id === selectedTraceId),
   );
   const selectedTrace = traces[selectedIndex];
+  const hasErrors = traces.some((trace) => trace.error_count > 0);
 
-  useBindings(
-    () => ({
+  useBindings(() => {
+    function selectErrorFrom(index: number, step: 1 | -1) {
+      for (let distance = 1; distance < traces.length; distance++) {
+        const candidate = traces[wrapIndex(index + step * distance, traces.length)];
+        if (candidate !== undefined && candidate.error_count > 0) {
+          setSelectedTraceId(candidate.trace_id);
+          return;
+        }
+      }
+    }
+
+    return {
       enabled: focused,
       priority: FIRST_HINT_PRIORITY,
       commands: [
@@ -38,11 +50,29 @@ export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
             }
           },
         },
+        {
+          name: "traces.next-error",
+          desc: "next error",
+          enabled: hasErrors,
+          run() {
+            selectErrorFrom(selectedIndex, 1);
+          },
+        },
+        {
+          name: "traces.previous-error",
+          enabled: hasErrors,
+          run() {
+            selectErrorFrom(selectedIndex, -1);
+          },
+        },
       ],
-      bindings: [{ key: "return", cmd: "traces.open" }],
-    }),
-    [focused, selectedTrace, onOpen],
-  );
+      bindings: [
+        { key: "return", cmd: "traces.open" },
+        { key: "e", cmd: "traces.next-error" },
+        { key: "shift+e", cmd: "traces.previous-error" },
+      ],
+    };
+  }, [focused, traces, hasErrors, selectedIndex, selectedTrace, onOpen]);
 
   return (
     <box flexGrow={1}>

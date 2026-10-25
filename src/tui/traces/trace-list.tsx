@@ -72,7 +72,7 @@ export function TraceList({ onOpen }: TraceListProps) {
         },
         {
           name: "traces.toggle-errors-only",
-          desc: "errors",
+          desc: "status",
           enabled: !searching,
           run() {
             setErrorsOnly((errorsOnly) => !errorsOnly);
@@ -99,7 +99,7 @@ export function TraceList({ onOpen }: TraceListProps) {
         { key: "/", cmd: "traces.search" },
         { key: "return", cmd: "traces.apply-search" },
         { key: "escape", cmd: "traces.clear-search" },
-        { key: "e", cmd: "traces.toggle-errors-only" },
+        { key: "s", cmd: "traces.toggle-errors-only" },
         { key: "o", cmd: "traces.next-sort" },
         { key: "shift+o", cmd: "traces.reverse-sort" },
       ],
