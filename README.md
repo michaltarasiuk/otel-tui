@@ -9,9 +9,9 @@ or time range in one view filters the others.
 
 ![Trace details with a span waterfall and the selected span's attributes, resource, and scope](docs/trace-details.png)
 
-![Logs view with severity, service, and body columns and the selected log's attributes and resource](docs/logs-view.png)
-
 ![Metric details with a series table, a value chart, and the selected series' resource and scope](docs/metrics-view.png)
+
+![Logs view with severity, service, and body columns and the selected log's attributes and resource](docs/logs-view.png)
 
 ## Views
 
