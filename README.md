@@ -7,10 +7,13 @@ or time range in one view filters the others.
 
 ![Traces view listing root traces with service, span count, errors, and duration](docs/traces-view.png)
 
+![Trace details with a span waterfall and the selected span's attributes, resource, and scope](docs/trace-details.png)
+
 ## Views
 
-- Traces: trace list works today. Span table, waterfall, and duration
-  histogram are planned.
+- Traces: the trace list works today, and `return` opens a trace as a span
+  waterfall with each span's events, attributes, links, and resource. A
+  duration histogram is planned.
 - Metrics: planned (line chart with a time brush).
 - Logs: planned (table, severity histogram, text search).
 

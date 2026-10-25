@@ -2,8 +2,11 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { useConnection } from "../connection.ts";
+import SPAN_DETAILS_SQL from "./span-details.sql" with { type: "text" };
+import { Span, SpanDetails } from "./span.ts";
 import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
 import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
+import TRACE_SPANS_SQL from "./trace-spans.sql" with { type: "text" };
 import { Trace, type TraceSort } from "./trace.ts";
 
 const POLL_INTERVAL_MS = 1000;
@@ -55,5 +58,32 @@ export function useTraceTotalCount() {
       return TraceCount.parse(row).total_count;
     },
     refetchInterval: POLL_INTERVAL_MS,
+  });
+}
+
+export function useTraceSpans(traceId: string) {
+  const connection = useConnection();
+
+  return useQuery({
+    queryKey: ["traces", traceId, "spans"],
+    queryFn: async () => {
+      const reader = await connection.runAndReadAll(TRACE_SPANS_SQL, { traceId });
+      return Span.array().parse(reader.getRowObjectsJS());
+    },
+    refetchInterval: POLL_INTERVAL_MS,
+  });
+}
+
+export function useSpanDetails(traceId: string, spanId: string) {
+  const connection = useConnection();
+
+  return useQuery({
+    queryKey: ["traces", traceId, "spans", spanId],
+    queryFn: async () => {
+      const reader = await connection.runAndReadAll(SPAN_DETAILS_SQL, { traceId, spanId });
+      const [row] = reader.getRowObjectsJS();
+      return SpanDetails.parse(row ?? {});
+    },
+    staleTime: Infinity,
   });
 }

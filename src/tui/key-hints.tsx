@@ -2,6 +2,8 @@ import { useActiveKeys } from "@opentui/keymap/react";
 
 import { THEME } from "./theme.ts";
 
+export const FIRST_HINT_PRIORITY = 1;
+
 export function KeyHints() {
   const activeKeys = useActiveKeys({ includeMetadata: true });
 

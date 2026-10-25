@@ -20,7 +20,11 @@ function nextSortColumn(column: TraceSortColumn) {
   ]!;
 }
 
-export function TraceList() {
+interface TraceListProps {
+  onOpen: (traceId: string) => void;
+}
+
+export function TraceList({ onOpen }: TraceListProps) {
   const focused = useFocused();
 
   const [search, setSearch] = useState("");
@@ -114,7 +118,7 @@ export function TraceList() {
     }
     return (
       <FocusScope focused={!searching}>
-        <TraceTable traces={traces} sort={sort} />
+        <TraceTable traces={traces} sort={sort} onOpen={onOpen} />
       </FocusScope>
     );
   }

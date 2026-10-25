@@ -1,7 +1,7 @@
 import { FocusScope } from "./focus.tsx";
 import { Placeholder } from "./placeholder.tsx";
 import type { Tab } from "./tabs.tsx";
-import { TraceList } from "./traces/trace-list.tsx";
+import { TracesView } from "./traces/traces-view.tsx";
 
 function renderPlaceholder(tab: Tab) {
   switch (tab) {
@@ -26,7 +26,7 @@ export function TabView({ tab }: TabViewProps) {
     <>
       <box visible={tab === "traces"} flexGrow={1}>
         <FocusScope focused={tab === "traces"}>
-          <TraceList />
+          <TracesView />
         </FocusScope>
       </box>
       {renderPlaceholder(tab)}

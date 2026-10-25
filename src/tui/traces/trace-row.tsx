@@ -1,42 +1,16 @@
-import { TextAttributes } from "@opentui/core";
-import type { TextProps } from "@opentui/react";
-
+import { formatDuration } from "../../utils/format-duration.ts";
+import { formatTime } from "../../utils/format-time.ts";
 import { useFocused } from "../focus.tsx";
-import { serviceColor, THEME } from "../theme.ts";
+import { ServiceName } from "../service-name.tsx";
+import { THEME } from "../theme.ts";
+import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH } from "./columns.ts";
 import type { Trace, TraceSort, TraceSortColumn } from "./trace.ts";
 
-const COLUMN_GAP = 2;
 const SORT_ARROW_WIDTH = 2;
 const TIME_WIDTH = 12;
-const SERVICE_WIDTH = 18;
 const SPANS_WIDTH = 5 + SORT_ARROW_WIDTH;
 const ERRORS_WIDTH = 6 + SORT_ARROW_WIDTH;
 const DURATION_WIDTH = 8 + SORT_ARROW_WIDTH;
-
-const HEADER_CELL_PROPS = {
-  fg: THEME.textMuted,
-  attributes: TextAttributes.BOLD,
-} satisfies TextProps;
-
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  fractionalSecondDigits: 3,
-  hourCycle: "h23",
-});
-
-function formatDuration(ms: number) {
-  const microseconds = Math.round(ms * 1000);
-  if (microseconds < 1000) {
-    return `${microseconds}µs`;
-  }
-  const tenthsOfMilliseconds = Math.round(ms * 10);
-  if (tenthsOfMilliseconds < 10_000) {
-    return `${(tenthsOfMilliseconds / 10).toFixed(1)}ms`;
-  }
-  return `${(ms / 1000).toFixed(2)}s`;
-}
 
 function sortArrow(sort: TraceSort, column: TraceSortColumn) {
   if (sort.column !== column) {
@@ -92,14 +66,10 @@ export function TraceRow({ trace, selected }: TraceRowProps) {
       backgroundColor={selected && focused ? THEME.backgroundSelected : THEME.background}
     >
       <text width={TIME_WIDTH} fg={secondaryColor}>
-        {timeFormatter.format(trace.start_time)}
+        {formatTime(trace.start_time)}
       </text>
       <text width={SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
-        {trace.service_name !== null && (
-          <>
-            <span fg={serviceColor(trace.service_name)}>●</span> {trace.service_name}
-          </>
-        )}
+        {trace.service_name !== null && <ServiceName name={trace.service_name} />}
       </text>
       <text flexGrow={1} fg={THEME.text} wrapMode="none" truncate>
         {trace.name}
