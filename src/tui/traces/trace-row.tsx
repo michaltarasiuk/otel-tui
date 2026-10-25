@@ -27,11 +27,13 @@ const timeFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 function formatDuration(ms: number) {
-  if (ms < 1) {
-    return `${Math.round(ms * 1000)}µs`;
+  const microseconds = Math.round(ms * 1000);
+  if (microseconds < 1000) {
+    return `${microseconds}µs`;
   }
-  if (ms < 1000) {
-    return `${ms.toFixed(1)}ms`;
+  const tenthsOfMilliseconds = Math.round(ms * 10);
+  if (tenthsOfMilliseconds < 10_000) {
+    return `${(tenthsOfMilliseconds / 10).toFixed(1)}ms`;
   }
   return `${(ms / 1000).toFixed(2)}s`;
 }
