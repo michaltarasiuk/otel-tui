@@ -60,6 +60,13 @@ bun run start        # in one terminal
 bun run gen:traces   # in another (also gen:logs, gen:metrics)
 ```
 
+For realistic data, `bun run demo:up` runs the
+[OpenTelemetry Demo](https://opentelemetry.io/docs/demo/) in Docker: an online
+shop of about 20 services in different languages, with a load generator and
+feature flags that inject failures. Its collector exports everything to
+otel-tui on `OTEL_TUI_PORT`. It needs about 6 GB of memory for Docker; stop it
+with `bun run demo:down`.
+
 ```shell
 bun run check
 bun run test

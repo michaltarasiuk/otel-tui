@@ -1,0 +1,14 @@
+# Layered last onto the OpenTelemetry Demo's collector config. Pipelines
+# replace their exporter lists, so the demo's own debug exporter is dropped.
+exporters:
+  otlp_http/otel-tui:
+    endpoint: http://host.docker.internal:${env:OTEL_TUI_PORT}
+
+service:
+  pipelines:
+    traces:
+      exporters: [span_metrics, otlp_http/otel-tui]
+    metrics:
+      exporters: [otlp_http/otel-tui]
+    logs:
+      exporters: [otlp_http/otel-tui]

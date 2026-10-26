@@ -17,7 +17,9 @@
     "check:fix": "bun run lint:fix && bun run format",
     "gen:traces": "telemetrygen traces --otlp-http --otlp-insecure --traces 10",
     "gen:metrics": "telemetrygen metrics --otlp-http --otlp-insecure --metrics 10",
-    "gen:logs": "telemetrygen logs --otlp-http --otlp-insecure --logs 10"
+    "gen:logs": "telemetrygen logs --otlp-http --otlp-insecure --logs 10",
+    "demo:up": "demo/demo.sh up",
+    "demo:down": "demo/demo.sh down"
   },
   "dependencies": {
     "@duckdb/node-api": "1.5.6-r.1",

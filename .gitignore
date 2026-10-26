@@ -3,3 +3,6 @@ node_modules/
 
 # macOS
 .DS_Store
+
+# OpenTelemetry Demo checkout
+demo/.upstream/
