@@ -34,12 +34,12 @@ export function WindowedRows<T>({
     Math.max(0, rows.length - visibleRowCount),
   );
 
-  useBindings(() => {
-    function selectRowAt(index: number) {
-      onSelect(clamp(index, 0, rows.length - 1));
-    }
+  function selectRowAt(index: number) {
+    onSelect(clamp(index, 0, rows.length - 1));
+  }
 
-    return {
+  useBindings(
+    () => ({
       enabled: focused,
       commands: [
         {
@@ -89,8 +89,9 @@ export function WindowedRows<T>({
         { key: "home", cmd: "rows.first" },
         { key: "end", cmd: "rows.last" },
       ],
-    };
-  }, [focused, rows.length, selectedIndex, visibleRowCount, onSelect]);
+    }),
+    [focused, rows.length, selectedIndex, visibleRowCount, onSelect],
+  );
 
   return (
     <box
@@ -100,6 +101,13 @@ export function WindowedRows<T>({
       maxHeight={rows.length}
       overflow="hidden"
       onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
+      onMouseScroll={({ scroll }) => {
+        if (scroll?.direction === "down") {
+          selectRowAt(selectedIndex + scroll.delta);
+        } else if (scroll?.direction === "up") {
+          selectRowAt(selectedIndex - scroll.delta);
+        }
+      }}
     >
       {rows.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount).map((row, offset) => (
         <Fragment key={getKey(row)}>
