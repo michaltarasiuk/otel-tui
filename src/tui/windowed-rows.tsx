@@ -1,6 +1,6 @@
 import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 
 import { clamp } from "../utils/clamp.ts";
 import { IGNORE_CONTENT_SIZE } from "./flex.ts";
@@ -27,6 +27,11 @@ export function WindowedRows<T>({
   const [visibleRowCount, setVisibleRowCount] = useState(0);
 
   const rowsRef = useRef<BoxRenderable>(null);
+  const requestedIndexRef = useRef(selectedIndex);
+
+  useLayoutEffect(() => {
+    requestedIndexRef.current = selectedIndex;
+  });
 
   const firstVisibleIndex = clamp(
     selectedIndex - Math.floor(visibleRowCount / 2),
@@ -35,7 +40,8 @@ export function WindowedRows<T>({
   );
 
   function selectRowAt(index: number) {
-    onSelect(clamp(index, 0, rows.length - 1));
+    requestedIndexRef.current = clamp(index, 0, rows.length - 1);
+    onSelect(requestedIndexRef.current);
   }
 
   useBindings(
@@ -103,9 +109,9 @@ export function WindowedRows<T>({
       onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
       onMouseScroll={({ scroll }) => {
         if (scroll?.direction === "down") {
-          selectRowAt(selectedIndex + scroll.delta);
+          selectRowAt(requestedIndexRef.current + scroll.delta);
         } else if (scroll?.direction === "up") {
-          selectRowAt(selectedIndex - scroll.delta);
+          selectRowAt(requestedIndexRef.current - scroll.delta);
         }
       }}
     >
