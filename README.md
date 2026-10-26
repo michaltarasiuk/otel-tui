@@ -2,8 +2,7 @@
 
 A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
-Send it data over OTLP/HTTP and browse it in your terminal. Picking a service
-or time range in one view filters the others.
+Send it data over OTLP/HTTP and browse it in your terminal.
 
 ![Traces view listing root traces with service, span count, errors, and duration](docs/traces-view.png)
 
@@ -76,7 +75,7 @@ bun run test
 
 An in-memory DuckDB runs the receiver from its
 [`otlp` community extension](https://duckdb.org/community_extensions/extensions/otlp).
-Each view queries DuckDB with SQL built from the shared filters, and
+Each view queries DuckDB with SQL built from its own search and filters, and
 [OpenTUI](https://opentui.com/) draws the results.
 
 - `src/db/`: DuckDB instance and OTLP receiver.
