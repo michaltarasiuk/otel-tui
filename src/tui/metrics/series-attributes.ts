@@ -18,7 +18,7 @@ export function attributeValues(attributeSets: Attributes[]) {
   }
   return [...byKey].map(([key, { values, setCount }]) => ({
     key,
-    values: [...values].toSorted((a, b) => compareValues(a, b)),
+    values: [...values].sort((a, b) => compareValues(a, b)),
     setCount,
   }));
 }

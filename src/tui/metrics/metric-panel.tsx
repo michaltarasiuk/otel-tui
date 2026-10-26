@@ -26,7 +26,7 @@ function describeValues(values: string[]) {
 
 function summarize(attributeSets: Attributes[]) {
   return attributeValues(attributeSets)
-    .toSorted((a, b) => b.values.length - a.values.length || a.key.localeCompare(b.key))
+    .sort((a, b) => b.values.length - a.values.length || a.key.localeCompare(b.key))
     .map(({ key, values }) => ({ key, value: describeValues(values) }));
 }
 

@@ -22,7 +22,7 @@ export function attributeColumns(series: Series[]) {
         ({ values, setCount }) =>
           series.length === 1 || values.length > 1 || setCount < series.length,
       )
-      .toSorted((a, b) => a.values.length - b.values.length || a.key.localeCompare(b.key))
+      .sort((a, b) => a.values.length - b.values.length || a.key.localeCompare(b.key))
       .map(({ key, values }) => ({
         key,
         source,

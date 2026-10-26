@@ -69,7 +69,7 @@ export function gapSlots(times: number[], { start, end, slotCount }: ChartWindow
   const spacings = times
     .slice(1)
     .map((time, index) => time - times[index]!)
-    .toSorted((a, b) => a - b);
+    .sort((a, b) => a - b);
   const medianSpacing = spacings[Math.floor(spacings.length / 2)] ?? 0;
   const slotDuration = (end - start) / slotCount;
   return Math.max(1, Math.ceil((MISSED_EXPORTS_BEFORE_GAP * medianSpacing) / slotDuration));
