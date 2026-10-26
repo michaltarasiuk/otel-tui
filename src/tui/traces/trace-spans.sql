@@ -33,7 +33,7 @@ SELECT
   depth,
   service_name,
   name,
-  kind,
+  coalesce(kind, 0) AS kind,
   status_code = 2 AS is_error,
   status_status_message AS status_message,
   start_time_unix_nano AS start_time,
