@@ -12,7 +12,7 @@ const RETENTION_COLUMNS = {
   otlp_metrics_exp_histogram: "time_unix_nano",
 };
 
-const HOST = "localhost";
+const HOST = "127.0.0.1";
 const SEAL_MAX_AGE_MS = 500;
 const PRUNE_INTERVAL_MS = 30 * 1000;
 
