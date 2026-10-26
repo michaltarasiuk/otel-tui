@@ -230,7 +230,7 @@ export function quantile(distribution: Distribution, q: number) {
       const lower = Math.max(bucket.lower, min);
       const upper = Math.min(bucket.upper, max);
       if (!Number.isFinite(lower)) {
-        return upper;
+        return Number.isFinite(upper) ? upper : null;
       }
       if (!Number.isFinite(upper)) {
         return lower;
