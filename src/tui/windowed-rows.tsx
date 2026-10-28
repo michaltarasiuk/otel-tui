@@ -36,7 +36,7 @@ export function WindowedRows<T>({
   const firstVisibleIndex = clamp(
     selectedIndex - Math.floor(visibleRowCount / 2),
     0,
-    Math.max(0, rows.length - visibleRowCount),
+    rows.length - visibleRowCount,
   );
 
   function selectRowAt(index: number) {
