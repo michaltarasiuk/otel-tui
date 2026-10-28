@@ -1,7 +1,7 @@
 import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
+import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { MetricFilterBar } from "./metric-filter-bar.tsx";
@@ -26,10 +26,7 @@ const DESCENDING_FIRST = {
 } satisfies Record<MetricSortColumn, boolean>;
 
 function nextSort(column: MetricSortColumn) {
-  const next =
-    METRIC_SORT_COLUMNS[
-      wrapIndex(METRIC_SORT_COLUMNS.indexOf(column) + 1, METRIC_SORT_COLUMNS.length)
-    ]!;
+  const next = cycle(METRIC_SORT_COLUMNS, column, 1);
   return { column: next, descending: DESCENDING_FIRST[next] };
 }
 

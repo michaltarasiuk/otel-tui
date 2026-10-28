@@ -1,7 +1,7 @@
 import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
-import { wrapIndex } from "../utils/wrap-index.ts";
+import { cycle } from "../utils/cycle.ts";
 
 type Region = (typeof REGIONS)[number];
 
@@ -16,13 +16,13 @@ export function useRegion() {
         name: "focus.next",
         desc: "next region",
         run() {
-          setRegion((region) => REGIONS[wrapIndex(REGIONS.indexOf(region) + 1, REGIONS.length)]!);
+          setRegion((region) => cycle(REGIONS, region, 1));
         },
       },
       {
         name: "focus.previous",
         run() {
-          setRegion((region) => REGIONS[wrapIndex(REGIONS.indexOf(region) - 1, REGIONS.length)]!);
+          setRegion((region) => cycle(REGIONS, region, -1));
         },
       },
     ],

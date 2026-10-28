@@ -1,7 +1,7 @@
 import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
+import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { LogFilterBar } from "./log-filter-bar.tsx";
@@ -11,12 +11,6 @@ import { LogTable } from "./log-table.tsx";
 type MinSeverity = (typeof MIN_SEVERITIES)[number];
 
 const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
-
-function nextMinSeverity(minSeverity: MinSeverity, step: 1 | -1) {
-  return MIN_SEVERITIES[
-    wrapIndex(MIN_SEVERITIES.indexOf(minSeverity) + step, MIN_SEVERITIES.length)
-  ];
-}
 
 interface LogsViewProps {
   onOpenTrace: (traceId: string) => void;
@@ -81,14 +75,14 @@ export function LogsView({ onOpenTrace }: LogsViewProps) {
           desc: "severity",
           enabled: !searching,
           run() {
-            setMinSeverity((minSeverity) => nextMinSeverity(minSeverity, 1));
+            setMinSeverity((minSeverity) => cycle(MIN_SEVERITIES, minSeverity, 1));
           },
         },
         {
           name: "logs.previous-severity",
           enabled: !searching,
           run() {
-            setMinSeverity((minSeverity) => nextMinSeverity(minSeverity, -1));
+            setMinSeverity((minSeverity) => cycle(MIN_SEVERITIES, minSeverity, -1));
           },
         },
       ],

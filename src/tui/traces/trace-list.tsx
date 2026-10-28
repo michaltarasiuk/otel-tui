@@ -1,24 +1,18 @@
 import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
+import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import { useTraceList, useTraceTotalCount } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
-import { TRACE_SORT_COLUMNS, type TraceSortColumn, type TraceSort } from "./trace.ts";
+import { TRACE_SORT_COLUMNS, type TraceSort } from "./trace.ts";
 
 const NEWEST_FIRST: TraceSort = {
   column: "start_time",
   descending: true,
 };
-
-function nextSortColumn(column: TraceSortColumn) {
-  return TRACE_SORT_COLUMNS[
-    wrapIndex(TRACE_SORT_COLUMNS.indexOf(column) + 1, TRACE_SORT_COLUMNS.length)
-  ]!;
-}
 
 interface TraceListProps {
   onOpen: (traceId: string) => void;
@@ -83,7 +77,10 @@ export function TraceList({ onOpen }: TraceListProps) {
           desc: "sort",
           enabled: !searching,
           run() {
-            setSort((sort) => ({ column: nextSortColumn(sort.column), descending: true }));
+            setSort((sort) => ({
+              column: cycle(TRACE_SORT_COLUMNS, sort.column, 1),
+              descending: true,
+            }));
           },
         },
         {
