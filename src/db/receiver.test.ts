@@ -32,14 +32,20 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   );
   await receiver.send(
     "/v1/logs",
-    logsRequest({ service: "checkout", logs: [{ time, body: "cart loaded" }] }),
+    logsRequest({
+      service: "checkout",
+      logs: [{ time, body: "cart loaded" }],
+    }),
   );
   await receiver.send(
     "/v1/metrics",
     metricsRequest({
       service: "checkout",
       metrics: [
-        { name: "queue.depth", gauge: [{ time, value: 4 }] },
+        {
+          name: "queue.depth",
+          gauge: [{ time, value: 4 }],
+        },
         {
           name: "orders",
           sum: [{ start: time, time, value: 1 }],
