@@ -1,3 +1,5 @@
+import type { ColorInput } from "@opentui/core";
+
 import { THEME } from "../theme.ts";
 
 export type SeverityLevel = (typeof SEVERITY_LEVELS)[number];
@@ -13,7 +15,7 @@ const SEVERITY_COLORS = {
   WARN: THEME.textWarning,
   ERROR: THEME.textError,
   FATAL: THEME.textError,
-} satisfies Record<SeverityLevel, string>;
+} satisfies Record<SeverityLevel, ColorInput>;
 
 export function severityLevel(severityNumber: number | null) {
   if (severityNumber === null) {
