@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { FocusScope } from "./focus.tsx";
 import { LogsView } from "./logs/logs-view.tsx";
 import { MetricsView } from "./metrics/metrics-view.tsx";
@@ -6,20 +8,25 @@ import { TracesView } from "./traces/traces-view.tsx";
 
 interface TabViewProps {
   tab: Tab;
-  openTraceId: string | undefined;
-  onOpenTrace: (traceId: string) => void;
-  onCloseTrace: () => void;
+  onTabChange: (tab: Tab) => void;
 }
 
-export function TabView({ tab, openTraceId, onOpenTrace, onCloseTrace }: TabViewProps) {
+export function TabView({ tab, onTabChange }: TabViewProps) {
+  const [openTraceId, setOpenTraceId] = useState<string>();
+
+  function openTrace(traceId: string) {
+    setOpenTraceId(traceId);
+    onTabChange("traces");
+  }
+
   return (
     <>
       <box visible={tab === "traces"} flexGrow={1}>
         <FocusScope focused={tab === "traces"}>
           <TracesView
             openTraceId={openTraceId}
-            onOpenTrace={(traceId) => onOpenTrace(traceId)}
-            onCloseTrace={() => onCloseTrace()}
+            onOpenTrace={(traceId) => openTrace(traceId)}
+            onCloseTrace={() => setOpenTraceId(undefined)}
           />
         </FocusScope>
       </box>
@@ -30,7 +37,7 @@ export function TabView({ tab, openTraceId, onOpenTrace, onCloseTrace }: TabView
       </box>
       <box visible={tab === "logs"} flexGrow={1}>
         <FocusScope focused={tab === "logs"}>
-          <LogsView onOpenTrace={(traceId) => onOpenTrace(traceId)} />
+          <LogsView onOpenTrace={(traceId) => openTrace(traceId)} />
         </FocusScope>
       </box>
     </>
