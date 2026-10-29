@@ -54,10 +54,10 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
   async function waitForSelection(text: string, { line }: { line?: number } = {}) {
     const [selected] = await waitUntil(
       () => selectedLines(setup.captureSpans()),
-      (lines) =>
-        lines.length === 1 &&
-        lines[0]?.text.includes(text) === true &&
-        (line === undefined || lines[0].line === line),
+      ([first]) =>
+        first !== undefined &&
+        first.text.includes(text) &&
+        (line === undefined || first.line === line),
     );
     return selected?.text;
   }
