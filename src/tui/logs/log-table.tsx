@@ -1,9 +1,8 @@
 import { useBindings } from "@opentui/keymap/react";
-import { useState } from "react";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useListState } from "../use-list-state.ts";
 import { WindowedRows } from "../windowed-rows.tsx";
 import { LogPanel } from "./log-panel.tsx";
 import { LogHeaderRow, LogRow } from "./log-row.tsx";
@@ -19,28 +18,17 @@ interface LogTableProps {
 export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
   const focused = useFocused();
 
-  const [selectedLogId, setSelectedLogId] = useState<string>();
+  const list = useListState({
+    items: logs,
+    getKey: (log) => log.log_id,
+  });
 
-  const selectedIndex = Math.max(
-    0,
-    logs.findIndex((log) => log.log_id === selectedLogId),
-  );
-  const selectedLog = logs[selectedIndex];
+  const selectedLog = list.selectedItem;
   const selectedTraceId = selectedLog?.trace_id ?? null;
   const hasErrors = logs.some((log) => isErrorLevel(log.severity));
 
-  useBindings(() => {
-    function selectErrorFrom(index: number, step: 1 | -1) {
-      for (let distance = 1; distance < logs.length; distance++) {
-        const candidate = logs[wrapIndex(index + step * distance, logs.length)];
-        if (candidate !== undefined && isErrorLevel(candidate.severity)) {
-          setSelectedLogId(candidate.log_id);
-          return;
-        }
-      }
-    }
-
-    return {
+  useBindings(
+    () => ({
       enabled: focused,
       priority: FIRST_HINT_PRIORITY,
       commands: [
@@ -49,14 +37,14 @@ export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
           desc: "next error",
           enabled: hasErrors,
           run() {
-            selectErrorFrom(selectedIndex, 1);
+            list.selectNext((log) => isErrorLevel(log.severity));
           },
         },
         {
           name: "logs.previous-error",
           enabled: hasErrors,
           run() {
-            selectErrorFrom(selectedIndex, -1);
+            list.selectPrevious((log) => isErrorLevel(log.severity));
           },
         },
         {
@@ -86,19 +74,16 @@ export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
         { key: "return", cmd: "logs.open-trace" },
         { key: "t", cmd: "logs.toggle-trace" },
       ],
-    };
-  }, [focused, hasErrors, logs, selectedIndex, selectedTraceId, onToggleTrace, onOpenTrace]);
+    }),
+    [focused, hasErrors, list, selectedTraceId, onToggleTrace, onOpenTrace],
+  );
 
   return (
     <box flexGrow={1}>
       <LogHeaderRow />
-      <WindowedRows
-        rows={logs}
-        selectedIndex={selectedIndex}
-        getKey={(log) => log.log_id}
-        renderRow={(log, selected) => <LogRow log={log} selected={selected} />}
-        onSelect={(index) => setSelectedLogId(logs[index]?.log_id)}
-      />
+      <WindowedRows state={list}>
+        {(log, selected) => <LogRow log={log} selected={selected} />}
+      </WindowedRows>
       {selectedLog !== undefined && <LogPanel log={selectedLog} />}
     </box>
   );

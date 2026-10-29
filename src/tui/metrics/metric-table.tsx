@@ -1,8 +1,8 @@
 import { useBindings } from "@opentui/keymap/react";
-import { useState } from "react";
 
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useListState } from "../use-list-state.ts";
 import { WindowedRows } from "../windowed-rows.tsx";
 import { MetricPanel } from "./metric-panel.tsx";
 import { MetricHeaderRow, MetricRow } from "./metric-row.tsx";
@@ -17,13 +17,12 @@ interface MetricTableProps {
 export function MetricTable({ metrics, sort, onOpen }: MetricTableProps) {
   const focused = useFocused();
 
-  const [selectedMetricId, setSelectedMetricId] = useState<string>();
+  const list = useListState({
+    items: metrics,
+    getKey: (metric) => metric.metric_id,
+  });
 
-  const selectedIndex = Math.max(
-    0,
-    metrics.findIndex((metric) => metric.metric_id === selectedMetricId),
-  );
-  const selectedMetric = metrics[selectedIndex];
+  const selectedMetric = list.selectedItem;
 
   useBindings(
     () => ({
@@ -48,13 +47,9 @@ export function MetricTable({ metrics, sort, onOpen }: MetricTableProps) {
   return (
     <box flexGrow={1}>
       <MetricHeaderRow sort={sort} />
-      <WindowedRows
-        rows={metrics}
-        selectedIndex={selectedIndex}
-        getKey={(metric) => metric.metric_id}
-        renderRow={(metric, selected) => <MetricRow metric={metric} selected={selected} />}
-        onSelect={(index) => setSelectedMetricId(metrics[index]?.metric_id)}
-      />
+      <WindowedRows state={list}>
+        {(metric, selected) => <MetricRow metric={metric} selected={selected} />}
+      </WindowedRows>
       {selectedMetric !== undefined && <MetricPanel metric={selectedMetric} />}
     </box>
   );

@@ -1,48 +1,32 @@
 import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
-import { Fragment, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 
 import { clamp } from "../utils/clamp.ts";
 import { IGNORE_CONTENT_SIZE } from "./flex.ts";
 import { useFocused } from "./focus.tsx";
 import { ScrollIndicator } from "./scroll-indicator.tsx";
+import type { useListState } from "./use-list-state.ts";
 
 interface WindowedRowsProps<T> {
-  rows: T[];
-  selectedIndex: number;
-  getKey: (row: T) => string;
-  renderRow: (row: T, selected: boolean) => React.ReactNode;
-  onSelect: (index: number) => void;
+  state: ReturnType<typeof useListState<T>>;
+  children: (item: T, selected: boolean) => React.ReactNode;
 }
 
-export function WindowedRows<T>({
-  rows,
-  selectedIndex,
-  getKey,
-  renderRow,
-  onSelect,
-}: WindowedRowsProps<T>) {
+export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
+  const { items, getKey, selectedIndex } = state;
+
   const focused = useFocused();
 
   const [visibleRowCount, setVisibleRowCount] = useState(0);
 
   const rowsRef = useRef<BoxRenderable>(null);
-  const requestedIndexRef = useRef(selectedIndex);
-
-  useLayoutEffect(() => {
-    requestedIndexRef.current = selectedIndex;
-  });
 
   const firstVisibleIndex = clamp(
     selectedIndex - Math.floor(visibleRowCount / 2),
     0,
-    rows.length - visibleRowCount,
+    items.length - visibleRowCount,
   );
-
-  function selectRowAt(index: number) {
-    requestedIndexRef.current = clamp(index, 0, rows.length - 1);
-    onSelect(requestedIndexRef.current);
-  }
 
   useBindings(
     () => ({
@@ -51,37 +35,37 @@ export function WindowedRows<T>({
         {
           name: "rows.next",
           run() {
-            selectRowAt(selectedIndex + 1);
+            state.moveBy(1);
           },
         },
         {
           name: "rows.previous",
           run() {
-            selectRowAt(selectedIndex - 1);
+            state.moveBy(-1);
           },
         },
         {
           name: "rows.next-page",
           run() {
-            selectRowAt(selectedIndex + visibleRowCount);
+            state.moveBy(visibleRowCount);
           },
         },
         {
           name: "rows.previous-page",
           run() {
-            selectRowAt(selectedIndex - visibleRowCount);
+            state.moveBy(-visibleRowCount);
           },
         },
         {
           name: "rows.first",
           run() {
-            selectRowAt(0);
+            state.selectIndex(0);
           },
         },
         {
           name: "rows.last",
           run() {
-            selectRowAt(rows.length - 1);
+            state.selectIndex(items.length - 1);
           },
         },
       ],
@@ -96,7 +80,7 @@ export function WindowedRows<T>({
         { key: "end", cmd: "rows.last" },
       ],
     }),
-    [focused, rows.length, selectedIndex, visibleRowCount, onSelect],
+    [focused, state, visibleRowCount],
   );
 
   return (
@@ -104,26 +88,26 @@ export function WindowedRows<T>({
       ref={rowsRef}
       flexGrow={1}
       flexBasis={IGNORE_CONTENT_SIZE}
-      maxHeight={rows.length}
+      maxHeight={items.length}
       overflow="hidden"
       onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
       onMouseScroll={({ scroll }) => {
         if (scroll?.direction === "down") {
-          selectRowAt(requestedIndexRef.current + scroll.delta);
+          state.moveBy(scroll.delta);
         } else if (scroll?.direction === "up") {
-          selectRowAt(requestedIndexRef.current - scroll.delta);
+          state.moveBy(-scroll.delta);
         }
       }}
     >
-      {rows.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount).map((row, offset) => (
-        <Fragment key={getKey(row)}>
-          {renderRow(row, firstVisibleIndex + offset === selectedIndex)}
+      {items.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount).map((item, offset) => (
+        <Fragment key={getKey(item)}>
+          {children(item, firstVisibleIndex + offset === selectedIndex)}
         </Fragment>
       ))}
       <ScrollIndicator
         firstVisibleIndex={firstVisibleIndex}
         visibleRowCount={visibleRowCount}
-        rowCount={rows.length}
+        rowCount={items.length}
       />
     </box>
   );

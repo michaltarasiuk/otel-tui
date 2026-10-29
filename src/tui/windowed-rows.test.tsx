@@ -1,9 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { useState } from "react";
-
 import { render, textLines } from "../testing/render.tsx";
 import { FocusScope } from "./focus.tsx";
+import { useListState } from "./use-list-state.ts";
 import { WindowedRows } from "./windowed-rows.tsx";
 
 const SIZE = { width: 20, height: 5 };
@@ -16,17 +15,13 @@ interface NumberedRowsProps {
 }
 
 function NumberedRows({ count }: NumberedRowsProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const rows = Array.from({ length: count }, (_, index) => `row ${index + 1}`);
+  const list = useListState({ items: rows, getKey: (row) => row });
 
   return (
-    <WindowedRows
-      rows={rows}
-      selectedIndex={selectedIndex}
-      getKey={(row) => row}
-      renderRow={(row, selected) => <text>{`${selected ? ">" : " "} ${row}`}</text>}
-      onSelect={(index) => setSelectedIndex(index)}
-    />
+    <WindowedRows state={list}>
+      {(row, selected) => <text>{`${selected ? ">" : " "} ${row}`}</text>}
+    </WindowedRows>
   );
 }
 

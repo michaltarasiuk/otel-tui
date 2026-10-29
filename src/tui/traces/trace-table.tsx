@@ -1,9 +1,8 @@
 import { useBindings } from "@opentui/keymap/react";
-import { useState } from "react";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useListState } from "../use-list-state.ts";
 import { WindowedRows } from "../windowed-rows.tsx";
 import { TraceHeaderRow, TraceRow } from "./trace-row.tsx";
 import type { Trace, TraceSort } from "./trace.ts";
@@ -17,27 +16,16 @@ interface TraceTableProps {
 export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
   const focused = useFocused();
 
-  const [selectedTraceId, setSelectedTraceId] = useState<string>();
+  const list = useListState({
+    items: traces,
+    getKey: (trace) => trace.trace_id,
+  });
 
-  const selectedIndex = Math.max(
-    0,
-    traces.findIndex((trace) => trace.trace_id === selectedTraceId),
-  );
-  const selectedTrace = traces[selectedIndex];
+  const selectedTrace = list.selectedItem;
   const hasErrors = traces.some((trace) => trace.error_count > 0);
 
-  useBindings(() => {
-    function selectErrorFrom(index: number, step: 1 | -1) {
-      for (let distance = 1; distance < traces.length; distance++) {
-        const candidate = traces[wrapIndex(index + step * distance, traces.length)];
-        if (candidate !== undefined && candidate.error_count > 0) {
-          setSelectedTraceId(candidate.trace_id);
-          return;
-        }
-      }
-    }
-
-    return {
+  useBindings(
+    () => ({
       enabled: focused,
       priority: FIRST_HINT_PRIORITY,
       commands: [
@@ -55,14 +43,14 @@ export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
           desc: "next error",
           enabled: hasErrors,
           run() {
-            selectErrorFrom(selectedIndex, 1);
+            list.selectNext((trace) => trace.error_count > 0);
           },
         },
         {
           name: "traces.previous-error",
           enabled: hasErrors,
           run() {
-            selectErrorFrom(selectedIndex, -1);
+            list.selectPrevious((trace) => trace.error_count > 0);
           },
         },
       ],
@@ -71,19 +59,16 @@ export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
         { key: "e", cmd: "traces.next-error" },
         { key: "shift+e", cmd: "traces.previous-error" },
       ],
-    };
-  }, [focused, traces, hasErrors, selectedIndex, selectedTrace, onOpen]);
+    }),
+    [focused, hasErrors, list, selectedTrace, onOpen],
+  );
 
   return (
     <box flexGrow={1}>
       <TraceHeaderRow sort={sort} />
-      <WindowedRows
-        rows={traces}
-        selectedIndex={selectedIndex}
-        getKey={(trace) => trace.trace_id}
-        renderRow={(trace, selected) => <TraceRow trace={trace} selected={selected} />}
-        onSelect={(index) => setSelectedTraceId(traces[index]?.trace_id)}
-      />
+      <WindowedRows state={list}>
+        {(trace, selected) => <TraceRow trace={trace} selected={selected} />}
+      </WindowedRows>
     </box>
   );
 }

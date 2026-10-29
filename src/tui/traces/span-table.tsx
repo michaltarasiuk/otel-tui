@@ -1,8 +1,7 @@
 import { useBindings } from "@opentui/keymap/react";
-import { useState } from "react";
 
-import { wrapIndex } from "../../utils/wrap-index.ts";
 import { useFocused } from "../focus.tsx";
+import { useListState } from "../use-list-state.ts";
 import { WindowedRows } from "../windowed-rows.tsx";
 import { SpanPanel } from "./span-panel.tsx";
 import { SpanHeaderRow, SpanRow } from "./span-row.tsx";
@@ -17,40 +16,29 @@ interface SpanTableProps {
 export function SpanTable({ traceId, spans, traceDurationMs }: SpanTableProps) {
   const focused = useFocused();
 
-  const [selectedSpanId, setSelectedSpanId] = useState<string>();
+  const list = useListState({
+    items: spans,
+    getKey: (span) => span.span_id,
+  });
 
-  const selectedIndex = Math.max(
-    0,
-    spans.findIndex((span) => span.span_id === selectedSpanId),
-  );
-  const selectedSpan = spans[selectedIndex];
+  const selectedSpan = list.selectedItem;
   const hasErrors = spans.some((span) => span.is_error);
 
-  useBindings(() => {
-    function selectErrorFrom(index: number, step: 1 | -1) {
-      for (let distance = 1; distance < spans.length; distance++) {
-        const candidate = spans[wrapIndex(index + step * distance, spans.length)];
-        if (candidate?.is_error === true) {
-          setSelectedSpanId(candidate.span_id);
-          return;
-        }
-      }
-    }
-
-    return {
+  useBindings(
+    () => ({
       enabled: focused && hasErrors,
       commands: [
         {
           name: "spans.next-error",
           desc: "next error",
           run() {
-            selectErrorFrom(selectedIndex, 1);
+            list.selectNext((span) => span.is_error);
           },
         },
         {
           name: "spans.previous-error",
           run() {
-            selectErrorFrom(selectedIndex, -1);
+            list.selectPrevious((span) => span.is_error);
           },
         },
       ],
@@ -58,21 +46,18 @@ export function SpanTable({ traceId, spans, traceDurationMs }: SpanTableProps) {
         { key: "e", cmd: "spans.next-error" },
         { key: "shift+e", cmd: "spans.previous-error" },
       ],
-    };
-  }, [focused, hasErrors, spans, selectedIndex]);
+    }),
+    [focused, hasErrors, list],
+  );
 
   return (
     <box flexGrow={1}>
       <SpanHeaderRow traceDurationMs={traceDurationMs} />
-      <WindowedRows
-        rows={spans}
-        selectedIndex={selectedIndex}
-        getKey={(span) => span.span_id}
-        renderRow={(span, selected) => (
+      <WindowedRows state={list}>
+        {(span, selected) => (
           <SpanRow span={span} traceDurationMs={traceDurationMs} selected={selected} />
         )}
-        onSelect={(index) => setSelectedSpanId(spans[index]?.span_id)}
-      />
+      </WindowedRows>
       {selectedSpan !== undefined && <SpanPanel traceId={traceId} span={selectedSpan} />}
     </box>
   );
