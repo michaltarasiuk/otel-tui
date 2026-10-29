@@ -27,14 +27,8 @@ export function useRegion() {
       },
     ],
     bindings: [
-      {
-        key: "tab",
-        cmd: "focus.next",
-      },
-      {
-        key: "shift+tab",
-        cmd: "focus.previous",
-      },
+      { key: "tab", cmd: "focus.next" },
+      { key: "shift+tab", cmd: "focus.previous" },
     ],
   }));
 
