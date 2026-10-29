@@ -5,6 +5,7 @@ import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot, flushSync } from "@opentui/react";
 
 import { THEME } from "../tui/theme.ts";
+import { collapseSpaces } from "../utils/collapse-spaces.ts";
 
 const FRAME_TIMEOUT_MS = 3000;
 const FRAME_POLL_INTERVAL_MS = 10;
@@ -74,10 +75,6 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       await setup.dispose();
     },
   };
-}
-
-function collapseSpaces(text: string) {
-  return text.replace(/\s+/g, " ").trim();
 }
 
 export function textLines(frame: string) {

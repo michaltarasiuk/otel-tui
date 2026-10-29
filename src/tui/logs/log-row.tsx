@@ -1,3 +1,4 @@
+import { collapseSpaces } from "../../utils/collapse-spaces.ts";
 import { formatTime } from "../../utils/format-time.ts";
 import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH, TIME_WIDTH } from "../columns.ts";
 import { useFocused } from "../focus.tsx";
@@ -7,10 +8,6 @@ import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
 
 const SEVERITY_WIDTH = 8;
-
-function toSingleLine(text: string) {
-  return text.replace(/\s+/g, " ").trim();
-}
 
 export function LogHeaderRow() {
   return (
@@ -59,7 +56,7 @@ export function LogRow({ log, selected }: LogRowProps) {
       </text>
       <text flexGrow={1} fg={THEME.text} wrapMode="none" truncate>
         {log.event_name !== null && <span fg={secondaryColor}>{log.event_name} </span>}
-        {log.body !== null && toSingleLine(log.body)}
+        {log.body !== null && collapseSpaces(log.body)}
       </text>
     </box>
   );

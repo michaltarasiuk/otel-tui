@@ -6,6 +6,7 @@ import { renderApp } from "../../testing/app.tsx";
 import { SPAN_KIND, STATUS_CODE, tracesRequest } from "../../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
 import { panelLines, textLines } from "../../testing/render.tsx";
+import { collapseSpaces } from "../../utils/collapse-spaces.ts";
 import { serviceColor } from "../theme.ts";
 
 const BASE_TIME = Date.parse("2026-10-28T12:00:00.000Z");
@@ -304,7 +305,7 @@ test("opens a trace as a span waterfall", async () => {
     "● checkout 12:00:01.000 3 spans 2 errors 500.0ms",
     "Service Name Duration 0 500.0ms",
   ]);
-  expect(spanRows(frame).map((row) => row.replace(/\s+/g, " ").trim())).toEqual([
+  expect(spanRows(frame).map((row) => collapseSpaces(row))).toEqual([
     "● checkout POST /checkout 450.0ms",
     "● payment charge 300.0ms",
     "● email send receipt 40.0ms",
