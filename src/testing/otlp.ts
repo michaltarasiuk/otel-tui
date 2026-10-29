@@ -146,7 +146,12 @@ function exponentialBuckets(buckets: ExponentialBucketsFixture | undefined) {
 function metric(fixture: MetricFixture) {
   const { name, unit, description } = fixture;
   if ("gauge" in fixture) {
-    return { name, unit, description, gauge: { dataPoints: numberDataPoints(fixture.gauge) } };
+    return {
+      name,
+      unit,
+      description,
+      gauge: { dataPoints: numberDataPoints(fixture.gauge) },
+    };
   }
   if ("sum" in fixture) {
     return {
@@ -255,7 +260,10 @@ export function metricsRequest(...resources: (ResourceFixture & { metrics: Metri
     resourceMetrics: resources.map((fixture) => ({
       resource: resource(fixture),
       scopeMetrics: [
-        { scope: fixture.scope, metrics: fixture.metrics.map((item) => metric(item)) },
+        {
+          scope: fixture.scope,
+          metrics: fixture.metrics.map((item) => metric(item)),
+        },
       ],
     })),
   };
