@@ -1,13 +1,6 @@
+import { formatShownCount } from "../../utils/format-shown-count.ts";
 import { SearchField } from "../search-field.tsx";
 import { THEME } from "../theme.ts";
-
-function formatTraceCount(shownCount: number, totalCount: number) {
-  const unit = totalCount === 1 ? "trace" : "traces";
-  if (shownCount < totalCount) {
-    return `${shownCount.toLocaleString()} of ${totalCount.toLocaleString()} ${unit}`;
-  }
-  return `${totalCount.toLocaleString()} ${unit}`;
-}
 
 interface TraceFilterBarProps {
   search: string;
@@ -40,7 +33,7 @@ export function TraceFilterBar({
         </text>
       )}
       <text fg={THEME.textMuted} flexShrink={0}>
-        {formatTraceCount(shownCount, totalCount)}
+        {formatShownCount(shownCount, totalCount, "trace")}
       </text>
     </box>
   );

@@ -1,15 +1,12 @@
 import { TextAttributes } from "@opentui/core";
 
+import { formatCount } from "../../utils/format-count.ts";
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
 import type { Span } from "./span.ts";
-
-function formatCount(count: number, unit: string) {
-  return `${count.toLocaleString()} ${unit}${count === 1 ? "" : "s"}`;
-}
 
 interface TraceHeaderProps {
   traceId: string;

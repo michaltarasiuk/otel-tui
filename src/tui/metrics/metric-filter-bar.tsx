@@ -1,13 +1,6 @@
+import { formatShownCount } from "../../utils/format-shown-count.ts";
 import { SearchField } from "../search-field.tsx";
 import { THEME } from "../theme.ts";
-
-function formatMetricCount(shownCount: number, totalCount: number) {
-  const unit = totalCount === 1 ? "metric" : "metrics";
-  if (shownCount < totalCount) {
-    return `${shownCount.toLocaleString()} of ${totalCount.toLocaleString()} ${unit}`;
-  }
-  return `${totalCount.toLocaleString()} ${unit}`;
-}
 
 interface MetricFilterBarProps {
   search: string;
@@ -33,7 +26,7 @@ export function MetricFilterBar({
         onInput={(search) => onSearchInput(search)}
       />
       <text fg={THEME.textMuted} flexShrink={0}>
-        {formatMetricCount(shownCount, totalCount)}
+        {formatShownCount(shownCount, totalCount, "metric")}
       </text>
     </box>
   );

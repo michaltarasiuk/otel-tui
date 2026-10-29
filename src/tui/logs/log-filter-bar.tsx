@@ -1,16 +1,9 @@
+import { formatShownCount } from "../../utils/format-shown-count.ts";
 import { SearchField } from "../search-field.tsx";
 import { THEME } from "../theme.ts";
 import { severityColor, type SeverityLevel } from "./severity.ts";
 
 const SHORT_TRACE_ID_LENGTH = 8;
-
-function formatLogCount(shownCount: number, totalCount: number) {
-  const unit = totalCount === 1 ? "log" : "logs";
-  if (shownCount < totalCount) {
-    return `${shownCount.toLocaleString()} of ${totalCount.toLocaleString()} ${unit}`;
-  }
-  return `${totalCount.toLocaleString()} ${unit}`;
-}
 
 interface LogFilterBarProps {
   search: string;
@@ -50,7 +43,7 @@ export function LogFilterBar({
         </text>
       )}
       <text fg={THEME.textMuted} flexShrink={0}>
-        {formatLogCount(shownCount, totalCount)}
+        {formatShownCount(shownCount, totalCount, "log")}
       </text>
     </box>
   );
