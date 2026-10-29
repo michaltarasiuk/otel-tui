@@ -14,7 +14,7 @@ interface TabViewProps {
 export function TabView({ tab, onTabChange }: TabViewProps) {
   const [openTraceId, setOpenTraceId] = useState<string>();
 
-  function openTrace(traceId: string) {
+  function handleOpenTrace(traceId: string) {
     setOpenTraceId(traceId);
     onTabChange("traces");
   }
@@ -25,7 +25,7 @@ export function TabView({ tab, onTabChange }: TabViewProps) {
         <FocusScope focused={tab === "traces"}>
           <TracesView
             openTraceId={openTraceId}
-            onOpenTrace={(traceId) => openTrace(traceId)}
+            onOpenTrace={(traceId) => handleOpenTrace(traceId)}
             onCloseTrace={() => setOpenTraceId(undefined)}
           />
         </FocusScope>
@@ -37,7 +37,7 @@ export function TabView({ tab, onTabChange }: TabViewProps) {
       </box>
       <box visible={tab === "logs"} flexGrow={1}>
         <FocusScope focused={tab === "logs"}>
-          <LogsView onOpenTrace={(traceId) => openTrace(traceId)} />
+          <LogsView onOpenTrace={(traceId) => handleOpenTrace(traceId)} />
         </FocusScope>
       </box>
     </>
