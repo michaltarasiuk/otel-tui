@@ -6,9 +6,9 @@ import ATTRIBUTE_ENTRIES_SQL from "./attribute-entries.sql" with { type: "text" 
 
 const OtlpServeRow = z.object({ listen_url: z.url() });
 
-const RETENTION_COLUMNS = {
+const RETENTION_TIMES = {
   otlp_traces: "start_time_unix_nano",
-  otlp_logs: "time_unix_nano",
+  otlp_logs: "coalesce(time_unix_nano, observed_time_unix_nano)",
   otlp_metrics_gauge: "time_unix_nano",
   otlp_metrics_sum: "time_unix_nano",
   otlp_metrics_histogram: "time_unix_nano",
@@ -50,9 +50,9 @@ export async function startReceiver({ port, retentionMs }: ReceiverOptions) {
   }
 
   async function prune() {
-    for (const [table, column] of Object.entries(RETENTION_COLUMNS)) {
+    for (const [table, time] of Object.entries(RETENTION_TIMES)) {
       await control.run(
-        `DELETE FROM ${table} WHERE ${column} < (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)`,
+        `DELETE FROM ${table} WHERE ${time} < (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)`,
         { retentionMs },
       );
     }

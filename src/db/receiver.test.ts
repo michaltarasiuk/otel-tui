@@ -83,6 +83,19 @@ function eachTableWith(rows: number) {
   return Object.fromEntries(TABLES.map((table) => [table, rows]));
 }
 
+async function pruneAndWaitFor(connection: DuckDBConnection, expected: Record<string, number>) {
+  jest.advanceTimersByTime(PRUNE_INTERVAL_MS);
+  jest.useRealTimers();
+
+  const deadline = performance.now() + PRUNE_TIMEOUT_MS;
+  let counts = await rowCounts(connection);
+  while (!Bun.deepEquals(counts, expected) && performance.now() < deadline) {
+    await Bun.sleep(PRUNE_POLL_INTERVAL_MS);
+    counts = await rowCounts(connection);
+  }
+  return counts;
+}
+
 afterEach(() => {
   jest.useRealTimers();
   mock.restore();
@@ -111,16 +124,26 @@ test("drops telemetry older than the retention period", async () => {
   await sendOneOfEach(receiver, new Date());
   expect(await rowCounts(connection)).toEqual(eachTableWith(2));
 
-  jest.advanceTimersByTime(PRUNE_INTERVAL_MS);
-  jest.useRealTimers();
+  expect(await pruneAndWaitFor(connection, eachTableWith(1))).toEqual(eachTableWith(1));
+});
 
-  const deadline = performance.now() + PRUNE_TIMEOUT_MS;
-  let counts = await rowCounts(connection);
-  while (!Bun.deepEquals(counts, eachTableWith(1)) && performance.now() < deadline) {
-    await Bun.sleep(PRUNE_POLL_INTERVAL_MS);
-    counts = await rowCounts(connection);
-  }
-  expect(counts).toEqual(eachTableWith(1));
+test("drops logs by their observed time when they carry no time", async () => {
+  jest.useFakeTimers();
+  await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
+  const connection = await receiver.connect();
+  await receiver.send(
+    "/v1/logs",
+    logsRequest({
+      service: "shipping",
+      logs: [
+        { observedTime: new Date(Date.now() - 2 * RETENTION_MS), body: "quote requested" },
+        { observedTime: new Date(), body: "order shipped" },
+      ],
+    }),
+  );
+  const expected = { ...eachTableWith(0), otlp_logs: 1 };
+
+  expect(await pruneAndWaitFor(connection, expected)).toEqual(expected);
 });
 
 test("reports a failed prune and keeps running", async () => {
