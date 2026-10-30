@@ -116,7 +116,7 @@ export function MetricList({ onOpen }: MetricListProps) {
     }
     return (
       <FocusScope focused={!searching}>
-        <MetricTable metrics={metrics} sort={sort} onOpen={onOpen} />
+        <MetricTable metrics={metrics} sort={sort} onOpen={(metric) => onOpen(metric)} />
       </FocusScope>
     );
   }

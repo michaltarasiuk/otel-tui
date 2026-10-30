@@ -115,7 +115,7 @@ export function TraceList({ onOpen }: TraceListProps) {
     }
     return (
       <FocusScope focused={!searching}>
-        <TraceTable traces={traces} sort={sort} onOpen={onOpen} />
+        <TraceTable traces={traces} sort={sort} onOpen={(traceId) => onOpen(traceId)} />
       </FocusScope>
     );
   }
