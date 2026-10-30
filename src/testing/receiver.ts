@@ -1,6 +1,7 @@
 import { startReceiver } from "../db/receiver.ts";
+import { MILLISECONDS_PER_HOUR } from "../utils/time-units.ts";
 
-const DEFAULT_RETENTION_MS = 60 * 60 * 1000;
+const DEFAULT_RETENTION_MS = MILLISECONDS_PER_HOUR;
 
 function freePort() {
   const listener = Bun.listen({ hostname: "127.0.0.1", port: 0, socket: { data() {} } });

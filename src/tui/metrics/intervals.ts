@@ -1,7 +1,6 @@
+import { MILLISECONDS_PER_SECOND } from "../../utils/time-units.ts";
 import { type Distribution, hasNegativeCounts, subtractDistributions } from "./distribution.ts";
 import type { DistributionPoint, NumberPoint } from "./series.ts";
-
-export const MILLISECONDS_PER_SECOND = 1000;
 
 export interface Interval<T> {
   start: number;

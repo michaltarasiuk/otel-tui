@@ -1,5 +1,6 @@
+import { MILLISECONDS_PER_SECOND } from "../../utils/time-units.ts";
 import { addDistributions, type Distribution, quantile } from "./distribution.ts";
-import { type Interval, MILLISECONDS_PER_SECOND } from "./intervals.ts";
+import type { Interval } from "./intervals.ts";
 
 const MISSED_EXPORTS_BEFORE_GAP = 3;
 

@@ -1,13 +1,19 @@
 import { formatDuration } from "../../utils/format-duration.ts";
+import {
+  MILLISECONDS_PER_DAY,
+  MILLISECONDS_PER_HOUR,
+  MILLISECONDS_PER_MINUTE,
+  MILLISECONDS_PER_SECOND,
+} from "../../utils/time-units.ts";
 
 const MILLISECONDS_PER_UNIT: Record<string, number> = {
   ns: 1e-6,
   us: 1e-3,
   ms: 1,
-  s: 1000,
-  min: 60 * 1000,
-  h: 60 * 60 * 1000,
-  d: 24 * 60 * 60 * 1000,
+  s: MILLISECONDS_PER_SECOND,
+  min: MILLISECONDS_PER_MINUTE,
+  h: MILLISECONDS_PER_HOUR,
+  d: MILLISECONDS_PER_DAY,
 };
 
 const BYTES_PER_UNIT: Record<string, number> = {
