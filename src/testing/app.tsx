@@ -1,32 +1,17 @@
-import { environmentManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 
-import { App } from "../tui/app.tsx";
-import { ConnectionContext } from "../tui/connection.ts";
+import { QUERY_CLIENT_CONFIG, TuiRoot, waitForInFlightQueries } from "../tui/tui.tsx";
 import type { TestReceiver } from "./receiver.ts";
 import { render } from "./render.tsx";
 
 const APP_SIZE = { width: 120, height: 30 };
 
-function enableRefetchWithoutWindow() {
-  environmentManager.setIsServer(() => false);
-}
-
-enableRefetchWithoutWindow();
-
 export async function renderApp(receiver: TestReceiver, size = APP_SIZE) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-    },
-  });
+  const queryClient = new QueryClient(QUERY_CLIENT_CONFIG);
   const connection = await receiver.connect();
 
   const screen = await render(
-    <QueryClientProvider client={queryClient}>
-      <ConnectionContext value={connection}>
-        <App receiverUrl={receiver.url} />
-      </ConnectionContext>
-    </QueryClientProvider>,
+    <TuiRoot queryClient={queryClient} connection={connection} receiverUrl={receiver.url} />,
     size,
   );
 
@@ -34,8 +19,7 @@ export async function renderApp(receiver: TestReceiver, size = APP_SIZE) {
     ...screen,
     async [Symbol.asyncDispose]() {
       await screen[Symbol.asyncDispose]();
-      const queries = queryClient.getQueryCache().findAll({ fetchStatus: "fetching" });
-      await Promise.allSettled(queries.map((query) => query.promise));
+      await waitForInFlightQueries(queryClient);
     },
   };
 }

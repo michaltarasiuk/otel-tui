@@ -5,12 +5,12 @@ import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot, flushSync } from "@opentui/react";
 
 import { THEME } from "../tui/theme.ts";
+import { RENDERER_CONFIG } from "../tui/tui.tsx";
 import { collapseSpaces } from "../utils/collapse-spaces.ts";
 
 const FRAME_TIMEOUT_MS = 3000;
 const FRAME_POLL_INTERVAL_MS = 10;
 const BINDINGS_REGISTERED_AFTER_COMMIT_MS = 10;
-const FOCUS_CONTROLLED_BY_APP = true;
 const SELECTED_BACKGROUND = RGBA.fromHex(THEME.backgroundSelected);
 const SCROLLBAR_GLYPHS = /[\u2580-\u259F]/g;
 const FOOTER_LINES = 1;
@@ -22,10 +22,10 @@ interface RenderOptions {
 
 export async function render(node: React.ReactNode, { width, height }: RenderOptions) {
   const setup = await createTestRenderer({
+    ...RENDERER_CONFIG,
     width,
     height,
     kittyKeyboard: true,
-    autoFocus: !FOCUS_CONTROLLED_BY_APP,
   });
   const keymap = createDefaultOpenTuiKeymap(setup.renderer);
   const root = createRoot(setup.renderer);
