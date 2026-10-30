@@ -22,7 +22,6 @@ import {
   HistogramSeries,
   NumberPoint,
   NumberSeries,
-  type Series,
 } from "./series.ts";
 
 const MAX_METRICS = 500;
@@ -78,7 +77,7 @@ export function useMetricTotalCount() {
 export function useMetricSeries(metric: Metric) {
   const connection = useConnection();
 
-  return useQuery<Series[]>({
+  return useQuery({
     queryKey: ["metrics", metric.metric_id, "series"],
     queryFn: async () => {
       const identity = metricIdentity(metric);

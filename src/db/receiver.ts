@@ -24,12 +24,7 @@ interface ReceiverOptions {
   retentionMs: number;
 }
 
-interface Receiver extends AsyncDisposable {
-  readonly url: string;
-  connect(): Promise<DuckDBConnection>;
-}
-
-export async function startReceiver({ port, retentionMs }: ReceiverOptions): Promise<Receiver> {
+export async function startReceiver({ port, retentionMs }: ReceiverOptions) {
   const instance = await DuckDBInstance.create(":memory:");
   const control = await instance.connect();
 
