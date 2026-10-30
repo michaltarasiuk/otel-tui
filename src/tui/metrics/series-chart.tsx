@@ -41,7 +41,7 @@ function runningTotals(points: NumberPoint[]) {
   let total = 0;
   return points.map(({ time, value }) => {
     total += value;
-    return { time: time.getTime(), value: total };
+    return { time, value: total };
   });
 }
 
@@ -75,9 +75,7 @@ function chartLines(metric: Metric, data: SeriesPoints, color: string, window: C
       ),
     };
   }
-  const samples = delta
-    ? runningTotals(data.points)
-    : data.points.map(({ time, value }) => ({ time: time.getTime(), value }));
+  const samples = delta ? runningTotals(data.points) : data.points;
   return {
     lines: [{ color, values: meanLine(samples, window) }],
     gapSlots: gapSlots(
@@ -142,7 +140,7 @@ export function SeriesChart({ metric, series, color, windowStart }: SeriesChartP
       <LineChart
         height={CHART_HEIGHT}
         includeZero={metric.type !== "gauge" && metric.type !== "updowncounter"}
-        startLabel={formatTime(new Date(start))}
+        startLabel={formatTime(start)}
         endLabel="now"
         formatValue={(value) =>
           metric.type === "counter"

@@ -9,12 +9,12 @@ export interface Interval<T> {
 }
 
 interface TimedPoint {
-  time: Date;
-  start_time: Date | null;
+  time: number;
+  start_time: number | null;
 }
 
 function sameStart(a: TimedPoint, b: TimedPoint) {
-  return a.start_time?.getTime() === b.start_time?.getTime();
+  return a.start_time === b.start_time;
 }
 
 function intervalsOf<P extends TimedPoint, T>(
@@ -26,21 +26,18 @@ function intervalsOf<P extends TimedPoint, T>(
   const intervals: Interval<T>[] = [];
   for (const [index, point] of points.entries()) {
     const previous = points[index - 1];
-    const end = point.time.getTime();
+    const end = point.time;
     if (!delta) {
       if (previous === undefined) {
         continue;
       }
       const increase = sameStart(point, previous) ? increaseSince(point, previous) : null;
       if (increase !== null) {
-        intervals.push({ start: previous.time.getTime(), end, value: increase });
+        intervals.push({ start: previous.time, end, value: increase });
         continue;
       }
     }
-    const start = Math.max(
-      point.start_time?.getTime() ?? -Infinity,
-      previous?.time.getTime() ?? -Infinity,
-    );
+    const start = Math.max(point.start_time ?? -Infinity, previous?.time ?? -Infinity);
     if (Number.isFinite(start) && start < end) {
       intervals.push({ start, end, value: ownValue(point) });
     }

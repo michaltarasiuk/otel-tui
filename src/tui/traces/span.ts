@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { Attributes } from "../attributes.ts";
+import { Timestamp } from "../timestamp.ts";
 
 const SPAN_KINDS = ["unspecified", "internal", "server", "client", "producer", "consumer"] as const;
 
@@ -13,7 +14,7 @@ export const Span = z.object({
   kind: z.number().transform((kind) => SPAN_KINDS[kind] ?? "unspecified"),
   is_error: z.boolean(),
   status_message: z.string().nullable(),
-  start_time: z.date(),
+  start_time: Timestamp,
   offset_ms: z.number(),
   duration_ms: z.number(),
 });

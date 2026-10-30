@@ -11,7 +11,7 @@ function withTemporality(temporality: number | null): Metric {
     unit: "{request}",
     service_name: "checkout",
     description: "",
-    last_time: new Date(0),
+    last_time: 0,
     series_count: 1,
   };
 }

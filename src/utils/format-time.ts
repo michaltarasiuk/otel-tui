@@ -6,6 +6,6 @@ const timeFormatter = new Intl.DateTimeFormat(undefined, {
   hourCycle: "h23",
 });
 
-export function formatTime(date: Date) {
-  return timeFormatter.format(date);
+export function formatTime(time: number) {
+  return timeFormatter.format(time);
 }

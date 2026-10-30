@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { Attributes } from "../attributes.ts";
+import { Timestamp } from "../timestamp.ts";
 import { type Distribution, explicitBuckets, exponentialBuckets } from "./distribution.ts";
 
 const IndexedCounts = z
@@ -55,27 +56,27 @@ const ExponentialDistribution = z
   );
 
 export const NumberPoint = z.object({
-  time: z.date(),
-  start_time: z.date().nullable(),
+  time: Timestamp,
+  start_time: Timestamp.nullable(),
   value: z.number(),
 });
 export type NumberPoint = z.infer<typeof NumberPoint>;
 
 export interface DistributionPoint {
-  time: Date;
-  start_time: Date | null;
+  time: number;
+  start_time: number | null;
   distribution: Distribution;
 }
 
 export const HistogramPoint = z.object({
-  time: z.date(),
-  start_time: z.date().nullable(),
+  time: Timestamp,
+  start_time: Timestamp.nullable(),
   distribution: ExplicitDistribution,
 });
 
 export const ExponentialHistogramPoint = z.object({
-  time: z.date(),
-  start_time: z.date().nullable(),
+  time: Timestamp,
+  start_time: Timestamp.nullable(),
   distribution: ExponentialDistribution,
 });
 
@@ -89,8 +90,8 @@ const SeriesIdentity = z.object({
   scope_version: z.string().nullable(),
   attributes: Attributes,
   resource_attributes: Attributes,
-  first_time: z.date(),
-  last_time: z.date(),
+  first_time: Timestamp,
+  last_time: Timestamp,
 });
 
 export const NumberSeries = SeriesIdentity.extend({
@@ -128,7 +129,7 @@ export type Series =
   | z.infer<typeof ExponentialHistogramSeries>;
 
 export const Exemplar = z.object({
-  time: z.date(),
+  time: Timestamp,
   value: z.number(),
   trace_id: z.string().nullable(),
   span_id: z.string().nullable(),

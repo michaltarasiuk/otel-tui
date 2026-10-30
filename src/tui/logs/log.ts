@@ -1,11 +1,12 @@
 import { z } from "zod";
 
 import { Attributes } from "../attributes.ts";
+import { Timestamp } from "../timestamp.ts";
 import { severityLevel } from "./severity.ts";
 
 export const Log = z.object({
   log_id: z.string(),
-  time: z.date().nullable(),
+  time: Timestamp.nullable(),
   service_name: z.string().nullable(),
   severity: z
     .number()

@@ -18,7 +18,7 @@ interface TraceHeaderProps {
 export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderProps) {
   const errorCount = spans.filter((span) => span.is_error).length;
   const startTime = spans.reduce(
-    (start, span) => (span.start_time < start ? span.start_time : start),
+    (start, span) => Math.min(start, span.start_time),
     root.start_time,
   );
 

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { Timestamp } from "../timestamp.ts";
+
 export type MetricType = (typeof METRIC_TYPES)[number];
 
 const METRIC_TYPES = [
@@ -29,7 +31,7 @@ export const Metric = z.object({
   unit: z.string(),
   service_name: z.string().nullable(),
   description: z.string(),
-  last_time: z.date(),
+  last_time: Timestamp,
   series_count: z.number(),
 });
 export type Metric = z.infer<typeof Metric>;

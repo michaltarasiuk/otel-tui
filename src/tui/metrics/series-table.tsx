@@ -21,7 +21,7 @@ export function SeriesTable({ metric, series }: SeriesTableProps) {
   });
 
   const selectedSeries = list.selectedItem;
-  const windowStart = Math.min(...series.map((row) => row.first_time.getTime()));
+  const windowStart = Math.min(...series.map((row) => row.first_time));
 
   return (
     <box flexGrow={1}>

@@ -5,7 +5,7 @@ import { counterIntervals, distributionIntervals, perSecond } from "./intervals.
 import type { DistributionPoint, NumberPoint } from "./series.ts";
 
 function atSecond(seconds: number) {
-  return new Date(seconds * 1000);
+  return seconds * 1000;
 }
 
 function point(time: number, value: number, startTime: number | null = 0): NumberPoint {

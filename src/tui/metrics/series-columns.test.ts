@@ -24,8 +24,8 @@ function series(
     scope_version: null,
     attributes: toAttributes(attributes),
     resource_attributes: toAttributes(resourceAttributes),
-    first_time: new Date(0),
-    last_time: new Date(0),
+    first_time: 0,
+    last_time: 0,
     stats: { kind: "number", value: 0, min: 0, max: 0, latestPoints: [] },
   };
 }

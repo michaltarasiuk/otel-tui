@@ -1,8 +1,10 @@
 import { z } from "zod";
 
+import { Timestamp } from "../timestamp.ts";
+
 export const Trace = z.object({
   trace_id: z.string(),
-  start_time: z.date(),
+  start_time: Timestamp,
   service_name: z.string().nullable(),
   name: z.string(),
   span_count: z.number(),
