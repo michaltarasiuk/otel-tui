@@ -74,7 +74,7 @@ export function useSpanDetails(traceId: string, spanId: string) {
     queryFn: async () => {
       const reader = await connection.runAndReadAll(SPAN_DETAILS_SQL, { traceId, spanId });
       const [row] = reader.getRowObjectsJS();
-      return SpanDetails.parse(row ?? {});
+      return row === undefined ? null : SpanDetails.parse(row);
     },
     staleTime: Infinity,
   });

@@ -172,7 +172,10 @@ export function SpanPanel({ traceId, span }: SpanPanelProps) {
         contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
       >
         {spanDetails.isError && <text fg={THEME.textError}>Failed to load span details</text>}
-        {spanDetails.data !== undefined && <SpanBody details={spanDetails.data} />}
+        {spanDetails.data === null && <text fg={THEME.textMuted}>Span is no longer stored</text>}
+        {spanDetails.data !== undefined && spanDetails.data !== null && (
+          <SpanBody details={spanDetails.data} />
+        )}
       </scrollbox>
     </box>
   );

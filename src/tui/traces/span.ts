@@ -19,23 +19,18 @@ export const Span = z.object({
 });
 export type Span = z.infer<typeof Span>;
 
-const NullableString = z
-  .string()
-  .nullish()
-  .transform((value) => value ?? null);
-
 export const SpanDetails = z.object({
-  scope_name: NullableString,
-  scope_version: NullableString,
+  scope_name: z.string().nullable(),
+  scope_version: z.string().nullable(),
   attributes: Attributes,
   resource_attributes: Attributes,
   events: z
     .array(z.object({ name: z.string(), offset_ms: z.number(), attributes: Attributes }))
-    .nullish()
+    .nullable()
     .transform((events) => events ?? []),
   links: z
     .array(z.object({ trace_id: z.string(), span_id: z.string(), attributes: Attributes }))
-    .nullish()
+    .nullable()
     .transform((links) => links ?? []),
 });
 export type SpanDetails = z.infer<typeof SpanDetails>;
