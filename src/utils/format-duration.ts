@@ -1,4 +1,7 @@
 export function formatDuration(ms: number) {
+  if (ms < 0) {
+    throw new Error(`Duration must not be negative: ${ms}ms`);
+  }
   const microseconds = Math.round(ms * 1000);
   if (microseconds < 1000) {
     return `${microseconds}µs`;

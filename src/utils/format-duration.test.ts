@@ -18,6 +18,10 @@ test("shows longer durations in seconds", () => {
   expect(formatDuration(61_234)).toBe("61.23s");
 });
 
+test("rejects a negative duration", () => {
+  expect(() => formatDuration(-5)).toThrow("Duration must not be negative: -5ms");
+});
+
 test("rounds before choosing the unit", () => {
   expect(formatDuration(0.9996)).toBe("1.0ms");
   expect(formatDuration(999.96)).toBe("1.00s");
