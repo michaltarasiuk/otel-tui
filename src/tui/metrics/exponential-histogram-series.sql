@@ -11,11 +11,11 @@ WITH points AS MATERIALIZED (
     zero_threshold,
     list_transform(
       positive_bucket_counts,
-      (bucket_count, position) -> {index: positive_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
+      lambda bucket_count, position: {index: positive_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
     ) AS positive_buckets,
     list_transform(
       negative_bucket_counts,
-      (bucket_count, position) -> {index: negative_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
+      lambda bucket_count, position: {index: negative_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
     ) AS negative_buckets,
     resource_attributes,
     scope_name,
@@ -72,11 +72,11 @@ SELECT
   latest.scope_version,
   list_transform(
     map_entries(latest.metric_attributes::JSON::MAP(VARCHAR, JSON)),
-    attribute -> {key: attribute.key, value: json_extract_string(attribute.value, '$')}
+    lambda attribute: {key: attribute.key, value: json_extract_string(attribute.value, '$')}
   ) AS attributes,
   list_transform(
     map_entries(latest.resource_attributes::JSON::MAP(VARCHAR, JSON)),
-    attribute -> {key: attribute.key, value: json_extract_string(attribute.value, '$')}
+    lambda attribute: {key: attribute.key, value: json_extract_string(attribute.value, '$')}
   ) AS resource_attributes,
   first_time,
   last_time,

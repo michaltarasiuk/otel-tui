@@ -52,11 +52,11 @@ SELECT
   latest.scope_version,
   list_transform(
     map_entries(latest.metric_attributes::JSON::MAP(VARCHAR, JSON)),
-    attribute -> {key: attribute.key, value: json_extract_string(attribute.value, '$')}
+    lambda attribute: {key: attribute.key, value: json_extract_string(attribute.value, '$')}
   ) AS attributes,
   list_transform(
     map_entries(latest.resource_attributes::JSON::MAP(VARCHAR, JSON)),
-    attribute -> {key: attribute.key, value: json_extract_string(attribute.value, '$')}
+    lambda attribute: {key: attribute.key, value: json_extract_string(attribute.value, '$')}
   ) AS resource_attributes,
   first_time,
   last_time,

@@ -19,11 +19,11 @@ SELECT
     zero_threshold: zero_threshold,
     positive_buckets: list_transform(
       positive_bucket_counts,
-      (bucket_count, position) -> {index: positive_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
+      lambda bucket_count, position: {index: positive_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
     ),
     negative_buckets: list_transform(
       negative_bucket_counts,
-      (bucket_count, position) -> {index: negative_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
+      lambda bucket_count, position: {index: negative_offset + position::INTEGER - 1, count: bucket_count::DOUBLE}
     )
   } AS distribution
 FROM metric_points

@@ -22,7 +22,7 @@
     "demo:down": "demo/demo.sh down"
   },
   "dependencies": {
-    "@duckdb/node-api": "1.5.6-r.1",
+    "@duckdb/node-api": "2.0.0-r.1",
     "@opentui/core": "^0.6.6",
     "@opentui/keymap": "^0.6.6",
     "@opentui/react": "^0.6.6",

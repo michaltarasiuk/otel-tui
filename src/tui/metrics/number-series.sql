@@ -44,11 +44,11 @@ SELECT
   any_value(scope_version) AS scope_version,
   list_transform(
     map_entries(any_value(metric_attributes)::JSON::MAP(VARCHAR, JSON)),
-    attribute -> {key: attribute.key, value: json_extract_string(attribute.value, '$')}
+    lambda attribute: {key: attribute.key, value: json_extract_string(attribute.value, '$')}
   ) AS attributes,
   list_transform(
     map_entries(any_value(resource_attributes)::JSON::MAP(VARCHAR, JSON)),
-    attribute -> {key: attribute.key, value: json_extract_string(attribute.value, '$')}
+    lambda attribute: {key: attribute.key, value: json_extract_string(attribute.value, '$')}
   ) AS resource_attributes,
   min(time) AS first_time,
   max(time) AS last_time,
