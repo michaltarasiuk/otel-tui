@@ -39,10 +39,6 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
   });
 }
 
-const LogCount = z.object({
-  total_count: z.number(),
-});
-
 export function useLogTotalCount() {
   const connection = useConnection();
 
@@ -50,8 +46,7 @@ export function useLogTotalCount() {
     queryKey: ["logs", "count"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(LOG_COUNT_SQL);
-      const [row] = reader.getRowObjectsJS();
-      return LogCount.parse(row).total_count;
+      return z.number().parse(reader.value(0, 0));
     },
     refetchInterval: POLL_INTERVAL_MS,
   });

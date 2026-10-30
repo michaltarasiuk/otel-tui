@@ -53,10 +53,6 @@ export function useMetricList({ search, sort }: MetricQuery) {
   });
 }
 
-const MetricCount = z.object({
-  total_count: z.number(),
-});
-
 export function useMetricTotalCount() {
   const connection = useConnection();
 
@@ -64,8 +60,7 @@ export function useMetricTotalCount() {
     queryKey: ["metrics", "count"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(METRIC_COUNT_SQL);
-      const [row] = reader.getRowObjectsJS();
-      return MetricCount.parse(row).total_count;
+      return z.number().parse(reader.value(0, 0));
     },
     refetchInterval: POLL_INTERVAL_MS,
   });

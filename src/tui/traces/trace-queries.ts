@@ -40,10 +40,6 @@ export function useTraceList({ search, errorsOnly, sort }: TraceQuery) {
   });
 }
 
-const TraceCount = z.object({
-  total_count: z.number(),
-});
-
 export function useTraceTotalCount() {
   const connection = useConnection();
 
@@ -51,8 +47,7 @@ export function useTraceTotalCount() {
     queryKey: ["traces", "count"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(TRACE_COUNT_SQL);
-      const [row] = reader.getRowObjectsJS();
-      return TraceCount.parse(row).total_count;
+      return z.number().parse(reader.value(0, 0));
     },
     refetchInterval: POLL_INTERVAL_MS,
   });
