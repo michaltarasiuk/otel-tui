@@ -1,4 +1,5 @@
 import { formatShownCount } from "../../utils/format-shown-count.ts";
+import { COLUMN_GAP } from "../columns.ts";
 import { SearchField } from "../search-field.tsx";
 import { THEME } from "../theme.ts";
 import { severityColor, type SeverityLevel } from "./severity.ts";
@@ -25,7 +26,7 @@ export function LogFilterBar({
   onSearchInput,
 }: LogFilterBarProps) {
   return (
-    <box flexDirection="row" gap={2} paddingX={1}>
+    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
       <SearchField
         search={search}
         searching={searching}
