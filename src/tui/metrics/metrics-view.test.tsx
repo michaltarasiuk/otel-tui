@@ -489,6 +489,37 @@ test("adds up a delta updowncounter's changes", async () => {
   expect(panel).toContain("12:00:00.000 now");
 });
 
+test("opens a delta histogram that exports no buckets", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.send(
+    "/v1/metrics",
+    metricsRequest({
+      service: "checkout",
+      metrics: [
+        {
+          name: "http.server.duration",
+          unit: "ms",
+          temporality: TEMPORALITY.delta,
+          histogram: [
+            { start: atSecond(0), time: atSecond(10), count: 3, bounds: [], counts: [] },
+            { start: atSecond(10), time: atSecond(20), count: 2, bounds: [], counts: [] },
+          ],
+        },
+      ],
+    }),
+  );
+  await using app = await renderMetrics(receiver, DETAILS_SIZE);
+  await app.waitForFrame((frame) => metricRows(frame).length === 1);
+
+  app.mockInput.pressEnter();
+
+  const frame = await app.waitForFrame((frame) => textLines(frame).includes("none 5"));
+  expect(panelLines(frame).slice(0, 2)).toEqual([
+    "no attributes 12:00:20.000",
+    "count 5 p50 p95 p99 max",
+  ]);
+});
+
 test("scrolls the metric panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   const attributes = Object.fromEntries(

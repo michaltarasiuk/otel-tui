@@ -61,7 +61,7 @@ SELECT
       min: series.min,
       max: series.max,
       bounds: latest.explicit_bounds,
-      bucket_counts: delta_buckets.bucket_counts
+      bucket_counts: coalesce(delta_buckets.bucket_counts, [])
     }
     ELSE {
       count: latest.count,
