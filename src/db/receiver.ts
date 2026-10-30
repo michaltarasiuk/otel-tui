@@ -16,7 +16,7 @@ const RETENTION_COLUMNS = {
 
 const HOST = "127.0.0.1";
 const SEAL_MAX_AGE_MS = 500;
-const PRUNE_INTERVAL_MS = 30 * 1000;
+export const PRUNE_INTERVAL_MS = 30 * 1000;
 
 interface ReceiverOptions {
   port: number;

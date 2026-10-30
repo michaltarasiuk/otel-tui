@@ -4,6 +4,7 @@ import type { DuckDBConnection } from "@duckdb/node-api";
 
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../testing/receiver.ts";
+import { PRUNE_INTERVAL_MS } from "./receiver.ts";
 
 const TABLES = [
   "otlp_traces",
@@ -15,7 +16,6 @@ const TABLES = [
 ];
 
 const RETENTION_MS = 60 * 1000;
-const PRUNE_INTERVAL_MS = 30 * 1000;
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
 
