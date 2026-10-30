@@ -13,6 +13,11 @@
 
 - Keep a component's props type private to its file; don't export it.
 - When another module needs a component's props, derive them with `React.ComponentProps<typeof Component>`.
+- Don't add `useMemo`, `useCallback`, or `memo` unless a measured problem calls for it.
+
+## Queries
+
+- Parse timestamps into epoch milliseconds with the shared `Timestamp` schema, not `Date`. TanStack Query keeps an unchanged result identical between polls only when it holds plain data, so a `Date` makes every poll look like new data and re-renders the view.
 
 ## Commits
 
