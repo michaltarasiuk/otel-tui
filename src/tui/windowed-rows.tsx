@@ -80,7 +80,7 @@ export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
         { key: "end", cmd: "rows.last" },
       ],
     }),
-    [focused, state, visibleRowCount],
+    [focused, state, visibleRowCount, items.length],
   );
 
   return (

@@ -1,4 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "react"]
+  "plugins": ["typescript", "unicorn", "oxc", "react"],
+  "rules": {
+    "react/exhaustive-deps": ["warn", { "additionalHooks": "useBindings" }]
+  }
 }
