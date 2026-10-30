@@ -22,7 +22,7 @@ interface SpanFixture {
   end: Date;
   status?: { code: number; message?: string };
   attributes?: AttributeMap;
-  events?: { name: string; time: Date; attributes?: AttributeMap }[];
+  events?: { name: string; time?: Date; attributes?: AttributeMap }[];
   links?: { traceId: string; spanId: string; attributes?: AttributeMap }[];
 }
 

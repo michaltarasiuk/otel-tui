@@ -7,7 +7,7 @@ SELECT
     from_json(events_json, '[{"name":"VARCHAR","time_unix_nano":"BIGINT","attributes":"JSON"}]'),
     lambda event: {
       name: event.name,
-      offset_ms: (event.time_unix_nano - epoch_ns(start_time_unix_nano)) / 1e6,
+      offset_ms: (nullif(event.time_unix_nano, 0) - epoch_ns(start_time_unix_nano)) / 1e6,
       attributes: attribute_entries(event.attributes)
     }
   ) AS events,

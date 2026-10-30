@@ -18,6 +18,10 @@ const NESTED_INDENT = 2;
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
 
+function formatOffset(ms: number) {
+  return ms < 0 ? `-${formatDuration(-ms)}` : `+${formatDuration(ms)}`;
+}
+
 interface SpanBodyProps {
   details: SpanDetails;
 }
@@ -30,7 +34,10 @@ function SpanBody({ details }: SpanBodyProps) {
           {details.events.map((event, index) => (
             <box key={index}>
               <text fg={THEME.text}>
-                <span fg={THEME.textMuted}>+{formatDuration(event.offset_ms)}</span> {event.name}
+                {event.offset_ms !== null && (
+                  <span fg={THEME.textMuted}>{formatOffset(event.offset_ms)} </span>
+                )}
+                {event.name}
               </text>
               {event.attributes.length > 0 && (
                 <box paddingLeft={NESTED_INDENT}>

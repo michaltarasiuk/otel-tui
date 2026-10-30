@@ -60,7 +60,11 @@ const TRACES = tracesRequest(
         kind: SPAN_KIND.server,
         start: at(10),
         end: at(90),
-        events: [{ name: "cache miss", time: at(15), attributes: { "cache.key": "cart:42" } }],
+        events: [
+          { name: "request queued", time: at(8) },
+          { name: "cache miss", time: at(15), attributes: { "cache.key": "cart:42" } },
+          { name: "cart loaded" },
+        ],
       },
       {
         traceId: CART_TRACE_ID,
@@ -372,8 +376,10 @@ test("shows the selected span's events with their offsets", async () => {
     `GetCart ${"1b".repeat(8)}`,
     "● cart server 12:00:00.010 +10.0ms 80.0ms",
     "Events",
+    "-2.0ms request queued",
     "+5.0ms cache miss",
     "cache.key cart:42",
+    "cart loaded",
     "Resource",
     "service.name cart",
   ]);
