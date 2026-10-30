@@ -1,7 +1,7 @@
 import { type Distribution, hasNegativeCounts, subtractDistributions } from "./distribution.ts";
 import type { DistributionPoint, NumberPoint } from "./series.ts";
 
-const MILLISECONDS_PER_SECOND = 1000;
+export const MILLISECONDS_PER_SECOND = 1000;
 
 export interface Interval<T> {
   start: number;

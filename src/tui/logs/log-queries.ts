@@ -3,12 +3,12 @@ import { z } from "zod";
 
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
+import { POLL_INTERVAL_MS } from "../polling.ts";
 import LOG_COUNT_SQL from "./log-count.sql" with { type: "text" };
 import LOG_LIST_SQL from "./log-list.sql" with { type: "text" };
 import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
 
-const POLL_INTERVAL_MS = 1000;
 const MAX_LOGS = 500;
 const ANY_SEVERITY_NUMBER = 0;
 

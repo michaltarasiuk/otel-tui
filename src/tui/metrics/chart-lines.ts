@@ -1,7 +1,6 @@
 import { addDistributions, type Distribution, quantile } from "./distribution.ts";
-import type { Interval } from "./intervals.ts";
+import { type Interval, MILLISECONDS_PER_SECOND } from "./intervals.ts";
 
-const MILLISECONDS_PER_SECOND = 1000;
 const MISSED_EXPORTS_BEFORE_GAP = 3;
 
 export interface ChartWindow {

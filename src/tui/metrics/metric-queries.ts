@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
+import { POLL_INTERVAL_MS } from "../polling.ts";
 import EXPONENTIAL_HISTOGRAM_POINTS_SQL from "./exponential-histogram-points.sql" with { type: "text" };
 import EXPONENTIAL_HISTOGRAM_SERIES_SQL from "./exponential-histogram-series.sql" with { type: "text" };
 import HISTOGRAM_POINTS_SQL from "./histogram-points.sql" with { type: "text" };
@@ -24,7 +25,6 @@ import {
   type Series,
 } from "./series.ts";
 
-const POLL_INTERVAL_MS = 1000;
 const MAX_METRICS = 500;
 const MAX_EXEMPLARS = 10;
 

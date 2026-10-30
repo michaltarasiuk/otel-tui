@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
+import { POLL_INTERVAL_MS } from "../polling.ts";
 import SPAN_DETAILS_SQL from "./span-details.sql" with { type: "text" };
 import { Span, SpanDetails } from "./span.ts";
 import TRACE_COUNT_SQL from "./trace-count.sql" with { type: "text" };
@@ -10,7 +11,6 @@ import TRACE_LIST_SQL from "./trace-list.sql" with { type: "text" };
 import TRACE_SPANS_SQL from "./trace-spans.sql" with { type: "text" };
 import { Trace, type TraceSort } from "./trace.ts";
 
-const POLL_INTERVAL_MS = 1000;
 const MAX_TRACES = 500;
 
 interface TraceQuery {
