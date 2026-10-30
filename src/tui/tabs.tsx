@@ -36,7 +36,12 @@ export function Tabs({ tab, onChange }: TabsProps) {
       selectedBackgroundColor={focused ? THEME.backgroundSelected : THEME.background}
       showDescription={false}
       showUnderline={false}
-      onChange={(_index, option) => option && onChange(option.value)}
+      onChange={(index) => {
+        const option = TABS[index];
+        if (option !== undefined) {
+          onChange(option.value);
+        }
+      }}
     />
   );
 }
