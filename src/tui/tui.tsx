@@ -76,6 +76,8 @@ export async function startTui({ connection, receiverUrl }: TuiOptions) {
   );
 
   return {
-    closed: renderer.closed.then(() => waitForInFlightQueries(queryClient)),
+    closed: renderer.closed
+      .then(() => waitForInFlightQueries(queryClient))
+      .then(() => queryClient.clear()),
   };
 }
