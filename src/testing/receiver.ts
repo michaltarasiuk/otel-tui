@@ -1,5 +1,7 @@
 import { startReceiver } from "../db/receiver.ts";
 
+const DEFAULT_RETENTION_MS = 60 * 60 * 1000;
+
 function freePort() {
   const listener = Bun.listen({ hostname: "127.0.0.1", port: 0, socket: { data() {} } });
   const { port } = listener;
@@ -11,8 +13,10 @@ interface TestReceiverOptions {
   retentionMs?: number;
 }
 
-export async function startTestReceiver(options: TestReceiverOptions = {}) {
-  const receiver = await startReceiver({ port: freePort(), ...options });
+export async function startTestReceiver({
+  retentionMs = DEFAULT_RETENTION_MS,
+}: TestReceiverOptions = {}) {
+  const receiver = await startReceiver({ port: freePort(), retentionMs });
   const control = await receiver.connect();
   const uri = `otlp:${new URL(receiver.url).host}`;
 

@@ -19,8 +19,8 @@ const SEAL_MAX_AGE_MS = 500;
 const PRUNE_INTERVAL_MS = 30 * 1000;
 
 interface ReceiverOptions {
-  port?: number;
-  retentionMs?: number;
+  port: number;
+  retentionMs: number;
 }
 
 interface Receiver extends AsyncDisposable {
@@ -28,10 +28,7 @@ interface Receiver extends AsyncDisposable {
   connect(): Promise<DuckDBConnection>;
 }
 
-export async function startReceiver({
-  port = 4318,
-  retentionMs = 60 * 60 * 1000,
-}: ReceiverOptions = {}): Promise<Receiver> {
+export async function startReceiver({ port, retentionMs }: ReceiverOptions): Promise<Receiver> {
   const instance = await DuckDBInstance.create(":memory:");
   const control = await instance.connect();
 
