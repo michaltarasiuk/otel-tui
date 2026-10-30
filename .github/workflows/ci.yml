@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # The otlp community extension serves only its latest build, so catch
+  # breaking releases weekly.
+  schedule:
+    - cron: "17 6 * * 1"
 
 jobs:
   check:
