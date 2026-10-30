@@ -1,4 +1,4 @@
-import { afterEach, expect, jest, test } from "bun:test";
+import { afterEach, expect, jest, mock, spyOn, test } from "bun:test";
 
 import type { DuckDBConnection } from "@duckdb/node-api";
 
@@ -84,6 +84,7 @@ function eachTableWith(rows: number) {
 
 afterEach(() => {
   jest.useRealTimers();
+  mock.restore();
 });
 
 test("listens for OTLP/HTTP on the IPv4 loopback address", async () => {
@@ -119,6 +120,23 @@ test("drops telemetry older than the retention period", async () => {
     counts = await rowCounts(connection);
   }
   expect(counts).toEqual(eachTableWith(1));
+});
+
+test("reports a failed prune and keeps running", async () => {
+  jest.useFakeTimers();
+  const consoleError = spyOn(console, "error").mockImplementation(() => {});
+  await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
+  const connection = await receiver.connect();
+  await connection.run("DROP TABLE otlp_traces");
+
+  jest.advanceTimersByTime(PRUNE_INTERVAL_MS);
+  jest.useRealTimers();
+
+  const deadline = performance.now() + PRUNE_TIMEOUT_MS;
+  while (consoleError.mock.calls.length === 0 && performance.now() < deadline) {
+    await Bun.sleep(PRUNE_POLL_INTERVAL_MS);
+  }
+  expect(consoleError).toHaveBeenCalledWith("Failed to prune expired telemetry", expect.any(Error));
 });
 
 test("closes its connections and stops listening when disposed", async () => {

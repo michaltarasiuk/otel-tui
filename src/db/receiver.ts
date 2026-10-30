@@ -64,7 +64,9 @@ export async function startReceiver({ port, retentionMs }: ReceiverOptions): Pro
 
   let pruning: Promise<void> | undefined;
   const pruneInterval = setInterval(() => {
-    pruning ??= prune().finally(() => (pruning = undefined));
+    pruning ??= prune()
+      .catch((error) => console.error("Failed to prune expired telemetry", error))
+      .finally(() => (pruning = undefined));
   }, PRUNE_INTERVAL_MS);
   pruneInterval.unref();
 
