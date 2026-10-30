@@ -1,6 +1,8 @@
 import { DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 import { z } from "zod";
 
+import ATTRIBUTE_ENTRIES_SQL from "./attribute-entries.sql" with { type: "text" };
+
 const OtlpServeRow = z.object({ listen_url: z.url() });
 
 const RETENTION_COLUMNS = {
@@ -35,6 +37,7 @@ export async function startReceiver({
 
   await control.run("INSTALL otlp FROM community");
   await control.run("LOAD otlp");
+  await control.run(ATTRIBUTE_ENTRIES_SQL);
 
   const uri = `otlp:${HOST}:${port}`;
   const reader = await control.runAndReadAll(
