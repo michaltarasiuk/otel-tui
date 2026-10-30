@@ -1,14 +1,14 @@
 import { formatTime } from "../../utils/format-time.ts";
 import {
-  COLUMN_GAP,
   HEADER_CELL_PROPS,
+  secondaryCellColor,
   SERVICE_WIDTH,
   SORT_ARROW_WIDTH,
   sortArrow,
   TIME_WIDTH,
 } from "../columns.ts";
-import { useFocused } from "../focus.tsx";
 import { ServiceName } from "../service-name.tsx";
+import { TableRow } from "../table-row.tsx";
 import { THEME } from "../theme.ts";
 import { type Metric, type MetricSort, typeLabel } from "./metric.ts";
 
@@ -22,7 +22,7 @@ interface MetricHeaderRowProps {
 
 export function MetricHeaderRow({ sort }: MetricHeaderRowProps) {
   return (
-    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
+    <TableRow>
       <text {...HEADER_CELL_PROPS} width={TIME_WIDTH}>
         Time {sortArrow(sort, "last_time")}
       </text>
@@ -41,7 +41,7 @@ export function MetricHeaderRow({ sort }: MetricHeaderRowProps) {
       <text {...HEADER_CELL_PROPS} width={SERIES_WIDTH} textAlign="right">
         {sortArrow(sort, "series_count")} Series
       </text>
-    </box>
+    </TableRow>
   );
 }
 
@@ -51,17 +51,10 @@ interface MetricRowProps {
 }
 
 export function MetricRow({ metric, selected }: MetricRowProps) {
-  const focused = useFocused();
-
-  const secondaryColor = selected ? THEME.text : THEME.textMuted;
+  const secondaryColor = secondaryCellColor(selected);
 
   return (
-    <box
-      flexDirection="row"
-      gap={COLUMN_GAP}
-      paddingX={1}
-      backgroundColor={selected && focused ? THEME.backgroundSelected : THEME.background}
-    >
+    <TableRow selected={selected}>
       <text width={TIME_WIDTH} fg={secondaryColor}>
         {formatTime(metric.last_time)}
       </text>
@@ -80,6 +73,6 @@ export function MetricRow({ metric, selected }: MetricRowProps) {
       <text width={SERIES_WIDTH} textAlign="right" fg={THEME.text}>
         {metric.series_count.toLocaleString()}
       </text>
-    </box>
+    </TableRow>
   );
 }

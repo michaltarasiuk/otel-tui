@@ -1,8 +1,8 @@
 import { collapseSpaces } from "../../utils/collapse-spaces.ts";
 import { formatTime } from "../../utils/format-time.ts";
-import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH, TIME_WIDTH } from "../columns.ts";
-import { useFocused } from "../focus.tsx";
+import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH, TIME_WIDTH } from "../columns.ts";
 import { ServiceName } from "../service-name.tsx";
+import { TableRow } from "../table-row.tsx";
 import { THEME } from "../theme.ts";
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
@@ -11,7 +11,7 @@ const SEVERITY_WIDTH = 8;
 
 export function LogHeaderRow() {
   return (
-    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
+    <TableRow>
       <text {...HEADER_CELL_PROPS} width={TIME_WIDTH}>
         Time
       </text>
@@ -24,7 +24,7 @@ export function LogHeaderRow() {
       <text {...HEADER_CELL_PROPS} flexGrow={1}>
         Body
       </text>
-    </box>
+    </TableRow>
   );
 }
 
@@ -34,17 +34,10 @@ interface LogRowProps {
 }
 
 export function LogRow({ log, selected }: LogRowProps) {
-  const focused = useFocused();
-
-  const secondaryColor = selected ? THEME.text : THEME.textMuted;
+  const secondaryColor = secondaryCellColor(selected);
 
   return (
-    <box
-      flexDirection="row"
-      gap={COLUMN_GAP}
-      paddingX={1}
-      backgroundColor={selected && focused ? THEME.backgroundSelected : THEME.background}
-    >
+    <TableRow selected={selected}>
       <text width={TIME_WIDTH} fg={secondaryColor}>
         {log.time !== null && formatTime(log.time)}
       </text>
@@ -58,6 +51,6 @@ export function LogRow({ log, selected }: LogRowProps) {
         {log.event_name !== null && <span fg={secondaryColor}>{log.event_name} </span>}
         {log.body !== null && collapseSpaces(log.body)}
       </text>
-    </box>
+    </TableRow>
   );
 }

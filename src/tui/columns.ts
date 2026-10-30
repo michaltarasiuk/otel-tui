@@ -13,6 +13,10 @@ export const HEADER_CELL_PROPS = {
   attributes: TextAttributes.BOLD,
 } satisfies TextProps;
 
+export function secondaryCellColor(selected: boolean) {
+  return selected ? THEME.text : THEME.textMuted;
+}
+
 export function sortArrow<Column>(sort: { column: Column; descending: boolean }, column: Column) {
   if (sort.column !== column) {
     return "";

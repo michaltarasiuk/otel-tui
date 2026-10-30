@@ -1,15 +1,15 @@
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
 import {
-  COLUMN_GAP,
   HEADER_CELL_PROPS,
+  secondaryCellColor,
   SERVICE_WIDTH,
   SORT_ARROW_WIDTH,
   sortArrow,
   TIME_WIDTH,
 } from "../columns.ts";
-import { useFocused } from "../focus.tsx";
 import { ServiceName } from "../service-name.tsx";
+import { TableRow } from "../table-row.tsx";
 import { THEME } from "../theme.ts";
 import type { Trace, TraceSort } from "./trace.ts";
 
@@ -23,7 +23,7 @@ interface TraceHeaderRowProps {
 
 export function TraceHeaderRow({ sort }: TraceHeaderRowProps) {
   return (
-    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
+    <TableRow>
       <text {...HEADER_CELL_PROPS} width={TIME_WIDTH}>
         Time {sortArrow(sort, "start_time")}
       </text>
@@ -42,7 +42,7 @@ export function TraceHeaderRow({ sort }: TraceHeaderRowProps) {
       <text {...HEADER_CELL_PROPS} width={DURATION_WIDTH} textAlign="right">
         {sortArrow(sort, "duration_ms")} Duration
       </text>
-    </box>
+    </TableRow>
   );
 }
 
@@ -52,17 +52,10 @@ interface TraceRowProps {
 }
 
 export function TraceRow({ trace, selected }: TraceRowProps) {
-  const focused = useFocused();
-
-  const secondaryColor = selected ? THEME.text : THEME.textMuted;
+  const secondaryColor = secondaryCellColor(selected);
 
   return (
-    <box
-      flexDirection="row"
-      gap={COLUMN_GAP}
-      paddingX={1}
-      backgroundColor={selected && focused ? THEME.backgroundSelected : THEME.background}
-    >
+    <TableRow selected={selected}>
       <text width={TIME_WIDTH} fg={secondaryColor}>
         {formatTime(trace.start_time)}
       </text>
@@ -81,6 +74,6 @@ export function TraceRow({ trace, selected }: TraceRowProps) {
       <text width={DURATION_WIDTH} textAlign="right" fg={THEME.text}>
         {formatDuration(trace.duration_ms)}
       </text>
-    </box>
+    </TableRow>
   );
 }

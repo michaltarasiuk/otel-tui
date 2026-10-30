@@ -1,6 +1,6 @@
-import { COLUMN_GAP, HEADER_CELL_PROPS } from "../columns.ts";
+import { HEADER_CELL_PROPS, secondaryCellColor } from "../columns.ts";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { useFocused } from "../focus.tsx";
+import { TableRow } from "../table-row.tsx";
 import { THEME } from "../theme.ts";
 import type { Metric } from "./metric.ts";
 import { type AttributeColumn, cellValue } from "./series-columns.ts";
@@ -16,7 +16,7 @@ interface SeriesHeaderRowProps {
 
 export function SeriesHeaderRow({ metric, columns }: SeriesHeaderRowProps) {
   return (
-    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
+    <TableRow>
       {columns.length === 0 ? (
         <text {...HEADER_CELL_PROPS} flexGrow={1}>
           Attributes
@@ -40,7 +40,7 @@ export function SeriesHeaderRow({ metric, columns }: SeriesHeaderRowProps) {
           {statLabel(key)}
         </text>
       ))}
-    </box>
+    </TableRow>
   );
 }
 
@@ -52,19 +52,12 @@ interface SeriesRowProps {
 }
 
 export function SeriesRow({ metric, columns, series, selected }: SeriesRowProps) {
-  const focused = useFocused();
-
   const stats = seriesStats(metric, series);
 
   return (
-    <box
-      flexDirection="row"
-      gap={COLUMN_GAP}
-      paddingX={1}
-      backgroundColor={selected && focused ? THEME.backgroundSelected : THEME.background}
-    >
+    <TableRow selected={selected}>
       {columns.length === 0 ? (
-        <text flexGrow={1} fg={selected ? THEME.text : THEME.textMuted}>
+        <text flexGrow={1} fg={secondaryCellColor(selected)}>
           none
         </text>
       ) : (
@@ -86,6 +79,6 @@ export function SeriesRow({ metric, columns, series, selected }: SeriesRowProps)
           {stats[key]}
         </text>
       ))}
-    </box>
+    </TableRow>
   );
 }

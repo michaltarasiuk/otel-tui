@@ -1,8 +1,8 @@
 import { formatDuration } from "../../utils/format-duration.ts";
-import { COLUMN_GAP, HEADER_CELL_PROPS, SERVICE_WIDTH } from "../columns.ts";
+import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH } from "../columns.ts";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { useFocused } from "../focus.tsx";
 import { ServiceName } from "../service-name.tsx";
+import { TableRow } from "../table-row.tsx";
 import { serviceColor, THEME } from "../theme.ts";
 import type { Span } from "./span.ts";
 
@@ -25,7 +25,7 @@ interface SpanHeaderRowProps {
 
 export function SpanHeaderRow({ traceDurationMs }: SpanHeaderRowProps) {
   return (
-    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
+    <TableRow>
       <text {...HEADER_CELL_PROPS} width={SERVICE_WIDTH}>
         Service
       </text>
@@ -44,7 +44,7 @@ export function SpanHeaderRow({ traceDurationMs }: SpanHeaderRowProps) {
         <text {...HEADER_CELL_PROPS}>0</text>
         <text {...HEADER_CELL_PROPS}>{formatDuration(traceDurationMs)}</text>
       </box>
-    </box>
+    </TableRow>
   );
 }
 
@@ -83,17 +83,10 @@ interface SpanRowProps {
 }
 
 export function SpanRow({ span, traceDurationMs, selected }: SpanRowProps) {
-  const focused = useFocused();
-
-  const secondaryColor = selected ? THEME.text : THEME.textMuted;
+  const secondaryColor = secondaryCellColor(selected);
 
   return (
-    <box
-      flexDirection="row"
-      gap={COLUMN_GAP}
-      paddingX={1}
-      backgroundColor={selected && focused ? THEME.backgroundSelected : THEME.background}
-    >
+    <TableRow selected={selected}>
       <text width={SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {span.service_name !== null && <ServiceName name={span.service_name} />}
       </text>
@@ -110,6 +103,6 @@ export function SpanRow({ span, traceDurationMs, selected }: SpanRowProps) {
         {formatDuration(span.duration_ms)}
       </text>
       <SpanBar span={span} traceDurationMs={traceDurationMs} />
-    </box>
+    </TableRow>
   );
 }
