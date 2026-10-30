@@ -8,7 +8,7 @@ import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
 import { useFocused } from "../focus.tsx";
-import { Section } from "../section.tsx";
+import { ScopeSection, Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
 import type { Span, SpanDetails } from "./span.ts";
@@ -68,11 +68,7 @@ function SpanBody({ details }: SpanBodyProps) {
         </Section>
       )}
       {details.scope_name !== null && (
-        <Section title="Scope">
-          <text fg={THEME.text}>
-            {details.scope_name} <span fg={THEME.textMuted}>{details.scope_version}</span>
-          </text>
-        </Section>
+        <ScopeSection name={details.scope_name} version={details.scope_version} />
       )}
     </>
   );

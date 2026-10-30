@@ -17,3 +17,18 @@ export function Section({ title, children }: SectionProps) {
     </box>
   );
 }
+
+interface ScopeSectionProps {
+  name: string;
+  version: string | null;
+}
+
+export function ScopeSection({ name, version }: ScopeSectionProps) {
+  return (
+    <Section title="Scope">
+      <text fg={THEME.text}>
+        {name} <span fg={THEME.textMuted}>{version}</span>
+      </text>
+    </Section>
+  );
+}

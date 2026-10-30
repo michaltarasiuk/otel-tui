@@ -7,7 +7,7 @@ import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
 import { useFocused } from "../focus.tsx";
-import { Section } from "../section.tsx";
+import { ScopeSection, Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
 import type { Log } from "./log.ts";
@@ -132,11 +132,7 @@ export function LogPanel({ log }: LogPanelProps) {
           </Section>
         )}
         {log.scope_name !== null && (
-          <Section title="Scope">
-            <text fg={THEME.text}>
-              {log.scope_name} <span fg={THEME.textMuted}>{log.scope_version}</span>
-            </text>
-          </Section>
+          <ScopeSection name={log.scope_name} version={log.scope_version} />
         )}
       </scrollbox>
     </box>

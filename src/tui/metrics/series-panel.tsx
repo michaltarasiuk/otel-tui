@@ -7,7 +7,7 @@ import { COLUMN_GAP, TIME_WIDTH } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
 import { useFocused } from "../focus.tsx";
-import { Section } from "../section.tsx";
+import { ScopeSection, Section } from "../section.tsx";
 import { serviceColor, THEME } from "../theme.ts";
 import { BucketBars } from "./bucket-bars.tsx";
 import { useSeriesExemplars } from "./metric-queries.ts";
@@ -148,11 +148,7 @@ export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelP
           </Section>
         )}
         {series.scope_name !== null && (
-          <Section title="Scope">
-            <text fg={THEME.text}>
-              {series.scope_name} <span fg={THEME.textMuted}>{series.scope_version}</span>
-            </text>
-          </Section>
+          <ScopeSection name={series.scope_name} version={series.scope_version} />
         )}
       </scrollbox>
     </box>
