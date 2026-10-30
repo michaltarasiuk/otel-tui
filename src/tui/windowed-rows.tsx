@@ -5,7 +5,7 @@ import { Fragment, useRef, useState } from "react";
 import { clamp } from "../utils/clamp.ts";
 import { IGNORE_CONTENT_SIZE } from "./flex.ts";
 import { useFocused } from "./focus.tsx";
-import { ScrollIndicator } from "./scroll-indicator.tsx";
+import { THEME } from "./theme.ts";
 import type { useListState } from "./use-list-state.ts";
 
 interface WindowedRowsProps<T> {
@@ -27,6 +27,9 @@ export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
     0,
     items.length - visibleRowCount,
   );
+
+  const hiddenRowCount = items.length - visibleRowCount;
+  const scrollThumbTop = Math.round((firstVisibleIndex / hiddenRowCount) * (visibleRowCount - 1));
 
   useBindings(
     () => ({
@@ -104,11 +107,11 @@ export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
           {children(item, firstVisibleIndex + offset === selectedIndex)}
         </Fragment>
       ))}
-      <ScrollIndicator
-        firstVisibleIndex={firstVisibleIndex}
-        visibleRowCount={visibleRowCount}
-        rowCount={items.length}
-      />
+      {hiddenRowCount > 0 && (
+        <text position="absolute" right={0} top={scrollThumbTop} fg={THEME.textMuted}>
+          █
+        </text>
+      )}
     </box>
   );
 }
