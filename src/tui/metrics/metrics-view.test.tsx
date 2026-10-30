@@ -10,15 +10,15 @@ const DETAILS_SIZE = { width: 120, height: 45 };
 const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 const METRIC_COUNT = / metrics? *$/m;
 
-function at(seconds: number) {
+function atSecond(seconds: number) {
   return new Date(BASE_TIME + seconds * 1000);
 }
 
 function routeRequests(route: string, values: number[]) {
   return values.map((value, index) => ({
     attributes: { "http.route": route },
-    start: at(0),
-    time: at(10 * (index + 1)),
+    start: atSecond(0),
+    time: atSecond(10 * (index + 1)),
     value,
   }));
 }
@@ -44,18 +44,18 @@ const METRICS = metricsRequest({
       monotonic: true,
       temporality: TEMPORALITY.delta,
       sum: [
-        { start: at(0), time: at(10), value: 3 },
-        { start: at(10), time: at(20), value: 4 },
-        { start: at(20), time: at(30), value: 5 },
+        { start: atSecond(0), time: atSecond(10), value: 3 },
+        { start: atSecond(10), time: atSecond(20), value: 4 },
+        { start: atSecond(20), time: atSecond(30), value: 5 },
       ],
     },
     {
       name: "process.memory.usage",
       unit: "By",
       gauge: [
-        { time: at(10), value: 1_048_576 },
-        { time: at(20), value: 2_097_152 },
-        { time: at(30), value: 1_572_864 },
+        { time: atSecond(10), value: 1_048_576 },
+        { time: atSecond(20), value: 2_097_152 },
+        { time: atSecond(30), value: 1_572_864 },
       ],
     },
     {
@@ -64,9 +64,9 @@ const METRICS = metricsRequest({
       monotonic: false,
       temporality: TEMPORALITY.cumulative,
       sum: [
-        { start: at(0), time: at(10), value: 5 },
-        { start: at(0), time: at(20), value: 3 },
-        { start: at(0), time: at(30), value: 8 },
+        { start: atSecond(0), time: atSecond(10), value: 5 },
+        { start: atSecond(0), time: atSecond(20), value: 3 },
+        { start: atSecond(0), time: atSecond(30), value: 8 },
       ],
     },
     {
@@ -75,19 +75,19 @@ const METRICS = metricsRequest({
       temporality: TEMPORALITY.delta,
       histogram: [
         {
-          start: at(0),
-          time: at(10),
+          start: atSecond(0),
+          time: atSecond(10),
           count: 5,
           sum: 150,
           min: 5,
           max: 80,
           bounds: [10, 50, 100],
           counts: [1, 3, 1, 0],
-          exemplars: [{ time: at(9), value: 75 }],
+          exemplars: [{ time: atSecond(9), value: 75 }],
         },
         {
-          start: at(10),
-          time: at(20),
+          start: atSecond(10),
+          time: atSecond(20),
           count: 5,
           sum: 400,
           min: 20,
@@ -95,7 +95,7 @@ const METRICS = metricsRequest({
           bounds: [10, 50, 100],
           counts: [0, 2, 2, 1],
           exemplars: [
-            { time: at(19), value: 140, traceId: "2".repeat(32), spanId: "2b".repeat(8) },
+            { time: atSecond(19), value: 140, traceId: "2".repeat(32), spanId: "2b".repeat(8) },
           ],
         },
       ],
@@ -105,8 +105,20 @@ const METRICS = metricsRequest({
       unit: "By",
       temporality: TEMPORALITY.cumulative,
       exponentialHistogram: [
-        { start: at(0), time: at(10), count: 3, scale: 0, positive: { offset: 9, counts: [1, 2] } },
-        { start: at(0), time: at(20), count: 6, scale: 0, positive: { offset: 9, counts: [2, 4] } },
+        {
+          start: atSecond(0),
+          time: atSecond(10),
+          count: 3,
+          scale: 0,
+          positive: { offset: 9, counts: [1, 2] },
+        },
+        {
+          start: atSecond(0),
+          time: atSecond(20),
+          count: 6,
+          scale: 0,
+          positive: { offset: 9, counts: [2, 4] },
+        },
       ],
     },
   ],
@@ -121,7 +133,7 @@ const PAYLOAD_ROW = "12:00:20.000 ● checkout rpc.payload.size exp histogram By
 const BY_NAME = [DURATION_ROW, REQUESTS_ROW, JOBS_ROW, MEMORY_ROW, QUEUE_ROW, PAYLOAD_ROW];
 
 beforeEach(() => {
-  setSystemTime(at(60));
+  setSystemTime(atSecond(60));
 });
 
 afterEach(() => {
@@ -276,7 +288,7 @@ test("lists a few attribute values and counts the rest", async () => {
         {
           name: "cpu.utilization",
           unit: "1",
-          gauge: cores.map((cpu) => ({ attributes: { cpu }, time: at(10), value: 0.5 })),
+          gauge: cores.map((cpu) => ({ attributes: { cpu }, time: atSecond(10), value: 0.5 })),
         },
       ],
     }),
@@ -418,7 +430,7 @@ test("waits for a second export before plotting a counter's rate", async () => {
           name: "orders",
           monotonic: true,
           temporality: TEMPORALITY.cumulative,
-          sum: [{ start: at(0), time: at(10), value: 5 }],
+          sum: [{ start: atSecond(0), time: atSecond(10), value: 5 }],
         },
       ],
     }),
@@ -455,9 +467,9 @@ test("adds up a delta updowncounter's changes", async () => {
           monotonic: false,
           temporality: TEMPORALITY.delta,
           sum: [
-            { start: at(0), time: at(10), value: 2 },
-            { start: at(10), time: at(20), value: -1 },
-            { start: at(20), time: at(30), value: 3 },
+            { start: atSecond(0), time: atSecond(10), value: 2 },
+            { start: atSecond(10), time: atSecond(20), value: -1 },
+            { start: atSecond(20), time: atSecond(30), value: 3 },
           ],
         },
       ],
@@ -486,7 +498,7 @@ test("scrolls the metric panel down and back up", async () => {
     "/v1/metrics",
     metricsRequest({
       service: "checkout",
-      metrics: [{ name: "queue.depth", gauge: [{ attributes, time: at(10), value: 1 }] }],
+      metrics: [{ name: "queue.depth", gauge: [{ attributes, time: atSecond(10), value: 1 }] }],
     }),
   );
   await using app = await renderMetrics(receiver);

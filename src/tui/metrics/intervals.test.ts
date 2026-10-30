@@ -4,12 +4,16 @@ import { type Distribution, explicitBuckets } from "./distribution.ts";
 import { counterIntervals, distributionIntervals, perSecond } from "./intervals.ts";
 import type { DistributionPoint, NumberPoint } from "./series.ts";
 
-function at(seconds: number) {
+function atSecond(seconds: number) {
   return new Date(seconds * 1000);
 }
 
 function point(time: number, value: number, startTime: number | null = 0): NumberPoint {
-  return { time: at(time), start_time: startTime === null ? null : at(startTime), value };
+  return {
+    time: atSecond(time),
+    start_time: startTime === null ? null : atSecond(startTime),
+    value,
+  };
 }
 
 function histogramPoint(time: number, counts: number[], startTime = 0): DistributionPoint {
@@ -20,7 +24,7 @@ function histogramPoint(time: number, counts: number[], startTime = 0): Distribu
     max: null,
     buckets: explicitBuckets([10], counts),
   };
-  return { time: at(time), start_time: at(startTime), distribution };
+  return { time: atSecond(time), start_time: atSecond(startTime), distribution };
 }
 
 describe("counterIntervals", () => {
