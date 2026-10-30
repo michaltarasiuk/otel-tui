@@ -28,6 +28,15 @@ import {
 const MAX_METRICS = 500;
 const MAX_EXEMPLARS = 10;
 
+function metricIdentity(metric: Metric) {
+  return {
+    name: metric.name,
+    unit: metric.unit,
+    serviceName: metric.service_name,
+    temporality: metric.temporality,
+  };
+}
+
 interface MetricQuery {
   search: string;
   sort: MetricSort;
@@ -72,12 +81,7 @@ export function useMetricSeries(metric: Metric) {
   return useQuery<Series[]>({
     queryKey: ["metrics", metric.metric_id, "series"],
     queryFn: async () => {
-      const identity = {
-        name: metric.name,
-        unit: metric.unit,
-        serviceName: metric.service_name,
-        temporality: metric.temporality,
-      };
+      const identity = metricIdentity(metric);
       switch (metric.type) {
         case "gauge":
         case "counter":
@@ -111,13 +115,7 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
   return useQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "points"],
     queryFn: async () => {
-      const identity = {
-        name: metric.name,
-        unit: metric.unit,
-        serviceName: metric.service_name,
-        temporality: metric.temporality,
-        seriesId,
-      };
+      const identity = { ...metricIdentity(metric), seriesId };
       switch (metric.type) {
         case "gauge":
         case "counter":
@@ -161,11 +159,8 @@ export function useSeriesExemplars(metric: Metric, seriesId: string) {
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "exemplars"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(SERIES_EXEMPLARS_SQL, {
+        ...metricIdentity(metric),
         type: metric.type,
-        name: metric.name,
-        unit: metric.unit,
-        serviceName: metric.service_name,
-        temporality: metric.temporality,
         seriesId,
         limit: MAX_EXEMPLARS,
       });
