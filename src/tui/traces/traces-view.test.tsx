@@ -171,7 +171,7 @@ function barExtent({ lines }: CapturedFrame, name: string, color: string) {
 }
 
 async function renderTraceList(receiver: TestReceiver) {
-  await receiver.send("/v1/traces", TRACES);
+  await receiver.sendHttp("/v1/traces", TRACES);
   const app = await renderApp(receiver);
   await app.waitForFrame((frame) => traceRows(frame).length === 3);
   app.mockInput.pressTab();
@@ -201,7 +201,7 @@ test("waits for traces before any arrive", async () => {
 
 test("lists traces whose root span arrived, newest first, with span and error counts", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send("/v1/traces", TRACES);
+  await receiver.sendHttp("/v1/traces", TRACES);
   await using app = await renderApp(receiver);
 
   const frame = await app.waitForFrame((frame) => traceRows(frame).length === 3);
@@ -482,7 +482,7 @@ test("scrolls the span panel down and back up", async () => {
   const attributes = Object.fromEntries(
     Array.from({ length: 30 }, (_, index) => [`attribute.${index + 1}`, "value"]),
   );
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
       service: "checkout",

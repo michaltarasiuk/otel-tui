@@ -102,7 +102,7 @@ async function renderLogs(receiver: TestReceiver) {
 }
 
 async function renderLogList(receiver: TestReceiver) {
-  await receiver.send("/v1/logs", LOGS);
+  await receiver.sendHttp("/v1/logs", LOGS);
   const app = await renderLogs(receiver);
   await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
   return app;
@@ -291,7 +291,7 @@ test("offers trace actions only for logs with a trace", async () => {
 
 test("opens the selected log's trace in the traces view", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
       service: "checkout",
@@ -328,7 +328,7 @@ test("lists identical logs separately and selects each in turn", async () => {
   await using receiver = await startTestReceiver();
   const repeated = { time: at(1000), severityNumber: SEVERITY_NUMBER.info, body: "heartbeat" };
   const earlier = { time: at(0), severityNumber: SEVERITY_NUMBER.info, body: "started" };
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/logs",
     logsRequest({ service: "worker", logs: [repeated, repeated, earlier] }),
   );
@@ -352,7 +352,7 @@ test("lists identical logs separately and selects each in turn", async () => {
 test("scrolls the log panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   const body = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join("\n");
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/logs",
     logsRequest({ service: "worker", logs: [{ time: at(0), body }] }),
   );

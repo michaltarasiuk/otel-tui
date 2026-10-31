@@ -26,7 +26,7 @@ const GRPC_STATUS_OK = "0";
 
 async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   const end = new Date(time.getTime() + 1);
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
       service: "checkout",
@@ -35,14 +35,14 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
       ],
     }),
   );
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
       service: "checkout",
       logs: [{ time, body: "cart loaded" }],
     }),
   );
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
       service: "checkout",
@@ -167,7 +167,7 @@ test("drops logs by their observed time when they carry no time", async () => {
   jest.useFakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
       service: "shipping",

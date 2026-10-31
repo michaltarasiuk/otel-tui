@@ -115,7 +115,7 @@ test("shows where the receiver listens in a padded footer", async () => {
 
 test("hints the view's described keys, the selected row's actions first", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
       service: "checkout",
@@ -143,7 +143,7 @@ test("hints the view's described keys, the selected row's actions first", async 
 
 test("hints the jump to the next error only when a trace has errors", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
       service: "checkout",
@@ -172,14 +172,14 @@ test("follows to the traces tab when a log opens its trace", async () => {
   await using receiver = await startTestReceiver();
   const traceId = "2".repeat(32);
   const spanId = "2a".repeat(8);
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
       service: "checkout",
       spans: [{ traceId, spanId, name: "POST /checkout", start: new Date(0), end: new Date(10) }],
     }),
   );
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
       service: "checkout",

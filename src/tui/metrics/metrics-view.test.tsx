@@ -155,7 +155,7 @@ async function renderMetrics(receiver: TestReceiver, size?: { width: number; hei
 }
 
 async function renderMetricList(receiver: TestReceiver, size?: { width: number; height: number }) {
-  await receiver.send("/v1/metrics", METRICS);
+  await receiver.sendHttp("/v1/metrics", METRICS);
   const app = await renderMetrics(receiver, size);
   await app.waitForFrame((frame) => metricRows(frame).length === BY_NAME.length);
   return app;
@@ -280,7 +280,7 @@ test("summarizes the selected metric's attribute values", async () => {
 test("lists a few attribute values and counts the rest", async () => {
   await using receiver = await startTestReceiver();
   const cores = ["0", "1", "2", "3", "4"];
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
       service: "worker",
@@ -421,7 +421,7 @@ test("shows an exponential histogram's buckets", async () => {
 
 test("waits for a second export before plotting a counter's rate", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
       service: "checkout",
@@ -456,7 +456,7 @@ test("goes back to the list with the opened metric still selected", async () => 
 
 test("adds up a delta updowncounter's changes", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
       service: "checkout",
@@ -491,7 +491,7 @@ test("adds up a delta updowncounter's changes", async () => {
 
 test("opens a delta histogram that exports no buckets", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
       service: "checkout",
@@ -525,7 +525,7 @@ test("scrolls the metric panel down and back up", async () => {
   const attributes = Object.fromEntries(
     Array.from({ length: 30 }, (_, index) => [`label.${index + 1}`, "value"]),
   );
-  await receiver.send(
+  await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
       service: "checkout",

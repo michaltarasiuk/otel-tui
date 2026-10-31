@@ -25,7 +25,7 @@ export async function startTestReceiver({
   const connection = await receiver.connect();
   const uri = `otlp:${new URL(receiver.urls.http).host}`;
 
-  async function send(path: string, request: unknown) {
+  async function sendHttp(path: string, request: unknown) {
     const response = await fetch(new URL(path, receiver.urls.http), {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -40,7 +40,7 @@ export async function startTestReceiver({
   return {
     urls: receiver.urls,
     connect: () => receiver.connect(),
-    send,
+    sendHttp,
     [Symbol.asyncDispose]: () => receiver[Symbol.asyncDispose](),
   };
 }
