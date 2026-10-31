@@ -1,15 +1,32 @@
-type AttributeValue = string | number | boolean;
-type AttributeMap = Record<string, AttributeValue>;
-
 export const SPAN_KIND = { server: 2, client: 3, consumer: 5 } as const;
 export const STATUS_CODE = { error: 2 } as const;
 export const SEVERITY_NUMBER = { debug: 5, info: 9, warn: 13, error: 17, fatal: 21 } as const;
 export const TEMPORALITY = { delta: 1, cumulative: 2 } as const;
 
+type AttributeValue = string | number | boolean;
+type AttributeMap = Record<string, AttributeValue>;
+
+interface ScopeFixture {
+  name: string;
+  version?: string;
+}
+
 interface ResourceFixture {
   service: string;
   attributes?: AttributeMap;
-  scope?: { name: string; version?: string };
+  scope?: ScopeFixture;
+}
+
+interface SpanEventFixture {
+  name: string;
+  time?: Date;
+  attributes?: AttributeMap;
+}
+
+interface SpanLinkFixture {
+  traceId: string;
+  spanId: string;
+  attributes?: AttributeMap;
 }
 
 interface SpanFixture {
@@ -22,8 +39,8 @@ interface SpanFixture {
   end: Date;
   status?: { code: number; message?: string };
   attributes?: AttributeMap;
-  events?: { name: string; time?: Date; attributes?: AttributeMap }[];
-  links?: { traceId: string; spanId: string; attributes?: AttributeMap }[];
+  events?: SpanEventFixture[];
+  links?: SpanLinkFixture[];
 }
 
 interface LogFixture {
@@ -33,27 +50,37 @@ interface LogFixture {
   severityText?: string;
   eventName?: string;
   body?: AttributeValue | AttributeMap;
+  attributes?: AttributeMap;
   traceId?: string;
   spanId?: string;
-  attributes?: AttributeMap;
+}
+
+interface ExemplarFixture {
+  time: Date;
+  value: number;
+  traceId?: string;
+  spanId?: string;
 }
 
 interface DataPointFixture {
-  attributes?: AttributeMap;
   start?: Date;
   time: Date;
-  exemplars?: { time: Date; value: number; traceId?: string; spanId?: string }[];
+  attributes?: AttributeMap;
+  exemplars?: ExemplarFixture[];
 }
 
 interface NumberPointFixture extends DataPointFixture {
   value: number;
 }
 
-interface HistogramPointFixture extends DataPointFixture {
+interface DistributionPointFixture extends DataPointFixture {
   count: number;
   sum?: number;
   min?: number;
   max?: number;
+}
+
+interface HistogramPointFixture extends DistributionPointFixture {
   bounds: number[];
   counts: number[];
 }
@@ -63,11 +90,7 @@ interface ExponentialBucketsFixture {
   counts: number[];
 }
 
-interface ExponentialHistogramPointFixture extends DataPointFixture {
-  count: number;
-  sum?: number;
-  min?: number;
-  max?: number;
+interface ExponentialHistogramPointFixture extends DistributionPointFixture {
   scale: number;
   zeroCount?: number;
   zeroThreshold?: number;
@@ -75,12 +98,33 @@ interface ExponentialHistogramPointFixture extends DataPointFixture {
   negative?: ExponentialBucketsFixture;
 }
 
-type MetricFixture = { name: string; unit?: string; description?: string } & (
-  | { gauge: NumberPointFixture[] }
-  | { sum: NumberPointFixture[]; monotonic: boolean; temporality: number }
-  | { histogram: HistogramPointFixture[]; temporality: number }
-  | { exponentialHistogram: ExponentialHistogramPointFixture[]; temporality: number }
-);
+interface MetricHeaderFixture {
+  name: string;
+  unit?: string;
+  description?: string;
+}
+
+interface GaugeFixture extends MetricHeaderFixture {
+  gauge: NumberPointFixture[];
+}
+
+interface SumFixture extends MetricHeaderFixture {
+  sum: NumberPointFixture[];
+  monotonic: boolean;
+  temporality: number;
+}
+
+interface HistogramFixture extends MetricHeaderFixture {
+  histogram: HistogramPointFixture[];
+  temporality: number;
+}
+
+interface ExponentialHistogramFixture extends MetricHeaderFixture {
+  exponentialHistogram: ExponentialHistogramPointFixture[];
+  temporality: number;
+}
+
+type MetricFixture = GaugeFixture | SumFixture | HistogramFixture | ExponentialHistogramFixture;
 
 function anyValue(value: AttributeValue) {
   switch (typeof value) {
@@ -101,6 +145,18 @@ function unixNano(time: Date | undefined) {
   return time === undefined ? undefined : String(BigInt(time.getTime()) * 1_000_000n);
 }
 
+function int64(value: number) {
+  return String(value);
+}
+
+function int64s(values: number[]) {
+  return values.map((value) => int64(value));
+}
+
+function numberValue(value: number) {
+  return Number.isInteger(value) ? { asInt: int64(value) } : { asDouble: value };
+}
+
 function resource({ service, attributes }: ResourceFixture) {
   return { attributes: keyValues({ "service.name": service, ...attributes }) };
 }
@@ -112,29 +168,68 @@ function logBody(body: LogFixture["body"]) {
   return typeof body === "object" ? { kvlistValue: { values: keyValues(body) } } : anyValue(body);
 }
 
-function numberValue(value: number) {
-  return Number.isInteger(value) ? { asInt: String(value) } : { asDouble: value };
+function spanEvent({ time, attributes, ...event }: SpanEventFixture) {
+  return { ...event, timeUnixNano: unixNano(time), attributes: keyValues(attributes) };
 }
 
-function int64s(values: number[]) {
-  return values.map((value) => String(value));
+function spanLink({ attributes, ...link }: SpanLinkFixture) {
+  return { ...link, attributes: keyValues(attributes) };
 }
 
-function dataPoint({ attributes, start, time, exemplars }: DataPointFixture) {
+function span({ start, end, attributes, events, links, ...fields }: SpanFixture) {
   return {
-    attributes: keyValues(attributes),
+    ...fields,
     startTimeUnixNano: unixNano(start),
-    timeUnixNano: unixNano(time),
-    exemplars: exemplars?.map(({ time, value, ...exemplar }) => ({
-      ...exemplar,
-      timeUnixNano: unixNano(time),
-      ...numberValue(value),
-    })),
+    endTimeUnixNano: unixNano(end),
+    attributes: keyValues(attributes),
+    events: events?.map((event) => spanEvent(event)),
+    links: links?.map((link) => spanLink(link)),
   };
 }
 
-function numberDataPoints(points: NumberPointFixture[]) {
-  return points.map((point) => ({ ...dataPoint(point), ...numberValue(point.value) }));
+function logRecord({ time, observedTime, body, attributes, ...log }: LogFixture) {
+  return {
+    ...log,
+    timeUnixNano: unixNano(time),
+    observedTimeUnixNano: unixNano(observedTime),
+    body: logBody(body),
+    attributes: keyValues(attributes),
+  };
+}
+
+function exemplar({ time, value, ...fields }: ExemplarFixture) {
+  return { ...fields, timeUnixNano: unixNano(time), ...numberValue(value) };
+}
+
+function dataPoint({ start, time, attributes, exemplars }: DataPointFixture) {
+  return {
+    startTimeUnixNano: unixNano(start),
+    timeUnixNano: unixNano(time),
+    attributes: keyValues(attributes),
+    exemplars: exemplars?.map((item) => exemplar(item)),
+  };
+}
+
+function distributionPoint(point: DistributionPointFixture) {
+  return {
+    ...dataPoint(point),
+    count: int64(point.count),
+    sum: point.sum,
+    min: point.min,
+    max: point.max,
+  };
+}
+
+function numberDataPoint(point: NumberPointFixture) {
+  return { ...dataPoint(point), ...numberValue(point.value) };
+}
+
+function histogramDataPoint(point: HistogramPointFixture) {
+  return {
+    ...distributionPoint(point),
+    explicitBounds: point.bounds,
+    bucketCounts: int64s(point.counts),
+  };
 }
 
 function exponentialBuckets(buckets: ExponentialBucketsFixture | undefined) {
@@ -143,67 +238,49 @@ function exponentialBuckets(buckets: ExponentialBucketsFixture | undefined) {
     : { offset: buckets.offset, bucketCounts: int64s(buckets.counts) };
 }
 
-function metric(fixture: MetricFixture) {
-  const { name, unit, description } = fixture;
+function exponentialHistogramDataPoint(point: ExponentialHistogramPointFixture) {
+  return {
+    ...distributionPoint(point),
+    scale: point.scale,
+    zeroCount: int64(point.zeroCount ?? 0),
+    zeroThreshold: point.zeroThreshold,
+    positive: exponentialBuckets(point.positive),
+    negative: exponentialBuckets(point.negative),
+  };
+}
+
+function metricData(fixture: MetricFixture) {
   if ("gauge" in fixture) {
-    return {
-      name,
-      unit,
-      description,
-      gauge: { dataPoints: numberDataPoints(fixture.gauge) },
-    };
+    return { gauge: { dataPoints: fixture.gauge.map((point) => numberDataPoint(point)) } };
   }
   if ("sum" in fixture) {
     return {
-      name,
-      unit,
-      description,
       sum: {
         aggregationTemporality: fixture.temporality,
         isMonotonic: fixture.monotonic,
-        dataPoints: numberDataPoints(fixture.sum),
+        dataPoints: fixture.sum.map((point) => numberDataPoint(point)),
       },
     };
   }
   if ("histogram" in fixture) {
     return {
-      name,
-      unit,
-      description,
       histogram: {
         aggregationTemporality: fixture.temporality,
-        dataPoints: fixture.histogram.map(({ count, bounds, counts, ...point }) => ({
-          ...dataPoint(point),
-          count: String(count),
-          sum: point.sum,
-          min: point.min,
-          max: point.max,
-          explicitBounds: bounds,
-          bucketCounts: int64s(counts),
-        })),
+        dataPoints: fixture.histogram.map((point) => histogramDataPoint(point)),
       },
     };
   }
   return {
-    name,
-    unit,
-    description,
     exponentialHistogram: {
       aggregationTemporality: fixture.temporality,
-      dataPoints: fixture.exponentialHistogram.map(({ count, zeroCount = 0, ...point }) => ({
-        ...dataPoint(point),
-        count: String(count),
-        sum: point.sum,
-        min: point.min,
-        max: point.max,
-        scale: point.scale,
-        zeroCount: String(zeroCount),
-        zeroThreshold: point.zeroThreshold,
-        positive: exponentialBuckets(point.positive),
-        negative: exponentialBuckets(point.negative),
-      })),
+      dataPoints: fixture.exponentialHistogram.map((point) => exponentialHistogramDataPoint(point)),
     },
   };
+}
+
+function metric(fixture: MetricFixture) {
+  const { name, unit, description } = fixture;
+  return { name, unit, description, ...metricData(fixture) };
 }
 
 export function tracesRequest(...resources: (ResourceFixture & { spans: SpanFixture[] })[]) {
@@ -213,22 +290,7 @@ export function tracesRequest(...resources: (ResourceFixture & { spans: SpanFixt
       scopeSpans: [
         {
           scope: fixture.scope,
-          spans: fixture.spans.map(({ start, end, attributes, events, links, ...span }) => ({
-            ...span,
-            startTimeUnixNano: unixNano(start),
-            endTimeUnixNano: unixNano(end),
-            attributes: keyValues(attributes),
-            events: events?.map((event) => ({
-              name: event.name,
-              timeUnixNano: unixNano(event.time),
-              attributes: keyValues(event.attributes),
-            })),
-            links: links?.map((link) => ({
-              traceId: link.traceId,
-              spanId: link.spanId,
-              attributes: keyValues(link.attributes),
-            })),
-          })),
+          spans: fixture.spans.map((item) => span(item)),
         },
       ],
     })),
@@ -242,13 +304,7 @@ export function logsRequest(...resources: (ResourceFixture & { logs: LogFixture[
       scopeLogs: [
         {
           scope: fixture.scope,
-          logRecords: fixture.logs.map(({ time, observedTime, body, attributes, ...log }) => ({
-            ...log,
-            timeUnixNano: unixNano(time),
-            observedTimeUnixNano: unixNano(observedTime),
-            body: logBody(body),
-            attributes: keyValues(attributes),
-          })),
+          logRecords: fixture.logs.map((item) => logRecord(item)),
         },
       ],
     })),
