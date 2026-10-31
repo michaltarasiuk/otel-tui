@@ -12,7 +12,7 @@ const FRAME_TIMEOUT_MS = 3000;
 const FRAME_POLL_INTERVAL_MS = 10;
 const BINDINGS_REGISTERED_AFTER_COMMIT_MS = 10;
 const SELECTED_BACKGROUND = RGBA.fromHex(THEME.backgroundSelected);
-const SCROLLBAR_GLYPHS = /[\u2580-\u259F]/g;
+const SCROLLBAR_CHARACTERS = /[\u2580-\u259F]/g;
 const FOOTER_LINES = 1;
 
 interface RenderOptions {
@@ -89,7 +89,7 @@ export function textLines(frame: string) {
 }
 
 export function panelLines(frame: string) {
-  const lines = textLines(frame.replace(SCROLLBAR_GLYPHS, ""));
+  const lines = textLines(frame.replace(SCROLLBAR_CHARACTERS, ""));
   const border = lines.findIndex((line) => line.startsWith("─"));
   return lines.slice(border + 1, -FOOTER_LINES);
 }
