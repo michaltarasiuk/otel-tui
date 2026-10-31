@@ -29,6 +29,10 @@ export async function startTestReceiver({
   const connection = await receiver.connect();
   const uri = `otlp:${new URL(receiver.urls.http).host}`;
 
+  function flush() {
+    return connection.run("SELECT * FROM otlp_flush($uri)", { uri });
+  }
+
   async function sendHttp(path: string, request: unknown) {
     const response = await fetch(new URL(path, receiver.urls.http), {
       method: "POST",
@@ -38,7 +42,7 @@ export async function startTestReceiver({
     if (!response.ok) {
       throw new Error(`POST ${path} failed with ${response.status}: ${await response.text()}`);
     }
-    await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
+    await flush();
   }
 
   async function sendGrpc(method: string) {
@@ -69,7 +73,7 @@ export async function startTestReceiver({
     } finally {
       session.close();
     }
-    await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
+    await flush();
   }
 
   return {
