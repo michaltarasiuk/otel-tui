@@ -20,6 +20,10 @@ interface RenderOptions {
   height: number;
 }
 
+interface SelectionOptions {
+  line?: number;
+}
+
 export async function render(node: React.ReactNode, { width, height }: RenderOptions) {
   const setup = await createTestRenderer({
     ...RENDERER_CONFIG,
@@ -33,7 +37,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
 
   async function waitUntil<T>(capture: () => T, matches: (captured: T) => boolean) {
     const deadline = performance.now() + FRAME_TIMEOUT_MS;
-    do {
+    while (performance.now() < deadline) {
       await setup.renderOnce();
       const captured = capture();
       if (matches(captured)) {
@@ -41,7 +45,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
         return captured;
       }
       await Bun.sleep(FRAME_POLL_INTERVAL_MS);
-    } while (performance.now() < deadline);
+    }
     throw new Error(
       `No frame matched within ${FRAME_TIMEOUT_MS}ms. ` +
         `The last frame was:\n${setup.captureCharFrame()}`,
@@ -52,7 +56,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     return waitUntil(() => setup.captureCharFrame(), predicate);
   }
 
-  async function waitForSelection(text: string, { line }: { line?: number } = {}) {
+  async function waitForSelection(text: string, { line }: SelectionOptions = {}) {
     const [selected] = await waitUntil(
       () => selectedLines(setup.captureSpans()),
       ([first]) =>
@@ -91,11 +95,9 @@ export function panelLines(frame: string) {
 }
 
 function selectedLines({ lines }: CapturedFrame) {
-  return lines
-    .map(({ spans }, index) => ({
-      line: index,
-      text: collapseSpaces(spans.map((span) => span.text).join("")),
-      selected: spans.some((span) => span.bg.equals(SELECTED_BACKGROUND)),
-    }))
-    .filter(({ selected }) => selected);
+  return lines.flatMap(({ spans }, line) =>
+    spans.some((span) => span.bg.equals(SELECTED_BACKGROUND))
+      ? [{ line, text: collapseSpaces(spans.map((span) => span.text).join("")) }]
+      : [],
+  );
 }
