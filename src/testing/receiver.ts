@@ -22,7 +22,7 @@ export async function startTestReceiver({
     grpcPort: freePort(),
     retentionMs,
   });
-  const control = await receiver.connect();
+  const connection = await receiver.connect();
   const uri = `otlp:${new URL(receiver.urls.http).host}`;
 
   async function send(path: string, request: unknown) {
@@ -34,7 +34,7 @@ export async function startTestReceiver({
     if (!response.ok) {
       throw new Error(`POST ${path} failed with ${response.status}: ${await response.text()}`);
     }
-    await control.run("SELECT * FROM otlp_flush($uri)", { uri });
+    await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
   }
 
   return {

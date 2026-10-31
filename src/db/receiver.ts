@@ -35,13 +35,13 @@ interface ReceiverOptions {
 
 export async function startReceiver({ httpPort, grpcPort, retentionMs }: ReceiverOptions) {
   const instance = await DuckDBInstance.create(":memory:");
-  const control = await instance.connect();
+  const connection = await instance.connect();
 
-  await control.run("INSTALL otlp FROM community");
-  await control.run("LOAD otlp");
-  await control.run(ATTRIBUTE_ENTRIES_SQL);
+  await connection.run("INSTALL otlp FROM community");
+  await connection.run("LOAD otlp");
+  await connection.run(ATTRIBUTE_ENTRIES_SQL);
 
-  const reader = await control.runAndReadAll(
+  const reader = await connection.runAndReadAll(
     `SELECT transport, listen_url FROM otlp_serve(
       [$httpUri, $grpcUri],
       transport := ['http', 'grpc'],
@@ -68,7 +68,7 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
   async function pruneExpiredTelemetry() {
     try {
       for (const [table, time] of Object.entries(RETENTION_TIMES)) {
-        await control.run(
+        await connection.run(
           `DELETE FROM ${table} WHERE ${time} < (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)`,
           { retentionMs },
         );
@@ -92,11 +92,11 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
   async function close() {
     clearInterval(pruneInterval);
     await pruning;
-    await control.run("SELECT * FROM otlp_stop()");
+    await connection.run("SELECT * FROM otlp_stop()");
     for (const connection of connections) {
       connection.closeSync();
     }
-    control.closeSync();
+    connection.closeSync();
     instance.closeSync();
   }
 
