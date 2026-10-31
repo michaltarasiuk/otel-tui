@@ -17,12 +17,16 @@ interface TestReceiverOptions {
 export async function startTestReceiver({
   retentionMs = DEFAULT_RETENTION_MS,
 }: TestReceiverOptions = {}) {
-  const receiver = await startReceiver({ port: freePort(), retentionMs });
+  const receiver = await startReceiver({
+    httpPort: freePort(),
+    grpcPort: freePort(),
+    retentionMs,
+  });
   const control = await receiver.connect();
-  const uri = `otlp:${new URL(receiver.url).host}`;
+  const uri = `otlp:${new URL(receiver.urls.http).host}`;
 
   async function send(path: string, request: unknown) {
-    const response = await fetch(new URL(path, receiver.url), {
+    const response = await fetch(new URL(path, receiver.urls.http), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(request),
@@ -34,7 +38,7 @@ export async function startTestReceiver({
   }
 
   return {
-    url: receiver.url,
+    urls: receiver.urls,
     connect: () => receiver.connect(),
     send,
     [Symbol.asyncDispose]: () => receiver[Symbol.asyncDispose](),

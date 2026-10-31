@@ -14,7 +14,7 @@ if [[ ! -d $upstream_dir ]]; then
   git clone --quiet --depth 1 --branch "$DEMO_VERSION" "$DEMO_REPO" "$upstream_dir"
 fi
 
-export OTEL_TUI_PORT=${OTEL_TUI_PORT:-4318}
+export OTEL_TUI_HTTP_PORT=${OTEL_TUI_HTTP_PORT:-4318}
 export OTEL_COLLECTOR_CONFIG_EXTRAS="$demo_dir/otelcol-config.yml"
 
 compose() {
@@ -32,7 +32,7 @@ compose() {
 case ${1:-} in
   up)
     compose up --detach --remove-orphans
-    echo "Sending telemetry to otel-tui on port $OTEL_TUI_PORT."
+    echo "Sending telemetry to otel-tui on port $OTEL_TUI_HTTP_PORT."
     echo "Shop: http://localhost:8080, load generator: http://localhost:8080/loadgen/,"
     echo "feature flags (failure scenarios): http://localhost:8080/feature/"
     ;;

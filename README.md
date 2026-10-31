@@ -2,7 +2,7 @@
 
 A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
-Send it data over OTLP/HTTP and browse it in your terminal.
+Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
 ![Traces view listing root traces with service, span count, errors, and duration](docs/traces-view.png)
 
@@ -40,13 +40,15 @@ bun install
 bun run start
 ```
 
-Point your OTLP/HTTP exporter at `http://localhost:4318`. Data lives in memory
-and auth is off, so it only suits local use.
+Point your OTLP exporter at `http://localhost:4318` for OTLP/HTTP or
+`http://localhost:4317` for OTLP/gRPC. Data lives in memory and auth is off, so
+it only suits local use.
 
-| Variable                     | Default | Meaning                      |
-| ---------------------------- | ------- | ---------------------------- |
-| `OTEL_TUI_PORT`              | `4318`  | Port the receiver listens on |
-| `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept   |
+| Variable                     | Default | Meaning                    |
+| ---------------------------- | ------- | -------------------------- |
+| `OTEL_TUI_HTTP_PORT`         | `4318`  | Port for OTLP/HTTP         |
+| `OTEL_TUI_GRPC_PORT`         | `4317`  | Port for OTLP/gRPC         |
+| `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept |
 
 ## Development
 
@@ -63,8 +65,8 @@ For realistic data, `bun run demo:up` runs the
 [OpenTelemetry Demo](https://opentelemetry.io/docs/demo/) in Docker: an online
 shop of about 20 services in different languages, with a load generator and
 feature flags that inject failures. Its collector exports everything to
-otel-tui on `OTEL_TUI_PORT`. It needs about 6 GB of memory for Docker; stop it
-with `bun run demo:down`.
+otel-tui on `OTEL_TUI_HTTP_PORT`. It needs about 6 GB of memory for Docker; stop
+it with `bun run demo:down`.
 
 ```shell
 bun run check

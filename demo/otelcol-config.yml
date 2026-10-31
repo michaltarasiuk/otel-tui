@@ -2,7 +2,7 @@
 # replace their exporter lists, so the demo's own debug exporter is dropped.
 exporters:
   otlp_http/otel-tui:
-    endpoint: http://host.docker.internal:${env:OTEL_TUI_PORT}
+    endpoint: http://host.docker.internal:${env:OTEL_TUI_HTTP_PORT}
 
 service:
   pipelines:

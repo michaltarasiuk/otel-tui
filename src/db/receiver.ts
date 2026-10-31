@@ -4,7 +4,10 @@ import { z } from "zod";
 import { MILLISECONDS_PER_SECOND } from "../utils/time-units.ts";
 import ATTRIBUTE_ENTRIES_SQL from "./attribute-entries.sql" with { type: "text" };
 
-const OtlpServeRow = z.object({ listen_url: z.url() });
+const OtlpServeRows = z.tuple([
+  z.object({ transport: z.literal("http"), listen_url: z.url() }),
+  z.object({ transport: z.literal("grpc"), listen_url: z.url() }),
+]);
 
 const RETENTION_TIMES = {
   otlp_traces: "start_time_unix_nano",
@@ -19,12 +22,18 @@ const HOST = "127.0.0.1";
 const SEAL_MAX_AGE_MS = 500;
 export const PRUNE_INTERVAL_MS = 30 * MILLISECONDS_PER_SECOND;
 
+export interface ReceiverUrls {
+  http: string;
+  grpc: string;
+}
+
 interface ReceiverOptions {
-  port: number;
+  httpPort: number;
+  grpcPort: number;
   retentionMs: number;
 }
 
-export async function startReceiver({ port, retentionMs }: ReceiverOptions) {
+export async function startReceiver({ httpPort, grpcPort, retentionMs }: ReceiverOptions) {
   const instance = await DuckDBInstance.create(":memory:");
   const control = await instance.connect();
 
@@ -32,14 +41,21 @@ export async function startReceiver({ port, retentionMs }: ReceiverOptions) {
   await control.run("LOAD otlp");
   await control.run(ATTRIBUTE_ENTRIES_SQL);
 
-  const uri = `otlp:${HOST}:${port}`;
   const reader = await control.runAndReadAll(
-    `SELECT listen_url FROM otlp_serve($uri, disable_auth := true, seal_max_age_ms := $sealMaxAgeMs)`,
-    { uri, sealMaxAgeMs: SEAL_MAX_AGE_MS },
+    `SELECT transport, listen_url FROM otlp_serve(
+      [$httpUri, $grpcUri],
+      transport := ['http', 'grpc'],
+      disable_auth := true,
+      seal_max_age_ms := $sealMaxAgeMs
+    )`,
+    {
+      httpUri: `otlp:${HOST}:${httpPort}`,
+      grpcUri: `otlp:${HOST}:${grpcPort}`,
+      sealMaxAgeMs: SEAL_MAX_AGE_MS,
+    },
   );
-
-  const [otlpServeRow] = reader.getRowObjectsJS();
-  const { listen_url: url } = OtlpServeRow.parse(otlpServeRow);
+  const [http, grpc] = OtlpServeRows.parse(reader.getRowObjectsJS());
+  const urls: ReceiverUrls = { http: http.listen_url, grpc: grpc.listen_url };
 
   const connections = new Set<DuckDBConnection>();
 
@@ -69,7 +85,7 @@ export async function startReceiver({ port, retentionMs }: ReceiverOptions) {
   async function close() {
     clearInterval(pruneInterval);
     await pruning;
-    await control.run("SELECT * FROM otlp_stop($uri)", { uri });
+    await control.run("SELECT * FROM otlp_stop()");
     for (const connection of connections) {
       connection.closeSync();
     }
@@ -78,7 +94,7 @@ export async function startReceiver({ port, retentionMs }: ReceiverOptions) {
   }
 
   return {
-    url,
+    urls,
     connect,
     [Symbol.asyncDispose]: close,
   };

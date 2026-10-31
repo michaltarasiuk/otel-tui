@@ -10,6 +10,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 
+import type { ReceiverUrls } from "../db/receiver.ts";
 import { App } from "./app.tsx";
 import { ConnectionContext } from "./connection.ts";
 
@@ -39,14 +40,14 @@ export async function waitForInFlightQueries(queryClient: QueryClient) {
 interface TuiRootProps {
   queryClient: QueryClient;
   connection: DuckDBConnection;
-  receiverUrl: string;
+  receiverUrls: ReceiverUrls;
 }
 
-export function TuiRoot({ queryClient, connection, receiverUrl }: TuiRootProps) {
+export function TuiRoot({ queryClient, connection, receiverUrls }: TuiRootProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ConnectionContext value={connection}>
-        <App receiverUrl={receiverUrl} />
+        <App receiverUrls={receiverUrls} />
       </ConnectionContext>
     </QueryClientProvider>
   );
@@ -54,10 +55,10 @@ export function TuiRoot({ queryClient, connection, receiverUrl }: TuiRootProps) 
 
 interface TuiOptions {
   connection: DuckDBConnection;
-  receiverUrl: string;
+  receiverUrls: ReceiverUrls;
 }
 
-export async function startTui({ connection, receiverUrl }: TuiOptions) {
+export async function startTui({ connection, receiverUrls }: TuiOptions) {
   const renderer = await createCliRenderer(RENDERER_CONFIG);
   const keymap = createDefaultOpenTuiKeymap(renderer);
 
@@ -71,7 +72,7 @@ export async function startTui({ connection, receiverUrl }: TuiOptions) {
 
   createRoot(renderer).render(
     <KeymapProvider keymap={keymap}>
-      <TuiRoot queryClient={queryClient} connection={connection} receiverUrl={receiverUrl} />
+      <TuiRoot queryClient={queryClient} connection={connection} receiverUrls={receiverUrls} />
     </KeymapProvider>,
   );
 

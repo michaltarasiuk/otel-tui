@@ -3,4 +3,4 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     environment:
-      - OTEL_TUI_PORT
+      - OTEL_TUI_HTTP_PORT

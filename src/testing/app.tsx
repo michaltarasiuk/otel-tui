@@ -11,7 +11,7 @@ export async function renderApp(receiver: TestReceiver, size = APP_SIZE) {
   const connection = await receiver.connect();
 
   const screen = await render(
-    <TuiRoot queryClient={queryClient} connection={connection} receiverUrl={receiver.url} />,
+    <TuiRoot queryClient={queryClient} connection={connection} receiverUrls={receiver.urls} />,
     size,
   );
 
