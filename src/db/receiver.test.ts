@@ -1,5 +1,4 @@
 import { afterEach, expect, jest, mock, spyOn, test } from "bun:test";
-import { connect, type IncomingHttpHeaders } from "node:http2";
 
 import type { DuckDBConnection } from "@duckdb/node-api";
 
@@ -20,9 +19,7 @@ const TABLES = [
 const RETENTION_MS = MILLISECONDS_PER_MINUTE;
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
-const GRPC_FRAME_PREFIX_BYTES = 5;
-const EMPTY_GRPC_REQUEST = new Uint8Array(GRPC_FRAME_PREFIX_BYTES);
-const GRPC_STATUS_OK = "0";
+const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
 
 async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   const end = new Date(time.getTime() + 1);
@@ -74,29 +71,6 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   );
 }
 
-async function exportEmptyLogsOverGrpc(url: string) {
-  const session = connect(url);
-  return new Promise((resolve, reject) => {
-    function resolveStatus(headers: IncomingHttpHeaders) {
-      const status = headers["grpc-status"];
-      if (status !== undefined) {
-        resolve(status);
-      }
-    }
-    session.on("error", (error) => reject(error));
-    session
-      .request({
-        ":method": "POST",
-        ":path": "/opentelemetry.proto.collector.logs.v1.LogsService/Export",
-        "content-type": "application/grpc",
-      })
-      .on("response", (headers) => resolveStatus(headers))
-      .on("trailers", (trailers) => resolveStatus(trailers))
-      .on("error", (error) => reject(error))
-      .end(EMPTY_GRPC_REQUEST);
-  }).finally(() => session.close());
-}
-
 async function rowCounts(connection: DuckDBConnection) {
   const reader = await connection.runAndReadAll(
     TABLES.map(
@@ -140,7 +114,7 @@ test("listens for OTLP/HTTP and OTLP/gRPC on the IPv4 loopback address", async (
 test("accepts OTLP/gRPC exports", async () => {
   await using receiver = await startTestReceiver();
 
-  expect(await exportEmptyLogsOverGrpc(receiver.urls.grpc)).toBe(GRPC_STATUS_OK);
+  await receiver.sendGrpc(LOGS_EXPORT);
 });
 
 test("stores every signal where its connections can query it", async () => {
@@ -207,5 +181,5 @@ test("closes its connections and stops listening when disposed", async () => {
 
   expect(connection.run("SELECT 1")).rejects.toThrow("connection disconnected");
   expect(fetch(`${receiver.urls.http}/v1/logs`, { method: "POST", body: "{}" })).rejects.toThrow();
-  expect(exportEmptyLogsOverGrpc(receiver.urls.grpc)).rejects.toThrow();
+  expect(receiver.sendGrpc(LOGS_EXPORT)).rejects.toThrow();
 });

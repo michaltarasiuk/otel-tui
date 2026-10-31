@@ -1,7 +1,11 @@
+import { connect, type IncomingHttpHeaders } from "node:http2";
+
 import { startReceiver } from "../db/receiver.ts";
 import { MILLISECONDS_PER_HOUR } from "../utils/time-units.ts";
 
-const DEFAULT_RETENTION_MS = MILLISECONDS_PER_HOUR;
+const GRPC_FRAME_PREFIX_BYTES = 5;
+const EMPTY_GRPC_REQUEST = new Uint8Array(GRPC_FRAME_PREFIX_BYTES);
+const GRPC_STATUS_OK = "0";
 
 function freePort() {
   const listener = Bun.listen({ hostname: "127.0.0.1", port: 0, socket: { data() {} } });
@@ -15,7 +19,7 @@ interface TestReceiverOptions {
 }
 
 export async function startTestReceiver({
-  retentionMs = DEFAULT_RETENTION_MS,
+  retentionMs = MILLISECONDS_PER_HOUR,
 }: TestReceiverOptions = {}) {
   const receiver = await startReceiver({
     httpPort: freePort(),
@@ -37,10 +41,42 @@ export async function startTestReceiver({
     await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
   }
 
+  async function sendGrpc(method: string) {
+    const session = connect(receiver.urls.grpc);
+    try {
+      const status = await new Promise((resolve, reject) => {
+        function resolveStatus(headers: IncomingHttpHeaders) {
+          const status = headers["grpc-status"];
+          if (status !== undefined) {
+            resolve(status);
+          }
+        }
+        session.on("error", (error) => reject(error));
+        session
+          .request({
+            ":method": "POST",
+            ":path": method,
+            "content-type": "application/grpc",
+          })
+          .on("response", (headers) => resolveStatus(headers))
+          .on("trailers", (trailers) => resolveStatus(trailers))
+          .on("error", (error) => reject(error))
+          .end(EMPTY_GRPC_REQUEST);
+      });
+      if (status !== GRPC_STATUS_OK) {
+        throw new Error(`gRPC ${method} failed with status ${status}`);
+      }
+    } finally {
+      session.close();
+    }
+    await connection.run("SELECT * FROM otlp_flush($uri)", { uri });
+  }
+
   return {
     urls: receiver.urls,
     connect: () => receiver.connect(),
     sendHttp,
+    sendGrpc,
     [Symbol.asyncDispose]: () => receiver[Symbol.asyncDispose](),
   };
 }
