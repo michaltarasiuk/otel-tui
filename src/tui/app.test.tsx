@@ -10,19 +10,27 @@ import { THEME } from "./theme.ts";
 
 const TAB_NAMES = ["Traces", "Metrics", "Logs"];
 
-function tabStyles({ lines }: CapturedFrame) {
-  const [tabBar] = lines;
-  return Object.fromEntries(
-    (tabBar?.spans ?? [])
-      .filter((span) => TAB_NAMES.includes(span.text.trim()))
-      .map((span) => [
-        span.text.trim(),
-        {
-          highlighted: span.bg.equals(RGBA.fromHex(THEME.backgroundSelected)),
-          fg: span.fg.equals(RGBA.fromHex(THEME.text)) ? "text" : "muted",
-        },
-      ]),
-  );
+const SELECTED_BACKGROUND = RGBA.fromHex(THEME.backgroundSelected);
+const TEXT_FOREGROUND = RGBA.fromHex(THEME.text);
+
+interface TabStyle {
+  highlighted: boolean;
+  fg: "text" | "muted";
+}
+
+function tabStyles({ lines: [tabBar] }: CapturedFrame) {
+  const styles: Record<string, TabStyle> = {};
+  for (const span of tabBar?.spans ?? []) {
+    const name = span.text.trim();
+    if (!TAB_NAMES.includes(name)) {
+      continue;
+    }
+    styles[name] = {
+      highlighted: span.bg.equals(SELECTED_BACKGROUND),
+      fg: span.fg.equals(TEXT_FOREGROUND) ? "text" : "muted",
+    };
+  }
+  return styles;
 }
 
 function footer(frame: string) {
