@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## Changes
+
+- When the existing code makes a change awkward, step back and fix the code instead of working around it. Rename, reshape, or move whatever is in the way, even if it sits outside the files the task names.
+- Treat existing code as open to change. A workaround that leaves it untouched costs more over time than the refactor would.
+- Commit the refactor on its own, before the change it makes possible.
+
 ## Comments
 
 - Prefer a name that carries the reason over a comment: a named constant for a value, a named function for a step.
