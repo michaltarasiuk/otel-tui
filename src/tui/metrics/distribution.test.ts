@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   addDistributions,
   bucketsOf,
-  coarsen,
+  limitBuckets,
   type Distribution,
   explicitBuckets,
   exponentialBuckets,
@@ -195,7 +195,7 @@ describe("hasNegativeCounts", () => {
   });
 });
 
-describe("coarsen", () => {
+describe("limitBuckets", () => {
   function contiguous(first: number, last: number, count: number) {
     return Object.fromEntries(
       Array.from({ length: last - first + 1 }, (_, offset) => [first + offset, count]),
@@ -203,23 +203,23 @@ describe("coarsen", () => {
   }
 
   test("halves exponential resolution until the buckets fit", () => {
-    const coarsened = coarsen(exponential(3, contiguous(0, 19, 1)), 16);
+    const limited = limitBuckets(exponential(3, contiguous(0, 19, 1)), 16);
 
-    expect(coarsened.buckets).toEqual(exponential(2, contiguous(0, 9, 2)).buckets);
+    expect(limited.buckets).toEqual(exponential(2, contiguous(0, 9, 2)).buckets);
   });
 
   test("counts negative and positive buckets together", () => {
     const distribution = exponential(0, contiguous(0, 9, 1), { negative: contiguous(0, 9, 1) });
-    const coarsened = coarsen(distribution, 16);
+    const limited = limitBuckets(distribution, 16);
 
-    expect(coarsened.buckets).toMatchObject({ scale: -1 });
-    expect(bucketsOf(coarsened)).toHaveLength(5 + 1 + 5);
+    expect(limited.buckets).toMatchObject({ scale: -1 });
+    expect(bucketsOf(limited)).toHaveLength(5 + 1 + 5);
   });
 
   test("keeps bucket boundaries aligned for values below one", () => {
-    const coarsened = coarsen(exponential(0, contiguous(-4, 15, 1)), 16);
+    const limited = limitBuckets(exponential(0, contiguous(-4, 15, 1)), 16);
 
-    expect(bucketsOf(coarsened).slice(1, 3)).toEqual([
+    expect(bucketsOf(limited).slice(1, 3)).toEqual([
       { lower: 1 / 16, upper: 1 / 4, count: 2 },
       { lower: 1 / 4, upper: 1, count: 2 },
     ]);
@@ -232,6 +232,6 @@ describe("coarsen", () => {
       Array.from({ length: bounds.length + 1 }, () => 1),
     );
 
-    expect(coarsen(distribution, 16)).toEqual(distribution);
+    expect(limitBuckets(distribution, 16)).toEqual(distribution);
   });
 });

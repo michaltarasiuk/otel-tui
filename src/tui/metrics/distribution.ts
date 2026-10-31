@@ -173,7 +173,7 @@ function indexRange(counts: Map<number, number>) {
   return Array.from({ length: Math.max(...indexes) - first + 1 }, (_, offset) => first + offset);
 }
 
-export function coarsen(distribution: Distribution, maxBuckets: number) {
+export function limitBuckets(distribution: Distribution, maxBuckets: number) {
   let { buckets } = distribution;
   while (
     buckets.kind === "exponential" &&
