@@ -44,11 +44,11 @@ const integerFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigit
 const fractionFormatter = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 3 });
 
 function formatNumber(value: number) {
-  const magnitude = Math.abs(value);
-  if (magnitude >= COMPACT_THRESHOLD) {
+  const absoluteValue = Math.abs(value);
+  if (absoluteValue >= COMPACT_THRESHOLD) {
     return compactFormatter.format(value);
   }
-  if (magnitude >= GROUPING_THRESHOLD || Number.isInteger(value)) {
+  if (absoluteValue >= GROUPING_THRESHOLD || Number.isInteger(value)) {
     return integerFormatter.format(value);
   }
   return fractionFormatter.format(value);
