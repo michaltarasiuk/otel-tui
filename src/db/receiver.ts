@@ -65,20 +65,27 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     return connection;
   }
 
-  async function prune() {
-    for (const [table, time] of Object.entries(RETENTION_TIMES)) {
-      await control.run(
-        `DELETE FROM ${table} WHERE ${time} < (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)`,
-        { retentionMs },
-      );
+  async function pruneExpiredTelemetry() {
+    try {
+      for (const [table, time] of Object.entries(RETENTION_TIMES)) {
+        await control.run(
+          `DELETE FROM ${table} WHERE ${time} < (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)`,
+          { retentionMs },
+        );
+      }
+    } catch (error) {
+      console.error("Failed to prune expired telemetry", error);
     }
   }
 
   let pruning: Promise<void> | undefined;
   const pruneInterval = setInterval(() => {
-    pruning ??= prune()
-      .catch((error) => console.error("Failed to prune expired telemetry", error))
-      .finally(() => (pruning = undefined));
+    if (pruning !== undefined) {
+      return;
+    }
+    pruning = pruneExpiredTelemetry().finally(() => {
+      pruning = undefined;
+    });
   }, PRUNE_INTERVAL_MS);
   pruneInterval.unref();
 
