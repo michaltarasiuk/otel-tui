@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { clamp } from "../utils/clamp.ts";
+import { wrapIndex } from "../utils/wrap-index.ts";
 
 interface ListStateOptions<T> {
   items: T[];
@@ -17,14 +18,22 @@ export function useListState<T>({ items, getKey }: ListStateOptions<T>) {
     );
   }
 
-  function itemAt(index: number) {
-    return items[clamp(index, 0, items.length - 1)];
+  function select(pick: (selectedIndex: number) => T | undefined) {
+    setSelectedKey((key) => {
+      const item = pick(indexOf(key));
+      return item === undefined ? key : getKey(item);
+    });
   }
 
-  function select(pick: (selectedIndex: number) => T | undefined) {
-    setSelectedKey((selectedKey) => {
-      const item = pick(indexOf(selectedKey));
-      return item === undefined ? selectedKey : getKey(item);
+  function selectMatching(step: 1 | -1, predicate: (item: T) => boolean) {
+    select((from) => {
+      for (let distance = 1; distance <= items.length; distance++) {
+        const item = items[wrapIndex(from + step * distance, items.length)];
+        if (item !== undefined && predicate(item)) {
+          return item;
+        }
+      }
+      return undefined;
     });
   }
 
@@ -36,24 +45,16 @@ export function useListState<T>({ items, getKey }: ListStateOptions<T>) {
     selectedIndex,
     selectedItem: items[selectedIndex],
     selectIndex(index: number) {
-      select(() => itemAt(index));
+      select(() => items[clamp(index, 0, items.length - 1)]);
     },
     moveBy(offset: number) {
-      select((current) => itemAt(current + offset));
+      select((from) => items[clamp(from + offset, 0, items.length - 1)]);
     },
     selectNext(predicate: (item: T) => boolean) {
-      select(
-        (current) =>
-          items.find((item, index) => index > current && predicate(item)) ??
-          items.find((item) => predicate(item)),
-      );
+      selectMatching(1, predicate);
     },
     selectPrevious(predicate: (item: T) => boolean) {
-      select(
-        (current) =>
-          items.findLast((item, index) => index < current && predicate(item)) ??
-          items.findLast((item) => predicate(item)),
-      );
+      selectMatching(-1, predicate);
     },
   };
 }
