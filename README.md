@@ -8,6 +8,8 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
 ![Trace details with a span waterfall and the selected span's attributes, resource, and scope](docs/trace-details.png)
 
+![Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource](docs/metrics-list.png)
+
 ![Metric details with a series table, a value chart, and the selected series' resource and scope](docs/metrics-view.png)
 
 ![Logs view with severity, service, and body columns and the selected log's attributes and resource](docs/logs-view.png)
