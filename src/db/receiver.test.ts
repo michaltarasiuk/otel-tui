@@ -16,10 +16,12 @@ const TABLES = [
   "otlp_metrics_exp_histogram",
 ];
 
+const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
+
 const RETENTION_MS = MILLISECONDS_PER_MINUTE;
+
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
-const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
 
 async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   const end = new Date(time.getTime() + 1);
