@@ -43,7 +43,7 @@ test("starts on the traces tab with the tab bar focused", async () => {
 
   await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
 
-  expect(await app.waitForSelection("Traces")).toBe("Traces Metrics Logs");
+  expect(await app.waitForSelection("Traces")).toStartWith("Traces Metrics Logs OTLP/HTTP");
   expect(tabStyles(app.captureSpans())).toEqual({
     Traces: { highlighted: true, fg: "text" },
     Metrics: { highlighted: false, fg: "muted" },
@@ -72,8 +72,8 @@ test("moves focus between the tab bar and the view with tab and shift+tab", asyn
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
   await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
-  expect(footer(await app.waitForFrame((frame) => frame.includes("tab next region")))).toStartWith(
-    "tab next region OTLP/HTTP",
+  expect(footer(await app.waitForFrame((frame) => frame.includes("tab next region")))).toBe(
+    "tab next region",
   );
 
   app.mockInput.pressTab();
@@ -108,17 +108,18 @@ test("keeps showing the current tab while the view has focus", async () => {
   });
 });
 
-test("shows where the receiver listens in a padded footer", async () => {
+test("shows where the receiver listens beside the tabs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
 
   const frame = await app.waitForFrame((frame) => frame.includes("tab next region"));
 
-  expect(frame.split("\n").findLast((line) => line.trim() !== "")).toMatch(
+  expect(frame.split("\n")[0]).toMatch(
     new RegExp(
-      `^ tab next region +OTLP/HTTP ${new URL(receiver.urls.http).host} · OTLP/gRPC ${new URL(receiver.urls.grpc).host} $`,
+      `^ Traces +Metrics +Logs +OTLP/HTTP ${new URL(receiver.urls.http).host} · OTLP/gRPC ${new URL(receiver.urls.grpc).host} $`,
     ),
   );
+  expect(footer(frame)).toBe("tab next region");
 });
 
 test("hints the view's described keys, the selected row's actions first", async () => {
@@ -144,8 +145,8 @@ test("hints the view's described keys, the selected row's actions first", async 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
 
-  expect(footer(frame)).toStartWith(
-    "return open / search right range s status o sort shift+o reverse tab next region OTLP/HTTP",
+  expect(footer(frame)).toBe(
+    "return open / search right range s status o sort shift+o reverse tab next region",
   );
 });
 

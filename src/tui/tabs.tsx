@@ -13,6 +13,8 @@ const TABS = [
   { name: "Logs", description: "", value: "logs" },
 ] as const satisfies TabSelectOption[];
 
+const TAB_WIDTH = 20;
+
 export function Tabs() {
   const focused = useFocused();
   const { tab, setTab } = useNavigation();
@@ -28,6 +30,9 @@ export function Tabs() {
       ref={tabsRef}
       focused={focused}
       options={TABS}
+      tabWidth={TAB_WIDTH}
+      width={TABS.length * TAB_WIDTH}
+      flexShrink={0}
       textColor={THEME.textMuted}
       selectedTextColor={THEME.text}
       selectedBackgroundColor={focused ? THEME.backgroundSelected : THEME.background}
