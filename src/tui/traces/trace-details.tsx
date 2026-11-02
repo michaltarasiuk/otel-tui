@@ -14,7 +14,7 @@ interface TraceDetailsProps {
 
 export function TraceDetails({ traceId }: TraceDetailsProps) {
   const focused = useFocused();
-  const { canGoBack, closeTrace, openLogs, goBack } = useNavigation();
+  const { openSpanId, canGoBack, closeTrace, openLogs, goBack } = useNavigation();
 
   const traceSpans = useTraceSpans(traceId);
 
@@ -73,7 +73,12 @@ export function TraceDetails({ traceId }: TraceDetailsProps) {
     return (
       <>
         <TraceHeader traceId={traceId} root={root} spans={spans} durationMs={durationMs} />
-        <SpanTable traceId={traceId} spans={spans} traceDurationMs={durationMs} />
+        <SpanTable
+          traceId={traceId}
+          initialSpanId={openSpanId}
+          spans={spans}
+          traceDurationMs={durationMs}
+        />
       </>
     );
   }

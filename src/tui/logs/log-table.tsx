@@ -25,6 +25,7 @@ export function LogTable({ logs }: LogTableProps) {
 
   const selectedLog = list.selectedItem;
   const selectedTraceId = selectedLog?.trace_id ?? null;
+  const selectedSpanId = selectedLog?.span_id ?? undefined;
   const hasErrors = logs.some((log) => isErrorLevel(log.severity));
 
   useBindings(
@@ -53,7 +54,7 @@ export function LogTable({ logs }: LogTableProps) {
           enabled: selectedTraceId !== null,
           run() {
             if (selectedTraceId !== null) {
-              openTrace(selectedTraceId);
+              openTrace(selectedTraceId, selectedSpanId);
             }
           },
         },
@@ -75,7 +76,16 @@ export function LogTable({ logs }: LogTableProps) {
         { key: "t", cmd: "logs.toggle-trace" },
       ],
     }),
-    [focused, hasErrors, list, selectedTraceId, logsTraceId, setLogsTraceId, openTrace],
+    [
+      focused,
+      hasErrors,
+      list,
+      selectedTraceId,
+      selectedSpanId,
+      logsTraceId,
+      setLogsTraceId,
+      openTrace,
+    ],
   );
 
   return (

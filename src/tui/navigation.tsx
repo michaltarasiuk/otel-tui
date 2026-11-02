@@ -5,6 +5,7 @@ import type { Tab } from "./tabs.tsx";
 interface Location {
   tab: Tab;
   openTraceId: string | undefined;
+  openSpanId: string | undefined;
   logsTraceId: string | undefined;
 }
 
@@ -16,15 +17,20 @@ interface History {
 interface Navigation extends Location {
   canGoBack: boolean;
   setTab: (tab: Tab) => void;
-  openTrace: (traceId: string) => void;
+  openTrace: (traceId: string, spanId?: string) => void;
   closeTrace: () => void;
   openLogs: (traceId: string) => void;
   setLogsTraceId: (traceId: string | undefined) => void;
   goBack: () => void;
 }
 
+const CLOSED_TRACE = {
+  openTraceId: undefined,
+  openSpanId: undefined,
+};
+
 const START_HISTORY: History = {
-  location: { tab: "traces", openTraceId: undefined, logsTraceId: undefined },
+  location: { tab: "traces", ...CLOSED_TRACE, logsTraceId: undefined },
   previous: [],
 };
 
@@ -68,11 +74,11 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         setTab(tab) {
           setHistory((history) => switchTab(history, tab));
         },
-        openTrace(traceId) {
-          setHistory((history) => push(history, { tab: "traces", openTraceId: traceId }));
+        openTrace(openTraceId, openSpanId) {
+          setHistory((history) => push(history, { tab: "traces", openTraceId, openSpanId }));
         },
         closeTrace() {
-          setHistory((history) => replace(history, { openTraceId: undefined }));
+          setHistory((history) => replace(history, CLOSED_TRACE));
         },
         openLogs(traceId) {
           setHistory((history) => push(history, { tab: "logs", logsTraceId: traceId }));

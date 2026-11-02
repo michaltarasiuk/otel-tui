@@ -9,16 +9,18 @@ import type { Span } from "./span.ts";
 
 interface SpanTableProps {
   traceId: string;
+  initialSpanId: string | undefined;
   spans: Span[];
   traceDurationMs: number;
 }
 
-export function SpanTable({ traceId, spans, traceDurationMs }: SpanTableProps) {
+export function SpanTable({ traceId, initialSpanId, spans, traceDurationMs }: SpanTableProps) {
   const focused = useFocused();
 
   const list = useListState({
     items: spans,
     getKey: (span) => span.span_id,
+    initialKey: initialSpanId,
   });
 
   const selectedSpan = list.selectedItem;

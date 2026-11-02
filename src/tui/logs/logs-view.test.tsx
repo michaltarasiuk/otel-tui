@@ -323,6 +323,50 @@ test("opens the selected log's trace in the traces view and goes back to the log
   expect(await app.waitForSelection("order placed")).toBe(ORDER_ROW);
 });
 
+test("selects the log's span in the trace it opens", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest(
+      {
+        service: "checkout",
+        spans: [
+          {
+            traceId: checkoutTraceId,
+            spanId: orderSpanId,
+            name: "POST /checkout",
+            start: at(0),
+            end: at(2500),
+          },
+        ],
+      },
+      {
+        service: "payment",
+        spans: [
+          {
+            traceId: checkoutTraceId,
+            spanId: chargeSpanId,
+            parentSpanId: orderSpanId,
+            name: "charge",
+            start: at(500),
+            end: at(2000),
+          },
+        ],
+      },
+    ),
+  );
+  await using app = await renderLogList(receiver);
+  app.mockInput.pressKey("e");
+  await app.waitForSelection(FATAL_ROW);
+  app.mockInput.pressKey("e");
+  await app.waitForSelection(ERROR_ROW);
+
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => frame.includes("2 spans"));
+
+  expect(await app.waitForSelection("charge")).toBe("● payment charge 1.50s");
+});
+
 test("lists identical logs separately and selects each in turn", async () => {
   await using receiver = await startTestReceiver();
   const repeated = { time: at(1000), severityNumber: SEVERITY_NUMBER.info, body: "heartbeat" };
