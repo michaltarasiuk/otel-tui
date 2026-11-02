@@ -10,8 +10,8 @@ import { THEME } from "./theme.ts";
 
 const TAB_NAMES = ["Traces", "Metrics", "Logs"];
 
-const SELECTED_BACKGROUND = RGBA.fromHex(THEME.backgroundSelected);
-const TEXT_FOREGROUND = RGBA.fromHex(THEME.text);
+const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
+const textForeground = RGBA.fromHex(THEME.text);
 
 interface TabStyle {
   highlighted: boolean;
@@ -26,8 +26,8 @@ function tabStyles({ lines: [tabBar] }: CapturedFrame) {
       continue;
     }
     styles[name] = {
-      highlighted: span.bg.equals(SELECTED_BACKGROUND),
-      fg: span.fg.equals(TEXT_FOREGROUND) ? "text" : "muted",
+      highlighted: span.bg.equals(selectedBackground),
+      fg: span.fg.equals(textForeground) ? "text" : "muted",
     };
   }
   return styles;

@@ -18,13 +18,13 @@ const CHART_HEIGHT = 8;
 const TIME_AXIS_HEIGHT = 1;
 const MIN_WINDOW_MS = MILLISECONDS_PER_MINUTE;
 
-const BLACK = RGBA.fromHex("#000000");
-const WHITE = RGBA.fromHex("#FFFFFF");
+const black = RGBA.fromHex("#000000");
+const white = RGBA.fromHex("#FFFFFF");
 
 const PERCENTILE_SHADES = {
-  p50: { toward: BLACK, amount: 0.4 },
-  p95: { toward: BLACK, amount: 0 },
-  p99: { toward: WHITE, amount: 0.5 },
+  p50: { toward: black, amount: 0.4 },
+  p95: { toward: black, amount: 0 },
+  p99: { toward: white, amount: 0.5 },
 } satisfies Record<(typeof PERCENTILES)[number]["key"], { toward: RGBA; amount: number }>;
 
 function percentileColor(color: string, key: keyof typeof PERCENTILE_SHADES) {

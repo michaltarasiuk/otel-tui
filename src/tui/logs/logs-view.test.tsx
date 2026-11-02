@@ -5,16 +5,16 @@ import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "../../testing/otlp.
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
 import { panelLines, textLines } from "../../testing/render.tsx";
 
-const BASE_TIME = Date.parse("2026-10-28T12:00:00.000Z");
-const CHECKOUT_TRACE_ID = "2".repeat(32);
-const ORDER_SPAN_ID = "2a".repeat(8);
-const CHARGE_SPAN_ID = "2b".repeat(8);
+const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
+const checkoutTraceId = "2".repeat(32);
+const orderSpanId = "2a".repeat(8);
+const chargeSpanId = "2b".repeat(8);
 
 function at(ms: number) {
-  return new Date(BASE_TIME + ms);
+  return new Date(baseTime + ms);
 }
 
-const LOGS = logsRequest(
+const otlpLogs = logsRequest(
   {
     service: "checkout",
     attributes: { "host.name": "web-1" },
@@ -24,8 +24,8 @@ const LOGS = logsRequest(
         time: at(0),
         severityNumber: SEVERITY_NUMBER.info,
         body: "order placed",
-        traceId: CHECKOUT_TRACE_ID,
-        spanId: ORDER_SPAN_ID,
+        traceId: checkoutTraceId,
+        spanId: orderSpanId,
         attributes: { "order.id": "42" },
       },
     ],
@@ -38,16 +38,16 @@ const LOGS = logsRequest(
         severityNumber: SEVERITY_NUMBER.warn,
         severityText: "warning",
         body: "retrying charge",
-        traceId: CHECKOUT_TRACE_ID,
-        spanId: CHARGE_SPAN_ID,
+        traceId: checkoutTraceId,
+        spanId: chargeSpanId,
         attributes: { attempt: 2 },
       },
       {
         time: at(2000),
         severityNumber: SEVERITY_NUMBER.error,
         body: "charge failed",
-        traceId: CHECKOUT_TRACE_ID,
-        spanId: CHARGE_SPAN_ID,
+        traceId: checkoutTraceId,
+        spanId: chargeSpanId,
       },
     ],
   },
@@ -102,7 +102,7 @@ async function renderLogs(receiver: TestReceiver) {
 }
 
 async function renderLogList(receiver: TestReceiver) {
-  await receiver.sendHttp("/v1/logs", LOGS);
+  await receiver.sendHttp("/v1/logs", otlpLogs);
   const app = await renderLogs(receiver);
   await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
   return app;
@@ -135,7 +135,7 @@ test("shows the selected log's body, attributes, resource, and scope", async () 
   const frame = await app.waitForFrame((frame) => panelLines(frame).includes("shop 1.0.0"));
 
   expect(panelLines(frame)).toEqual([
-    `INFO ● checkout 12:00:00.000 ${CHECKOUT_TRACE_ID} ${ORDER_SPAN_ID}`,
+    `INFO ● checkout 12:00:00.000 ${checkoutTraceId} ${orderSpanId}`,
     "Body",
     "order placed",
     "Attributes",
@@ -216,7 +216,7 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
   await search("memory", [FATAL_ROW]);
   await search("order.id", [ORDER_ROW]);
   await search("payment", [ERROR_ROW, WARN_ROW]);
-  await search(CHECKOUT_TRACE_ID.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
+  await search(checkoutTraceId.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
 });
 
 test("keeps an applied search while browsing", async () => {
@@ -297,8 +297,8 @@ test("opens the selected log's trace in the traces view", async () => {
       service: "checkout",
       spans: [
         {
-          traceId: CHECKOUT_TRACE_ID,
-          spanId: ORDER_SPAN_ID,
+          traceId: checkoutTraceId,
+          spanId: orderSpanId,
           name: "POST /checkout",
           start: at(0),
           end: at(2500),
@@ -313,7 +313,7 @@ test("opens the selected log's trace in the traces view", async () => {
   app.mockInput.pressEnter();
   let frame = await app.waitForFrame((frame) => frame.includes("1 span"));
   expect(textLines(frame).slice(1, 3)).toEqual([
-    `POST /checkout ${CHECKOUT_TRACE_ID}`,
+    `POST /checkout ${checkoutTraceId}`,
     "● checkout 12:00:00.000 1 span 2.50s",
   ]);
 

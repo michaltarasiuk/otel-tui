@@ -5,13 +5,13 @@ import { metricsRequest, TEMPORALITY } from "../../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
 import { panelLines, textLines } from "../../testing/render.tsx";
 
-const BASE_TIME = Date.parse("2026-10-28T12:00:00.000Z");
+const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 const DETAILS_SIZE = { width: 120, height: 45 };
 const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 const METRIC_COUNT = / metrics? *$/m;
 
 function atSecond(seconds: number) {
-  return new Date(BASE_TIME + seconds * 1000);
+  return new Date(baseTime + seconds * 1000);
 }
 
 function routeRequests(route: string, values: number[]) {
@@ -23,7 +23,7 @@ function routeRequests(route: string, values: number[]) {
   }));
 }
 
-const METRICS = metricsRequest({
+const otlpMetrics = metricsRequest({
   service: "checkout",
   scope: { name: "shop", version: "1.0.0" },
   metrics: [
@@ -155,7 +155,7 @@ async function renderMetrics(receiver: TestReceiver, size?: { width: number; hei
 }
 
 async function renderMetricList(receiver: TestReceiver, size?: { width: number; height: number }) {
-  await receiver.sendHttp("/v1/metrics", METRICS);
+  await receiver.sendHttp("/v1/metrics", otlpMetrics);
   const app = await renderMetrics(receiver, size);
   await app.waitForFrame((frame) => metricRows(frame).length === BY_NAME.length);
   return app;

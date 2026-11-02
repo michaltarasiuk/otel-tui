@@ -9,12 +9,12 @@ import { panelLines, textLines } from "../../testing/render.tsx";
 import { collapseSpaces } from "../../utils/collapse-spaces.ts";
 import { serviceColor } from "../theme.ts";
 
-const BASE_TIME = Date.parse("2026-10-28T12:00:00.000Z");
-const CART_TRACE_ID = "1".repeat(32);
-const CHECKOUT_TRACE_ID = "2".repeat(32);
-const HEALTH_TRACE_ID = "3".repeat(32);
-const ROOTLESS_TRACE_ID = "4".repeat(32);
-const MISSING_PARENT_ID = "5".repeat(16);
+const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
+const cartTraceId = "1".repeat(32);
+const checkoutTraceId = "2".repeat(32);
+const healthTraceId = "3".repeat(32);
+const rootlessTraceId = "4".repeat(32);
+const missingParentId = "5".repeat(16);
 
 const CART_ROW = "12:00:00.000 ● frontend GET /cart 3 120.0ms";
 const CHECKOUT_ROW = "12:00:01.000 ● checkout POST /checkout 3 2 500.0ms";
@@ -22,17 +22,17 @@ const HEALTH_ROW = "12:00:02.000 ● frontend GET /health 1 1.0ms";
 const NEWEST_FIRST = [HEALTH_ROW, CHECKOUT_ROW, CART_ROW];
 
 function at(ms: number) {
-  return new Date(BASE_TIME + ms);
+  return new Date(baseTime + ms);
 }
 
-const TRACES = tracesRequest(
+const otlpTraces = tracesRequest(
   {
     service: "frontend",
     attributes: { "host.name": "web-1" },
     scope: { name: "shop", version: "1.0.0" },
     spans: [
       {
-        traceId: CART_TRACE_ID,
+        traceId: cartTraceId,
         spanId: "1a".repeat(8),
         name: "GET /cart",
         kind: SPAN_KIND.server,
@@ -41,7 +41,7 @@ const TRACES = tracesRequest(
         attributes: { "http.route": "/cart" },
       },
       {
-        traceId: HEALTH_TRACE_ID,
+        traceId: healthTraceId,
         spanId: "3a".repeat(8),
         name: "GET /health",
         start: at(2000),
@@ -53,7 +53,7 @@ const TRACES = tracesRequest(
     service: "cart",
     spans: [
       {
-        traceId: CART_TRACE_ID,
+        traceId: cartTraceId,
         spanId: "1b".repeat(8),
         parentSpanId: "1a".repeat(8),
         name: "GetCart",
@@ -67,7 +67,7 @@ const TRACES = tracesRequest(
         ],
       },
       {
-        traceId: CART_TRACE_ID,
+        traceId: cartTraceId,
         spanId: "1c".repeat(8),
         parentSpanId: "1b".repeat(8),
         name: "SELECT carts",
@@ -82,7 +82,7 @@ const TRACES = tracesRequest(
     service: "checkout",
     spans: [
       {
-        traceId: CHECKOUT_TRACE_ID,
+        traceId: checkoutTraceId,
         spanId: "2a".repeat(8),
         name: "POST /checkout",
         kind: SPAN_KIND.server,
@@ -90,7 +90,7 @@ const TRACES = tracesRequest(
         end: at(1450),
         status: { code: STATUS_CODE.error, message: "card declined" },
         links: [
-          { traceId: CART_TRACE_ID, spanId: "1a".repeat(8), attributes: { "link.reason": "cart" } },
+          { traceId: cartTraceId, spanId: "1a".repeat(8), attributes: { "link.reason": "cart" } },
         ],
       },
     ],
@@ -99,7 +99,7 @@ const TRACES = tracesRequest(
     service: "payment",
     spans: [
       {
-        traceId: CHECKOUT_TRACE_ID,
+        traceId: checkoutTraceId,
         spanId: "2b".repeat(8),
         parentSpanId: "2a".repeat(8),
         name: "charge",
@@ -114,7 +114,7 @@ const TRACES = tracesRequest(
     service: "worker",
     spans: [
       {
-        traceId: ROOTLESS_TRACE_ID,
+        traceId: rootlessTraceId,
         spanId: "4b".repeat(8),
         parentSpanId: "4a".repeat(8),
         name: "process order",
@@ -127,9 +127,9 @@ const TRACES = tracesRequest(
     service: "email",
     spans: [
       {
-        traceId: CHECKOUT_TRACE_ID,
+        traceId: checkoutTraceId,
         spanId: "2c".repeat(8),
-        parentSpanId: MISSING_PARENT_ID,
+        parentSpanId: missingParentId,
         name: "send receipt",
         kind: SPAN_KIND.consumer,
         start: at(1460),
@@ -171,7 +171,7 @@ function barExtent({ lines }: CapturedFrame, name: string, color: string) {
 }
 
 async function renderTraceList(receiver: TestReceiver) {
-  await receiver.sendHttp("/v1/traces", TRACES);
+  await receiver.sendHttp("/v1/traces", otlpTraces);
   const app = await renderApp(receiver);
   await app.waitForFrame((frame) => traceRows(frame).length === 3);
   app.mockInput.pressTab();
@@ -201,7 +201,7 @@ test("waits for traces before any arrive", async () => {
 
 test("lists traces whose root span arrived, newest first, with span and error counts", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.sendHttp("/v1/traces", TRACES);
+  await receiver.sendHttp("/v1/traces", otlpTraces);
   await using app = await renderApp(receiver);
 
   const frame = await app.waitForFrame((frame) => traceRows(frame).length === 3);
@@ -231,7 +231,7 @@ test("searches trace names, services, and IDs", async () => {
 
   app.mockInput.pressKey("/");
   await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
-  await app.mockInput.typeText(HEALTH_TRACE_ID.slice(0, 8));
+  await app.mockInput.typeText(healthTraceId.slice(0, 8));
   frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
   expect(traceRows(frame)).toEqual([HEALTH_ROW]);
 });
@@ -305,7 +305,7 @@ test("opens a trace as a span waterfall", async () => {
   const frame = await app.waitForFrame((frame) => spanRows(frame).length === 3);
 
   expect(textLines(frame).slice(1, 4)).toEqual([
-    `POST /checkout ${CHECKOUT_TRACE_ID}`,
+    `POST /checkout ${checkoutTraceId}`,
     "● checkout 12:00:01.000 3 spans 2 errors 500.0ms",
     "Service Name Duration 0 500.0ms",
   ]);
@@ -396,7 +396,7 @@ test("shows a span's links and status message", async () => {
     "● checkout server 12:00:01.000 +0µs 450.0ms",
     "card declined",
     "Links",
-    `${CART_TRACE_ID} ${"1a".repeat(8)}`,
+    `${cartTraceId} ${"1a".repeat(8)}`,
     "link.reason cart",
     "Resource",
     "service.name checkout",
@@ -412,7 +412,7 @@ test("points out a span whose parent never arrived", async () => {
   const frame = await app.waitForFrame((frame) => frame.includes("not received"));
 
   expect(textLines(frame)).toContain(
-    `● email consumer 12:00:01.460 +460.0ms 40.0ms parent ${MISSING_PARENT_ID} not received`,
+    `● email consumer 12:00:01.460 +460.0ms 40.0ms parent ${missingParentId} not received`,
   );
 });
 
@@ -488,7 +488,7 @@ test("scrolls the span panel down and back up", async () => {
       service: "checkout",
       spans: [
         {
-          traceId: CART_TRACE_ID,
+          traceId: cartTraceId,
           spanId: "1a".repeat(8),
           name: "GET /cart",
           start: at(0),
@@ -529,7 +529,7 @@ test("says when an open trace is no longer available", async () => {
 
   const connection = await receiver.connect();
   await connection.run("DELETE FROM otlp_traces WHERE trace_id = $traceId", {
-    traceId: CART_TRACE_ID,
+    traceId: cartTraceId,
   });
 
   await app.waitForFrame((frame) => frame.includes("This trace is no longer available"));

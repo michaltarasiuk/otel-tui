@@ -31,7 +31,7 @@ const BYTES_PER_UNIT: Record<string, number> = {
 const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"] as const;
 const BYTES_PER_STEP = 1024;
 
-const DIMENSIONLESS_UNITS = new Set(["", "1"]);
+const dimensionlessUnits = new Set(["", "1"]);
 const ANNOTATION_UNIT = /^\{[^}]*\}$/;
 const COMPACT_THRESHOLD = 1e6;
 const GROUPING_THRESHOLD = 1000;
@@ -84,7 +84,7 @@ export function formatMetricValue(value: number, unit: string): string {
   if (bytes !== undefined) {
     return formatBytes(value * bytes);
   }
-  if (DIMENSIONLESS_UNITS.has(unit) || ANNOTATION_UNIT.test(unit)) {
+  if (dimensionlessUnits.has(unit) || ANNOTATION_UNIT.test(unit)) {
     return formatNumber(value);
   }
   if (unit === "%") {

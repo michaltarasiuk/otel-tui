@@ -5,10 +5,7 @@ import { MILLISECONDS_PER_HOUR } from "../utils/time-units.ts";
 
 const GRPC_UNCOMPRESSED_FLAG = 0;
 const GRPC_ZERO_MESSAGE_LENGTH = [0, 0, 0, 0];
-const EMPTY_GRPC_MESSAGE_FRAME = new Uint8Array([
-  GRPC_UNCOMPRESSED_FLAG,
-  ...GRPC_ZERO_MESSAGE_LENGTH,
-]);
+const emptyGrpcMessageFrame = new Uint8Array([GRPC_UNCOMPRESSED_FLAG, ...GRPC_ZERO_MESSAGE_LENGTH]);
 const GRPC_STATUS_OK = "0";
 
 function freePort() {
@@ -69,7 +66,7 @@ export async function startTestReceiver({
           .on("response", (headers) => resolveStatus(headers))
           .on("trailers", (trailers) => resolveStatus(trailers))
           .on("error", (error) => reject(error))
-          .end(EMPTY_GRPC_MESSAGE_FRAME);
+          .end(emptyGrpcMessageFrame);
       });
       if (status !== GRPC_STATUS_OK) {
         throw new Error(`gRPC ${method} failed with status ${status}`);

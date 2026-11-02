@@ -40,7 +40,7 @@ function line(values: (number | null)[]) {
 }
 
 const SLOTS = 20;
-const STEP_WITH_GAP = [1, 1, 1, 1, ...Array<null>(8).fill(null), 3, 3, 3, 3];
+const stepWithGap = [1, 1, 1, 1, ...Array<null>(8).fill(null), 3, 3, 3, 3];
 
 test("draws a line in braille between labels for its highest and lowest values", async () => {
   await using chart = await renderChart([line(Array.from({ length: SLOTS }, (_, slot) => slot))]);
@@ -53,7 +53,7 @@ test("draws a line in braille between labels for its highest and lowest values",
 });
 
 test("breaks the line where values are missing for more than the gap slots", async () => {
-  await using chart = await renderChart([line(STEP_WITH_GAP)], {
+  await using chart = await renderChart([line(stepWithGap)], {
     gapSlots: 2,
     includeZero: true,
   });
@@ -62,7 +62,7 @@ test("breaks the line where values are missing for more than the gap slots", asy
 });
 
 test("joins the line across missing values within the gap slots", async () => {
-  await using chart = await renderChart([line(STEP_WITH_GAP)], {
+  await using chart = await renderChart([line(stepWithGap)], {
     gapSlots: 10,
     includeZero: true,
   });

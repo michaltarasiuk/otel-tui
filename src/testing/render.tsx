@@ -12,7 +12,7 @@ const FRAME_TIMEOUT_MS = 3000;
 const FRAME_POLL_INTERVAL_MS = 10;
 const BINDINGS_REGISTERED_AFTER_COMMIT_MS = 10;
 
-const SELECTED_BACKGROUND = RGBA.fromHex(THEME.backgroundSelected);
+const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
 const SCROLLBAR_CHARACTERS = /[\u2580-\u259F]/g;
 const FOOTER_LINES = 1;
 
@@ -97,7 +97,7 @@ export function panelLines(frame: string) {
 
 function selectedLines({ lines }: CapturedFrame) {
   return lines.flatMap(({ spans }, line) =>
-    spans.some((span) => span.bg.equals(SELECTED_BACKGROUND))
+    spans.some((span) => span.bg.equals(selectedBackground))
       ? [{ line, text: collapseSpaces(spans.map((span) => span.text).join("")) }]
       : [],
   );

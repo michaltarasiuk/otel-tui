@@ -4,7 +4,7 @@ import type { Metric, MetricType } from "./metric.ts";
 import { seriesStats, statKeys, statLabel } from "./series-stats.ts";
 import { HistogramSeries, NumberSeries } from "./series.ts";
 
-const SERIES_IDENTITY = {
+const seriesIdentity = {
   series_id: "1",
   scope_name: null,
   scope_version: null,
@@ -43,7 +43,7 @@ test("lists the stats that suit each metric type", () => {
 describe("seriesStats", () => {
   test("shows a gauge's last, lowest, and highest values in its unit", () => {
     const series = NumberSeries.parse({
-      ...SERIES_IDENTITY,
+      ...seriesIdentity,
       stats: { value: 1536, min: 512, max: 2048, latest_points: [] },
     });
 
@@ -56,7 +56,7 @@ describe("seriesStats", () => {
 
   test("shows a cumulative counter's rate over the last export", () => {
     const series = NumberSeries.parse({
-      ...SERIES_IDENTITY,
+      ...seriesIdentity,
       stats: { value: 150, min: 100, max: 150, latest_points: [point(20, 150), point(10, 100)] },
     });
 
@@ -68,7 +68,7 @@ describe("seriesStats", () => {
 
   test("shows a delta counter's rate from its last point", () => {
     const series = NumberSeries.parse({
-      ...SERIES_IDENTITY,
+      ...seriesIdentity,
       stats: { value: 70, min: 30, max: 70, latest_points: [point(20, 40, 10), point(10, 30)] },
     });
 
@@ -80,7 +80,7 @@ describe("seriesStats", () => {
 
   test("leaves the rate blank before a cumulative counter's second export", () => {
     const series = NumberSeries.parse({
-      ...SERIES_IDENTITY,
+      ...seriesIdentity,
       stats: { value: 100, min: 100, max: 100, latest_points: [point(10, 100)] },
     });
 
@@ -89,7 +89,7 @@ describe("seriesStats", () => {
 
   test("shows a histogram's count, percentiles, and max", () => {
     const series = HistogramSeries.parse({
-      ...SERIES_IDENTITY,
+      ...seriesIdentity,
       stats: {
         count: 10,
         sum: null,
@@ -111,7 +111,7 @@ describe("seriesStats", () => {
 
   test("leaves percentiles blank when the buckets cannot place them", () => {
     const series = HistogramSeries.parse({
-      ...SERIES_IDENTITY,
+      ...seriesIdentity,
       stats: { count: 5, sum: null, min: null, max: null, bounds: [], bucket_counts: [5] },
     });
 
