@@ -212,3 +212,55 @@ test("follows to the traces tab when a log opens its trace", async () => {
     Logs: { highlighted: false, fg: "muted" },
   });
 });
+
+test("forgets where a trace was opened from after switching tabs", async () => {
+  await using receiver = await startTestReceiver();
+  const traceId = "2".repeat(32);
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "checkout",
+      spans: [
+        {
+          traceId,
+          spanId: "2a".repeat(8),
+          name: "POST /checkout",
+          start: new Date(0),
+          end: new Date(10),
+        },
+      ],
+    }),
+  );
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest({
+      service: "checkout",
+      logs: [{ time: new Date(5), body: "order placed", traceId }],
+    }),
+  );
+  await using app = await renderApp(receiver);
+  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => frame.includes("order placed"));
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => frame.includes("return open trace"));
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => frame.includes("1 span"));
+
+  app.mockInput.pressTab({ shift: true });
+  await app.waitForFrame((frame) => !frame.includes("escape back"));
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  app.mockInput.pressArrow("left");
+  await app.waitForFrame((frame) => frame.includes("1 span"));
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => frame.includes("escape back"));
+  app.mockInput.pressEscape();
+
+  await app.waitForFrame((frame) => frame.includes("1 trace"));
+  expect(tabStyles(app.captureSpans())).toMatchObject({
+    Traces: { highlighted: false, fg: "text" },
+  });
+});

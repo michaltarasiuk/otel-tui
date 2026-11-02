@@ -15,7 +15,7 @@ const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as
 
 export function LogsView() {
   const focused = useFocused();
-  const { logsTraceId: traceId, setLogsTraceId } = useNavigation();
+  const { logsTraceId: traceId, canGoBack, setLogsTraceId, goBack } = useNavigation();
 
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
@@ -60,9 +60,17 @@ export function LogsView() {
           },
         },
         {
+          name: "logs.back",
+          desc: "back",
+          enabled: !searching && search === "" && canGoBack,
+          run() {
+            goBack();
+          },
+        },
+        {
           name: "logs.clear-trace",
           desc: "all logs",
-          enabled: !searching && search === "" && traceId !== undefined,
+          enabled: !searching && search === "" && !canGoBack && traceId !== undefined,
           run() {
             setLogsTraceId(undefined);
           },
@@ -87,12 +95,13 @@ export function LogsView() {
         { key: "/", cmd: "logs.search" },
         { key: "return", cmd: "logs.apply-search" },
         { key: "escape", cmd: "logs.clear-search" },
+        { key: "escape", cmd: "logs.back" },
         { key: "escape", cmd: "logs.clear-trace" },
         { key: "s", cmd: "logs.next-severity" },
         { key: "shift+s", cmd: "logs.previous-severity" },
       ],
     }),
-    [focused, searching, search, traceId, setLogsTraceId],
+    [focused, searching, search, traceId, canGoBack, setLogsTraceId, goBack],
   );
 
   const filtered = search !== "" || minSeverity !== undefined || traceId !== undefined;

@@ -289,7 +289,7 @@ test("offers trace actions only for logs with a trace", async () => {
   expect(textLines(frame).at(-1)).toStartWith("e next error return open trace t trace / search");
 });
 
-test("opens the selected log's trace in the traces view", async () => {
+test("opens the selected log's trace in the traces view and goes back to the log", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp(
     "/v1/traces",
@@ -318,10 +318,9 @@ test("opens the selected log's trace in the traces view", async () => {
   ]);
 
   app.mockInput.pressEscape();
-  frame = await app.waitForFrame((frame) =>
-    textLines(frame).includes("12:00:00.000 ● checkout POST /checkout 1 2.50s"),
-  );
-  expect(textLines(frame)[1]).toBe("1 trace");
+  frame = await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
+  expect(textLines(frame)[1]).toBe("7 logs");
+  expect(await app.waitForSelection("order placed")).toBe(ORDER_ROW);
 });
 
 test("lists identical logs separately and selects each in turn", async () => {

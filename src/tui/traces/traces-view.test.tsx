@@ -740,6 +740,31 @@ test("opens the logs of the open trace in the logs view", async () => {
   expect(frame).not.toContain("cache warmed");
 });
 
+test("goes back from the trace's logs to the trace, then to the list", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest({
+      service: "checkout",
+      logs: [{ time: at(1100), body: "order placed", traceId: checkoutTraceId }],
+    }),
+  );
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  app.mockInput.pressKey("l");
+  let frame = await app.waitForFrame((frame) => frame.includes("order placed"));
+  expect(textLines(frame).at(-1)).toContain("escape back");
+
+  app.mockInput.pressEscape();
+  frame = await app.waitForFrame((frame) =>
+    textLines(frame).includes(`POST /checkout ${checkoutTraceId}`),
+  );
+  expect(frame).not.toContain("order placed");
+
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => traceRows(frame).length === 3);
+  expect(await app.waitForSelection("POST /checkout")).toBe(CHECKOUT_ROW);
+});
+
 test("keeps the search and sort when switching tabs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);

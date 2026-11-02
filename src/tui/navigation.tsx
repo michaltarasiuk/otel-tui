@@ -8,22 +8,47 @@ interface Location {
   logsTraceId: string | undefined;
 }
 
+interface History {
+  location: Location;
+  previous: Location[];
+}
+
 interface Navigation extends Location {
+  canGoBack: boolean;
   setTab: (tab: Tab) => void;
   openTrace: (traceId: string) => void;
   closeTrace: () => void;
   openLogs: (traceId: string) => void;
   setLogsTraceId: (traceId: string | undefined) => void;
+  goBack: () => void;
 }
 
-const START_LOCATION: Location = {
-  tab: "traces",
-  openTraceId: undefined,
-  logsTraceId: undefined,
+const START_HISTORY: History = {
+  location: { tab: "traces", openTraceId: undefined, logsTraceId: undefined },
+  previous: [],
 };
 
-function replace(location: Location, change: Partial<Location>) {
-  return { ...location, ...change };
+function replace({ location, previous }: History, change: Partial<Location>) {
+  return { location: { ...location, ...change }, previous };
+}
+
+function push({ location, previous }: History, change: Partial<Location>) {
+  return { location: { ...location, ...change }, previous: [...previous, location] };
+}
+
+function pop(history: History) {
+  const location = history.previous.at(-1);
+  if (location === undefined) {
+    return history;
+  }
+  return { location, previous: history.previous.slice(0, -1) };
+}
+
+function switchTab(history: History, tab: Tab) {
+  if (tab === history.location.tab) {
+    return history;
+  }
+  return { location: { ...history.location, tab }, previous: [] };
 }
 
 const NavigationContext = createContext<Navigation | undefined>(undefined);
@@ -33,26 +58,30 @@ interface NavigationProviderProps {
 }
 
 export function NavigationProvider({ children }: NavigationProviderProps) {
-  const [location, setLocation] = useState(START_LOCATION);
+  const [history, setHistory] = useState(START_HISTORY);
 
   return (
     <NavigationContext
       value={{
-        ...location,
+        ...history.location,
+        canGoBack: history.previous.length > 0,
         setTab(tab) {
-          setLocation((location) => replace(location, { tab }));
+          setHistory((history) => switchTab(history, tab));
         },
         openTrace(traceId) {
-          setLocation((location) => replace(location, { tab: "traces", openTraceId: traceId }));
+          setHistory((history) => push(history, { tab: "traces", openTraceId: traceId }));
         },
         closeTrace() {
-          setLocation((location) => replace(location, { openTraceId: undefined }));
+          setHistory((history) => replace(history, { openTraceId: undefined }));
         },
         openLogs(traceId) {
-          setLocation((location) => replace(location, { tab: "logs", logsTraceId: traceId }));
+          setHistory((history) => push(history, { tab: "logs", logsTraceId: traceId }));
         },
         setLogsTraceId(traceId) {
-          setLocation((location) => replace(location, { logsTraceId: traceId }));
+          setHistory((history) => replace(history, { logsTraceId: traceId }));
+        },
+        goBack() {
+          setHistory((history) => pop(history));
         },
       }}
     >
