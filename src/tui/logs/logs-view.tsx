@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
+import { useNavigation } from "../navigation.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { LogFilterBar } from "./log-filter-bar.tsx";
 import { useLogList, useLogTotalCount } from "./log-queries.ts";
@@ -12,17 +13,13 @@ type MinSeverity = (typeof MIN_SEVERITIES)[number];
 
 const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
 
-interface LogsViewProps {
-  onOpenTrace: (traceId: string) => void;
-}
-
-export function LogsView({ onOpenTrace }: LogsViewProps) {
+export function LogsView() {
   const focused = useFocused();
+  const { logsTraceId: traceId, setLogsTraceId } = useNavigation();
 
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [minSeverity, setMinSeverity] = useState<MinSeverity>();
-  const [traceId, setTraceId] = useState<string>();
 
   const logList = useLogList({ search, minSeverity, traceId });
   const logTotalCount = useLogTotalCount();
@@ -67,7 +64,7 @@ export function LogsView({ onOpenTrace }: LogsViewProps) {
           desc: "all logs",
           enabled: !searching && search === "" && traceId !== undefined,
           run() {
-            setTraceId(undefined);
+            setLogsTraceId(undefined);
           },
         },
         {
@@ -95,7 +92,7 @@ export function LogsView({ onOpenTrace }: LogsViewProps) {
         { key: "shift+s", cmd: "logs.previous-severity" },
       ],
     }),
-    [focused, searching, search, traceId],
+    [focused, searching, search, traceId, setLogsTraceId],
   );
 
   const filtered = search !== "" || minSeverity !== undefined || traceId !== undefined;
@@ -109,13 +106,7 @@ export function LogsView({ onOpenTrace }: LogsViewProps) {
     }
     return (
       <FocusScope focused={!searching}>
-        <LogTable
-          logs={logs}
-          onOpenTrace={(traceId) => onOpenTrace(traceId)}
-          onToggleTrace={(selectedTraceId) =>
-            setTraceId((traceId) => (traceId === selectedTraceId ? undefined : selectedTraceId))
-          }
-        />
+        <LogTable logs={logs} />
       </FocusScope>
     );
   }

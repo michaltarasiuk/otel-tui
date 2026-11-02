@@ -2,6 +2,7 @@ import { useBindings } from "@opentui/keymap/react";
 
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useNavigation } from "../navigation.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { SpanTable } from "./span-table.tsx";
 import { TraceHeader } from "./trace-header.tsx";
@@ -9,11 +10,11 @@ import { useTraceSpans } from "./trace-queries.ts";
 
 interface TraceDetailsProps {
   traceId: string;
-  onClose: () => void;
 }
 
-export function TraceDetails({ traceId, onClose }: TraceDetailsProps) {
+export function TraceDetails({ traceId }: TraceDetailsProps) {
   const focused = useFocused();
+  const { closeTrace } = useNavigation();
 
   const traceSpans = useTraceSpans(traceId);
 
@@ -28,13 +29,13 @@ export function TraceDetails({ traceId, onClose }: TraceDetailsProps) {
           name: "trace.close",
           desc: "back",
           run() {
-            onClose();
+            closeTrace();
           },
         },
       ],
       bindings: [{ key: "escape", cmd: "trace.close" }],
     }),
-    [focused, onClose],
+    [focused, closeTrace],
   );
 
   function renderTrace() {

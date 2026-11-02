@@ -2,6 +2,7 @@ import { useBindings } from "@opentui/keymap/react";
 
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useNavigation } from "../navigation.tsx";
 import { useListState } from "../use-list-state.ts";
 import { WindowedRows } from "../windowed-rows.tsx";
 import { TraceHeaderRow, TraceRow } from "./trace-row.tsx";
@@ -10,11 +11,11 @@ import type { Trace, TraceSort } from "./trace.ts";
 interface TraceTableProps {
   traces: Trace[];
   sort: TraceSort;
-  onOpen: (traceId: string) => void;
 }
 
-export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
+export function TraceTable({ traces, sort }: TraceTableProps) {
   const focused = useFocused();
+  const { openTrace } = useNavigation();
 
   const list = useListState({
     items: traces,
@@ -34,7 +35,7 @@ export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
           desc: "open",
           run() {
             if (selectedTrace !== undefined) {
-              onOpen(selectedTrace.trace_id);
+              openTrace(selectedTrace.trace_id);
             }
           },
         },
@@ -60,7 +61,7 @@ export function TraceTable({ traces, sort, onOpen }: TraceTableProps) {
         { key: "shift+e", cmd: "traces.previous-error" },
       ],
     }),
-    [focused, hasErrors, list, selectedTrace, onOpen],
+    [focused, hasErrors, list, selectedTrace, openTrace],
   );
 
   return (

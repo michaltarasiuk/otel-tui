@@ -2,6 +2,7 @@ import { useBindings } from "@opentui/keymap/react";
 
 import { useFocused } from "../focus.tsx";
 import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useNavigation } from "../navigation.tsx";
 import { useListState } from "../use-list-state.ts";
 import { WindowedRows } from "../windowed-rows.tsx";
 import { LogPanel } from "./log-panel.tsx";
@@ -11,12 +12,11 @@ import { isErrorLevel } from "./severity.ts";
 
 interface LogTableProps {
   logs: Log[];
-  onToggleTrace: (traceId: string) => void;
-  onOpenTrace: (traceId: string) => void;
 }
 
-export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
+export function LogTable({ logs }: LogTableProps) {
   const focused = useFocused();
+  const { logsTraceId, setLogsTraceId, openTrace } = useNavigation();
 
   const list = useListState({
     items: logs,
@@ -53,7 +53,7 @@ export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
           enabled: selectedTraceId !== null,
           run() {
             if (selectedTraceId !== null) {
-              onOpenTrace(selectedTraceId);
+              openTrace(selectedTraceId);
             }
           },
         },
@@ -63,7 +63,7 @@ export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
           enabled: selectedTraceId !== null,
           run() {
             if (selectedTraceId !== null) {
-              onToggleTrace(selectedTraceId);
+              setLogsTraceId(logsTraceId === selectedTraceId ? undefined : selectedTraceId);
             }
           },
         },
@@ -75,7 +75,7 @@ export function LogTable({ logs, onToggleTrace, onOpenTrace }: LogTableProps) {
         { key: "t", cmd: "logs.toggle-trace" },
       ],
     }),
-    [focused, hasErrors, list, selectedTraceId, onToggleTrace, onOpenTrace],
+    [focused, hasErrors, list, selectedTraceId, logsTraceId, setLogsTraceId, openTrace],
   );
 
   return (

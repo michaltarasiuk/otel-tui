@@ -13,6 +13,7 @@ import {
 import type { ReceiverUrls } from "../db/receiver.ts";
 import { App } from "./app.tsx";
 import { ConnectionContext } from "./connection.ts";
+import { NavigationProvider } from "./navigation.tsx";
 
 const FOCUS_CONTROLLED_BY_APP = true;
 
@@ -47,7 +48,9 @@ export function TuiRoot({ queryClient, connection, receiverUrls }: TuiRootProps)
   return (
     <QueryClientProvider client={queryClient}>
       <ConnectionContext value={connection}>
-        <App receiverUrls={receiverUrls} />
+        <NavigationProvider>
+          <App receiverUrls={receiverUrls} />
+        </NavigationProvider>
       </ConnectionContext>
     </QueryClientProvider>
   );

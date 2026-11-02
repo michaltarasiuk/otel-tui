@@ -2,6 +2,7 @@ import type { TabSelectOption, TabSelectRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
 
 import { useFocused } from "./focus.tsx";
+import { useNavigation } from "./navigation.tsx";
 import { THEME } from "./theme.ts";
 
 export type Tab = (typeof TABS)[number]["value"];
@@ -12,13 +13,9 @@ const TABS = [
   { name: "Logs", description: "", value: "logs" },
 ] as const satisfies TabSelectOption[];
 
-interface TabsProps {
-  tab: Tab;
-  onChange: (tab: Tab) => void;
-}
-
-export function Tabs({ tab, onChange }: TabsProps) {
+export function Tabs() {
   const focused = useFocused();
+  const { tab, setTab } = useNavigation();
 
   const tabsRef = useRef<TabSelectRenderable>(null);
 
@@ -39,7 +36,7 @@ export function Tabs({ tab, onChange }: TabsProps) {
       onChange={(index) => {
         const option = TABS[index];
         if (option !== undefined) {
-          onChange(option.value);
+          setTab(option.value);
         }
       }}
     />

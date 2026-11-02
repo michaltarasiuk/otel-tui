@@ -23,11 +23,7 @@ const NEWEST_FIRST: TraceSort = {
   descending: true,
 };
 
-interface TraceListProps {
-  onOpen: (traceId: string) => void;
-}
-
-export function TraceList({ onOpen }: TraceListProps) {
+export function TraceList() {
   const focused = useFocused();
 
   const [search, setSearch] = useState("");
@@ -159,7 +155,7 @@ export function TraceList({ onOpen }: TraceListProps) {
     }
     return (
       <FocusScope focused={!searching}>
-        <TraceTable traces={traces} sort={sort} onOpen={(traceId) => onOpen(traceId)} />
+        <TraceTable traces={traces} sort={sort} />
       </FocusScope>
     );
   }
