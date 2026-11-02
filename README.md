@@ -12,7 +12,7 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
 ![Metric details with a series table, a value chart, and the selected series' resource and scope](docs/metrics-view.png)
 
-![Logs view with severity, service, and body columns and the selected log's attributes and resource](docs/logs-view.png)
+![Logs view filtered to errors, with severity, service, and body columns and the selected log's body, resource, scope, and trace ID](docs/logs-view.png)
 
 ## Views
 
