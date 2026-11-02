@@ -4,7 +4,7 @@ A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
 Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
-![Traces view listing root traces with service, span count, errors, and duration](docs/traces-view.png)
+![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-view.png)
 
 ![Trace details with a span waterfall and the selected span's attributes, resource, and scope](docs/trace-details.png)
 
@@ -19,7 +19,11 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 - Traces: the trace list works today, and `return` opens a trace as a span
   waterfall with each span's events, attributes, links, and resource. `e`
   jumps to the next trace or span with errors, and `s` shows only traces
-  with errors. A duration histogram is planned.
+  with errors. A histogram above the list charts the traces over time in
+  10-second columns, with the errors in red, so a spike or a gap stands out.
+  `←` or `→` marks the latest column with traces and narrows the list to it;
+  they then move the mark to the previous or next column with traces,
+  scrolling the chart along, and `escape` clears it.
 - Metrics: the metric list shows each metric's type, unit, and series count,
   with a panel listing the values each attribute takes, so an attribute that
   blows up cardinality stands out. `return` opens a metric's series with

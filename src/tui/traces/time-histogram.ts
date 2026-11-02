@@ -1,0 +1,130 @@
+import { z } from "zod";
+
+import { formatTime } from "../../utils/format-time.ts";
+import {
+  MILLISECONDS_PER_DAY,
+  MILLISECONDS_PER_HOUR,
+  MILLISECONDS_PER_MINUTE,
+  MILLISECONDS_PER_SECOND,
+} from "../../utils/time-units.ts";
+import type { HistogramColumn, HistogramRange } from "./histogram.ts";
+
+const LABEL_GAP = 2;
+const LABEL_WIDTHS = {
+  minute: "00:00".length,
+  second: "00:00:00".length,
+};
+
+export const TIME_BUCKET_MS = 10 * MILLISECONDS_PER_SECOND;
+export const TIME_SCALE_LABEL = `${TIME_BUCKET_MS / MILLISECONDS_PER_SECOND}s per column`;
+
+const TICK_INTERVALS_MS = [
+  MILLISECONDS_PER_SECOND,
+  2 * MILLISECONDS_PER_SECOND,
+  5 * MILLISECONDS_PER_SECOND,
+  10 * MILLISECONDS_PER_SECOND,
+  15 * MILLISECONDS_PER_SECOND,
+  30 * MILLISECONDS_PER_SECOND,
+  MILLISECONDS_PER_MINUTE,
+  2 * MILLISECONDS_PER_MINUTE,
+  5 * MILLISECONDS_PER_MINUTE,
+  10 * MILLISECONDS_PER_MINUTE,
+  15 * MILLISECONDS_PER_MINUTE,
+  30 * MILLISECONDS_PER_MINUTE,
+  MILLISECONDS_PER_HOUR,
+  2 * MILLISECONDS_PER_HOUR,
+  6 * MILLISECONDS_PER_HOUR,
+  12 * MILLISECONDS_PER_HOUR,
+  MILLISECONDS_PER_DAY,
+];
+
+export const TimeBucket = z
+  .object({
+    bucket_start_ms: z.number(),
+    trace_count: z.number(),
+    error_count: z.number(),
+  })
+  .transform(
+    (row) =>
+      ({
+        from: row.bucket_start_ms,
+        to: row.bucket_start_ms + TIME_BUCKET_MS,
+        traceCount: row.trace_count,
+        errorCount: row.error_count,
+      }) satisfies HistogramColumn,
+  );
+
+export function bucketStart(timeMs: number) {
+  return Math.floor(timeMs / TIME_BUCKET_MS) * TIME_BUCKET_MS;
+}
+
+function clockPrecision(intervalMs: number) {
+  return intervalMs < MILLISECONDS_PER_MINUTE ? "second" : "minute";
+}
+
+export function timeColumns(
+  occupied: HistogramColumn[],
+  newestBucketMs: number,
+  columnCount: number,
+  selected: HistogramRange | undefined,
+) {
+  const centered =
+    (selected?.from ?? newestBucketMs) + Math.floor(columnCount / 2) * TIME_BUCKET_MS;
+  const end = Math.min(newestBucketMs, centered);
+  const start = end - (columnCount - 1) * TIME_BUCKET_MS;
+  const occupiedByStart = new Map(occupied.map((column) => [column.from, column]));
+  return Array.from({ length: columnCount }, (_, offset) => {
+    const from = start + offset * TIME_BUCKET_MS;
+    return (
+      occupiedByStart.get(from) ??
+      ({ from, to: from + TIME_BUCKET_MS, traceCount: 0, errorCount: 0 } satisfies HistogramColumn)
+    );
+  });
+}
+
+export function hiddenTraces(occupied: HistogramColumn[], columns: HistogramColumn[]) {
+  const first = columns.at(0);
+  const last = columns.at(-1);
+  if (first === undefined || last === undefined) {
+    return { earlier: false, later: false };
+  }
+  return {
+    earlier: occupied.some((column) => column.to <= first.from),
+    later: occupied.some((column) => column.from >= last.to),
+  };
+}
+
+export function timeRangeLabel({ from, to }: HistogramRange) {
+  const precision = clockPrecision(to - from);
+  return `${formatTime(from, precision)}–${formatTime(to, precision)}`;
+}
+
+function tickInterval(columnWidth: number) {
+  return (
+    TICK_INTERVALS_MS.find(
+      (interval) =>
+        (interval / TIME_BUCKET_MS) * columnWidth >=
+        LABEL_WIDTHS[clockPrecision(interval)] + LABEL_GAP,
+    ) ?? MILLISECONDS_PER_DAY
+  );
+}
+
+export function timeAxis(columns: HistogramColumn[], columnWidth: number) {
+  const interval = tickInterval(columnWidth);
+  const precision = clockPrecision(interval);
+  const axisWidth = columns.length * columnWidth;
+  let axis = "";
+  for (const [position, { from }] of columns.entries()) {
+    const localFrom = from - new Date(from).getTimezoneOffset() * MILLISECONDS_PER_MINUTE;
+    const untilTick = (interval - (localFrom % interval)) % interval;
+    if (untilTick >= TIME_BUCKET_MS) {
+      continue;
+    }
+    const label = formatTime(from + untilTick, precision);
+    const labelStart = position * columnWidth;
+    if (labelStart + label.length <= axisWidth) {
+      axis = axis.padEnd(labelStart) + label;
+    }
+  }
+  return axis;
+}

@@ -4,36 +4,66 @@ import { z } from "zod";
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
 import { POLL_INTERVAL_MS } from "../polling.ts";
+import type { HistogramRange } from "./histogram.ts";
 import spanDetails from "./span-details.sql" with { type: "text" };
 import { Span, SpanDetails } from "./span.ts";
+import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
 import traceCount from "./trace-count.sql" with { type: "text" };
 import traceList from "./trace-list.sql" with { type: "text" };
 import traceSpans from "./trace-spans.sql" with { type: "text" };
+import traceTimeline from "./trace-timeline.sql" with { type: "text" };
 import { Trace, type TraceSort } from "./trace.ts";
 
 const MAX_TRACES = 500;
 
-interface TraceQuery {
+interface TraceFilter {
   search: string;
   errorsOnly: boolean;
+}
+
+interface TraceQuery extends TraceFilter {
+  timeRange: HistogramRange | undefined;
   sort: TraceSort;
 }
 
-export function useTraceList({ search, errorsOnly, sort }: TraceQuery) {
+export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery) {
   const connection = useConnection();
 
   return useQuery({
-    queryKey: ["traces", { search, errorsOnly, sort }],
+    queryKey: ["traces", { search, errorsOnly, timeRange, sort }],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(traceList, {
         limit: MAX_TRACES,
         pattern: containsPattern(search),
         errorsOnly,
+        minTimeMs: timeRange?.from ?? null,
+        maxTimeMs: timeRange?.to ?? null,
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });
       const rows = reader.getRowObjectsJS();
       return Trace.array().parse(rows);
+    },
+    refetchInterval: POLL_INTERVAL_MS,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
+  const connection = useConnection();
+
+  return useQuery({
+    queryKey: ["traces", "timeline", { search, errorsOnly }],
+    queryFn: async () => {
+      const newestBucketMs = bucketStart(Date.now());
+      const reader = await connection.runAndReadAll(traceTimeline, {
+        pattern: containsPattern(search),
+        errorsOnly,
+        bucketMs: TIME_BUCKET_MS,
+        endMs: newestBucketMs + TIME_BUCKET_MS,
+      });
+      const rows = reader.getRowObjectsJS();
+      return { newestBucketMs, occupied: TimeBucket.array().parse(rows) };
     },
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
