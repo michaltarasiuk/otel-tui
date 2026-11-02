@@ -14,7 +14,7 @@ interface TraceDetailsProps {
 
 export function TraceDetails({ traceId }: TraceDetailsProps) {
   const focused = useFocused();
-  const { closeTrace } = useNavigation();
+  const { closeTrace, openLogs } = useNavigation();
 
   const traceSpans = useTraceSpans(traceId);
 
@@ -32,10 +32,20 @@ export function TraceDetails({ traceId }: TraceDetailsProps) {
             closeTrace();
           },
         },
+        {
+          name: "trace.open-logs",
+          desc: "logs",
+          run() {
+            openLogs(traceId);
+          },
+        },
       ],
-      bindings: [{ key: "escape", cmd: "trace.close" }],
+      bindings: [
+        { key: "escape", cmd: "trace.close" },
+        { key: "l", cmd: "trace.open-logs" },
+      ],
     }),
-    [focused, closeTrace],
+    [focused, traceId, closeTrace, openLogs],
   );
 
   function renderTrace() {

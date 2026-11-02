@@ -9,6 +9,7 @@ interface Navigation {
   setTab: (tab: Tab) => void;
   openTrace: (traceId: string) => void;
   closeTrace: () => void;
+  openLogs: (traceId: string) => void;
   setLogsTraceId: (traceId: string | undefined) => void;
 }
 
@@ -36,6 +37,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         },
         closeTrace() {
           setOpenTraceId(undefined);
+        },
+        openLogs(traceId) {
+          setLogsTraceId(traceId);
+          setTab("logs");
         },
         setLogsTraceId,
       }}

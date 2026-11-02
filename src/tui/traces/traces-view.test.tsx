@@ -3,7 +3,13 @@ import { afterEach, expect, setSystemTime, test } from "bun:test";
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
 import { renderApp } from "../../testing/app.tsx";
-import { SPAN_KIND, STATUS_CODE, tracesRequest } from "../../testing/otlp.ts";
+import {
+  logsRequest,
+  SEVERITY_NUMBER,
+  SPAN_KIND,
+  STATUS_CODE,
+  tracesRequest,
+} from "../../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
 import { panelLines, textLines } from "../../testing/render.tsx";
 import { collapseSpaces } from "../../utils/collapse-spaces.ts";
@@ -690,6 +696,48 @@ test("goes back to the list with the opened trace still selected", async () => {
   await app.waitForFrame((frame) => traceRows(frame).length === 3);
 
   expect(await app.waitForSelection("POST /checkout")).toBe(CHECKOUT_ROW);
+});
+
+test("opens the logs of the open trace in the logs view", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest(
+      {
+        service: "checkout",
+        logs: [
+          {
+            time: at(1100),
+            severityNumber: SEVERITY_NUMBER.info,
+            body: "order placed",
+            traceId: checkoutTraceId,
+            spanId: "2a".repeat(8),
+          },
+          { time: at(1900), severityNumber: SEVERITY_NUMBER.info, body: "cache warmed" },
+        ],
+      },
+      {
+        service: "payment",
+        logs: [
+          {
+            time: at(1200),
+            severityNumber: SEVERITY_NUMBER.error,
+            body: "charge failed",
+            traceId: checkoutTraceId,
+            spanId: "2b".repeat(8),
+          },
+        ],
+      },
+    ),
+  );
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+
+  app.mockInput.pressKey("l");
+
+  const frame = await app.waitForFrame((frame) => frame.includes("order placed"));
+  expect(textLines(frame)[1]).toBe("trace 22222222 2 of 3 logs");
+  expect(frame).toContain("charge failed");
+  expect(frame).not.toContain("cache warmed");
 });
 
 test("keeps the search and sort when switching tabs", async () => {

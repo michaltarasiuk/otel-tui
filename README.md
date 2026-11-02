@@ -17,9 +17,9 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 ## Views
 
 - Traces: the trace list works today, and `return` opens a trace as a span
-  waterfall with each span's events, attributes, links, and resource. `e`
-  jumps to the next trace or span with errors, and `s` shows only traces
-  with errors. A histogram above the list charts the traces over time in
+  waterfall with each span's events, attributes, links, and resource, and
+  `l` there opens the trace's logs. `e` jumps to the next trace or span
+  with errors, and `s` shows only traces with errors. A histogram above the list charts the traces over time in
   10-second columns, with the errors in red, so a spike or a gap stands out.
   `←` or `→` marks the latest column with traces and narrows the list to it;
   they then move the mark to the previous or next column with traces,
