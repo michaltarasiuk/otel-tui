@@ -4,8 +4,8 @@ import { z } from "zod";
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
 import { POLL_INTERVAL_MS } from "../polling.ts";
-import LOG_COUNT_SQL from "./log-count.sql" with { type: "text" };
-import LOG_LIST_SQL from "./log-list.sql" with { type: "text" };
+import logCount from "./log-count.sql" with { type: "text" };
+import logList from "./log-list.sql" with { type: "text" };
 import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
 
@@ -24,7 +24,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
   return useQuery({
     queryKey: ["logs", { search, minSeverity, traceId }],
     queryFn: async () => {
-      const reader = await connection.runAndReadAll(LOG_LIST_SQL, {
+      const reader = await connection.runAndReadAll(logList, {
         limit: MAX_LOGS,
         pattern: containsPattern(search),
         minSeverityNumber:
@@ -45,7 +45,7 @@ export function useLogTotalCount() {
   return useQuery({
     queryKey: ["logs", "count"],
     queryFn: async () => {
-      const reader = await connection.runAndReadAll(LOG_COUNT_SQL);
+      const reader = await connection.runAndReadAll(logCount);
       return z.number().parse(reader.value(0, 0));
     },
     refetchInterval: POLL_INTERVAL_MS,

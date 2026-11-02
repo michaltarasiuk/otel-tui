@@ -4,16 +4,16 @@ import { z } from "zod";
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
 import { POLL_INTERVAL_MS } from "../polling.ts";
-import EXPONENTIAL_HISTOGRAM_POINTS_SQL from "./exponential-histogram-points.sql" with { type: "text" };
-import EXPONENTIAL_HISTOGRAM_SERIES_SQL from "./exponential-histogram-series.sql" with { type: "text" };
-import HISTOGRAM_POINTS_SQL from "./histogram-points.sql" with { type: "text" };
-import HISTOGRAM_SERIES_SQL from "./histogram-series.sql" with { type: "text" };
-import METRIC_COUNT_SQL from "./metric-count.sql" with { type: "text" };
-import METRIC_LIST_SQL from "./metric-list.sql" with { type: "text" };
+import exponentialHistogramPoints from "./exponential-histogram-points.sql" with { type: "text" };
+import exponentialHistogramSeries from "./exponential-histogram-series.sql" with { type: "text" };
+import histogramPoints from "./histogram-points.sql" with { type: "text" };
+import histogramSeries from "./histogram-series.sql" with { type: "text" };
+import metricCount from "./metric-count.sql" with { type: "text" };
+import metricList from "./metric-list.sql" with { type: "text" };
 import { Metric, type MetricSort } from "./metric.ts";
-import NUMBER_POINTS_SQL from "./number-points.sql" with { type: "text" };
-import NUMBER_SERIES_SQL from "./number-series.sql" with { type: "text" };
-import SERIES_EXEMPLARS_SQL from "./series-exemplars.sql" with { type: "text" };
+import numberPoints from "./number-points.sql" with { type: "text" };
+import numberSeries from "./number-series.sql" with { type: "text" };
+import seriesExemplars from "./series-exemplars.sql" with { type: "text" };
 import {
   Exemplar,
   ExponentialHistogramPoint,
@@ -47,7 +47,7 @@ export function useMetricList({ search, sort }: MetricQuery) {
   return useQuery({
     queryKey: ["metrics", { search, sort }],
     queryFn: async () => {
-      const reader = await connection.runAndReadAll(METRIC_LIST_SQL, {
+      const reader = await connection.runAndReadAll(metricList, {
         limit: MAX_METRICS,
         pattern: containsPattern(search),
         sortBy: sort.column,
@@ -67,7 +67,7 @@ export function useMetricTotalCount() {
   return useQuery({
     queryKey: ["metrics", "count"],
     queryFn: async () => {
-      const reader = await connection.runAndReadAll(METRIC_COUNT_SQL);
+      const reader = await connection.runAndReadAll(metricCount);
       return z.number().parse(reader.value(0, 0));
     },
     refetchInterval: POLL_INTERVAL_MS,
@@ -85,18 +85,18 @@ export function useMetricSeries(metric: Metric) {
         case "gauge":
         case "counter":
         case "updowncounter": {
-          const reader = await connection.runAndReadAll(NUMBER_SERIES_SQL, {
+          const reader = await connection.runAndReadAll(numberSeries, {
             ...identity,
             type: metric.type,
           });
           return NumberSeries.array().parse(reader.getRowObjectsJS());
         }
         case "histogram": {
-          const reader = await connection.runAndReadAll(HISTOGRAM_SERIES_SQL, identity);
+          const reader = await connection.runAndReadAll(histogramSeries, identity);
           return HistogramSeries.array().parse(reader.getRowObjectsJS());
         }
         case "exponential_histogram": {
-          const reader = await connection.runAndReadAll(EXPONENTIAL_HISTOGRAM_SERIES_SQL, identity);
+          const reader = await connection.runAndReadAll(exponentialHistogramSeries, identity);
           return ExponentialHistogramSeries.array().parse(reader.getRowObjectsJS());
         }
         default:
@@ -119,7 +119,7 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
         case "gauge":
         case "counter":
         case "updowncounter": {
-          const reader = await connection.runAndReadAll(NUMBER_POINTS_SQL, {
+          const reader = await connection.runAndReadAll(numberPoints, {
             ...identity,
             type: metric.type,
           });
@@ -129,14 +129,14 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
           };
         }
         case "histogram": {
-          const reader = await connection.runAndReadAll(HISTOGRAM_POINTS_SQL, identity);
+          const reader = await connection.runAndReadAll(histogramPoints, identity);
           return {
             kind: "distribution" as const,
             points: HistogramPoint.array().parse(reader.getRowObjectsJS()),
           };
         }
         case "exponential_histogram": {
-          const reader = await connection.runAndReadAll(EXPONENTIAL_HISTOGRAM_POINTS_SQL, identity);
+          const reader = await connection.runAndReadAll(exponentialHistogramPoints, identity);
           return {
             kind: "distribution" as const,
             points: ExponentialHistogramPoint.array().parse(reader.getRowObjectsJS()),
@@ -157,7 +157,7 @@ export function useSeriesExemplars(metric: Metric, seriesId: string) {
   return useQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "exemplars"],
     queryFn: async () => {
-      const reader = await connection.runAndReadAll(SERIES_EXEMPLARS_SQL, {
+      const reader = await connection.runAndReadAll(seriesExemplars, {
         ...metricIdentity(metric),
         type: metric.type,
         seriesId,

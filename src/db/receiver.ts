@@ -2,7 +2,7 @@ import { DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 import { z } from "zod";
 
 import { MILLISECONDS_PER_SECOND } from "../utils/time-units.ts";
-import ATTRIBUTE_ENTRIES_SQL from "./attribute-entries.sql" with { type: "text" };
+import attributeEntries from "./attribute-entries.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("http"), listen_url: z.url() }),
@@ -39,7 +39,7 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
 
   await connection.run("INSTALL otlp FROM community");
   await connection.run("LOAD otlp");
-  await connection.run(ATTRIBUTE_ENTRIES_SQL);
+  await connection.run(attributeEntries);
 
   const reader = await connection.runAndReadAll(
     `SELECT transport, listen_url FROM otlp_serve(
