@@ -30,7 +30,7 @@ export function stepSelection(
   selected: HistogramRange | undefined,
   step: 1 | -1,
 ) {
-  let next;
+  let next: HistogramRange | undefined;
   if (selected === undefined) {
     next = occupied.at(-1);
   } else if (step === 1) {
