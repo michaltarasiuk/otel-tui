@@ -43,7 +43,7 @@ test("starts on the traces tab with the tab bar focused", async () => {
 
   await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
 
-  expect(await app.waitForSelection("Traces")).toStartWith("Traces Metrics Logs OTLP/HTTP");
+  expect(await app.waitForSelection("Traces")).toStartWith("Traces Metrics Logs ");
   expect(tabStyles(app.captureSpans())).toEqual({
     Traces: { highlighted: true, fg: "text" },
     Metrics: { highlighted: false, fg: "muted" },
@@ -112,14 +112,34 @@ test("shows where the receiver listens beside the tabs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("tab next region"));
+  const frame = await app.waitForFrame((frame) => frame.includes("nothing received yet"));
 
   expect(frame.split("\n")[0]).toMatch(
     new RegExp(
-      `^ Traces +Metrics +Logs +OTLP/HTTP ${new URL(receiver.urls.http).host} · OTLP/gRPC ${new URL(receiver.urls.grpc).host} $`,
+      `^ Traces +Metrics +Logs +nothing received yet · OTLP/HTTP ${new URL(receiver.urls.http).host} · OTLP/gRPC ${new URL(receiver.urls.grpc).host} $`,
     ),
   );
   expect(footer(frame)).toBe("tab next region");
+});
+
+test("counts the items received and says when the last arrived", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderApp(receiver);
+  await app.waitForFrame((frame) => frame.includes("nothing received yet"));
+
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest({
+      service: "checkout",
+      logs: [
+        { time: new Date(0), body: "order placed" },
+        { time: new Date(1), body: "order shipped" },
+      ],
+    }),
+  );
+
+  const frame = await app.waitForFrame((frame) => frame.includes("2 items received"));
+  expect(frame.split("\n")[0]).toMatch(/2 items received (just now|\d+s ago) · OTLP\/HTTP/);
 });
 
 test("hints the view's described keys, the selected row's actions first", async () => {

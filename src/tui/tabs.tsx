@@ -13,7 +13,7 @@ const TABS = [
   { name: "Logs", description: "", value: "logs" },
 ] as const satisfies TabSelectOption[];
 
-const TAB_WIDTH = 20;
+const TAB_WIDTH = 12;
 
 export function Tabs() {
   const focused = useFocused();
