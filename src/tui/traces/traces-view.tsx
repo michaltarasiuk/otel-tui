@@ -13,7 +13,7 @@ export function TracesView() {
       </Pane>
       {openTraceId !== undefined && (
         <TraceDetails
-          key={`${openTraceId} ${openSpanId ?? ""}`}
+          key={[openTraceId, openSpanId].join(" ")}
           traceId={openTraceId}
           initialSpanId={openSpanId}
         />
