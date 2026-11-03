@@ -1,9 +1,7 @@
-import { TextAttributes } from "@opentui/core";
-
 import { formatCount } from "../../utils/format-count.ts";
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
-import { COLUMN_GAP } from "../columns.ts";
+import { Facts, Heading } from "../heading.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
 import type { Span } from "./span.ts";
@@ -24,21 +22,8 @@ export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderPro
 
   return (
     <box paddingX={1}>
-      <box flexDirection="row" gap={COLUMN_GAP}>
-        <text
-          flexGrow={1}
-          fg={THEME.text}
-          attributes={TextAttributes.BOLD}
-          wrapMode="none"
-          truncate
-        >
-          {root.name}
-        </text>
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {traceId}
-        </text>
-      </box>
-      <box flexDirection="row" gap={COLUMN_GAP} overflow="hidden">
+      <Heading title={root.name} aside={traceId} />
+      <Facts>
         {root.service_name !== null && (
           <text fg={THEME.textMuted} wrapMode="none" flexShrink={0}>
             <ServiceName name={root.service_name} />
@@ -58,7 +43,7 @@ export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderPro
         <text fg={THEME.textMuted} flexShrink={0}>
           {formatDuration(durationMs)}
         </text>
-      </box>
+      </Facts>
     </box>
   );
 }

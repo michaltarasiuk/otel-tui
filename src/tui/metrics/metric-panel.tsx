@@ -1,7 +1,6 @@
 import type { Attributes } from "../attributes.ts";
 import { EntryList } from "../entry-list.tsx";
-import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { PanelBody } from "../panel-body.tsx";
+import { Panel, PanelBody } from "../panel.tsx";
 import { Section } from "../section.tsx";
 import { THEME } from "../theme.ts";
 import { MetricHeader } from "./metric-header.tsx";
@@ -78,18 +77,12 @@ export function MetricPanel({ metric }: MetricPanelProps) {
   const metricSeries = useMetricSeries(metric);
 
   return (
-    <box
-      flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
-      border={["top"]}
-      borderColor={THEME.textMuted}
-      paddingX={1}
-    >
+    <Panel>
       <MetricHeader metric={metric} seriesCount={metric.series_count} />
       <PanelBody contentKey={metric.metric_id}>
         {metricSeries.isError && <text fg={THEME.textError}>Failed to load series</text>}
         {metricSeries.data !== undefined && <SeriesSummary series={metricSeries.data} />}
       </PanelBody>
-    </box>
+    </Panel>
   );
 }

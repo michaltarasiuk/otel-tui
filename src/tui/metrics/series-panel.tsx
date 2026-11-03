@@ -1,10 +1,8 @@
-import { TextAttributes } from "@opentui/core";
-
 import { formatTime } from "../../utils/format-time.ts";
 import { COLUMN_GAP, TIME_WIDTH } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
-import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { PanelBody } from "../panel-body.tsx";
+import { Facts, Heading } from "../heading.tsx";
+import { Panel, PanelBody } from "../panel.tsx";
 import { ScopeSection, Section } from "../section.tsx";
 import { serviceColor, THEME } from "../theme.ts";
 import { BucketBars } from "./bucket-bars.tsx";
@@ -54,35 +52,15 @@ export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelP
   const color = metric.service_name === null ? THEME.text : serviceColor(metric.service_name);
 
   return (
-    <box
-      flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
-      border={["top"]}
-      borderColor={THEME.textMuted}
-      paddingX={1}
-    >
-      <box flexDirection="row" gap={COLUMN_GAP}>
-        <text
-          flexGrow={1}
-          flexBasis={IGNORE_CONTENT_SIZE}
-          fg={THEME.text}
-          attributes={TextAttributes.BOLD}
-          wrapMode="none"
-          truncate
-        >
-          {label}
-        </text>
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {formatTime(series.last_time)}
-        </text>
-      </box>
-      <box flexDirection="row" gap={COLUMN_GAP} overflow="hidden">
+    <Panel>
+      <Heading title={label} aside={formatTime(series.last_time)} />
+      <Facts>
         {statKeys(metric.type).map((key) => (
           <text key={key} fg={THEME.textMuted} flexShrink={0}>
             {key} <span fg={THEME.text}>{stats[key]}</span>
           </text>
         ))}
-      </box>
+      </Facts>
       <PanelBody contentKey={series.series_id}>
         <SeriesChart metric={metric} series={series} color={color} windowStart={windowStart} />
         {series.stats.kind === "distribution" && series.stats.distribution.count > 0 && (
@@ -110,6 +88,6 @@ export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelP
           <ScopeSection name={series.scope_name} version={series.scope_version} />
         )}
       </PanelBody>
-    </box>
+    </Panel>
   );
 }

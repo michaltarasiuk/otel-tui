@@ -1,11 +1,8 @@
-import { TextAttributes } from "@opentui/core";
-
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
-import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
-import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { PanelBody } from "../panel-body.tsx";
+import { Facts, Heading } from "../heading.tsx";
+import { Panel, PanelBody } from "../panel.tsx";
 import { ScopeSection, Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
@@ -88,27 +85,13 @@ export function SpanPanel({ traceId, span }: SpanPanelProps) {
   const detached = span.depth === 0 && span.parent_span_id !== null;
 
   return (
-    <box
-      flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
-      border={["top"]}
-      borderColor={THEME.textMuted}
-      paddingX={1}
-    >
-      <box flexDirection="row" gap={COLUMN_GAP}>
-        <text
-          flexGrow={1}
-          flexBasis={IGNORE_CONTENT_SIZE}
-          fg={span.is_error ? THEME.textError : THEME.text}
-          attributes={TextAttributes.BOLD}
-        >
-          {span.name}
-        </text>
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {span.span_id}
-        </text>
-      </box>
-      <box flexDirection="row" gap={COLUMN_GAP} overflow="hidden">
+    <Panel>
+      <Heading
+        title={span.name}
+        titleColor={span.is_error ? THEME.textError : THEME.text}
+        aside={span.span_id}
+      />
+      <Facts>
         {span.service_name !== null && (
           <text fg={THEME.textMuted} wrapMode="none" flexShrink={0}>
             <ServiceName name={span.service_name} />
@@ -128,7 +111,7 @@ export function SpanPanel({ traceId, span }: SpanPanelProps) {
             parent {span.parent_span_id} not received
           </text>
         )}
-      </box>
+      </Facts>
       {span.status_message !== null && (
         <text fg={span.is_error ? THEME.textError : THEME.textMuted}>{span.status_message}</text>
       )}
@@ -139,6 +122,6 @@ export function SpanPanel({ traceId, span }: SpanPanelProps) {
           <SpanBody details={spanDetails.data} />
         )}
       </PanelBody>
-    </box>
+    </Panel>
   );
 }

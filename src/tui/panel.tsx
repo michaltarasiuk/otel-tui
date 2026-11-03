@@ -4,9 +4,28 @@ import { useRef } from "react";
 
 import { IGNORE_CONTENT_SIZE } from "./flex.ts";
 import { useFocused } from "./focus.tsx";
+import { THEME } from "./theme.ts";
 
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
+
+interface PanelProps {
+  children: React.ReactNode;
+}
+
+export function Panel({ children }: PanelProps) {
+  return (
+    <box
+      flexGrow={1}
+      flexBasis={IGNORE_CONTENT_SIZE}
+      border={["top"]}
+      borderColor={THEME.textMuted}
+      paddingX={1}
+    >
+      {children}
+    </box>
+  );
+}
 
 interface PanelBodyProps {
   contentKey: string;

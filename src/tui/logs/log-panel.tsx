@@ -5,7 +5,7 @@ import { prettyPrintJson } from "../../utils/pretty-print-json.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { PanelBody } from "../panel-body.tsx";
+import { Panel, PanelBody } from "../panel.tsx";
 import { ScopeSection, Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
@@ -20,13 +20,7 @@ export function LogPanel({ log }: LogPanelProps) {
   const severityLabel = log.severity ?? log.severity_text;
 
   return (
-    <box
-      flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
-      border={["top"]}
-      borderColor={THEME.textMuted}
-      paddingX={1}
-    >
+    <Panel>
       <box flexDirection="row" gap={COLUMN_GAP}>
         <box
           flexGrow={1}
@@ -82,6 +76,6 @@ export function LogPanel({ log }: LogPanelProps) {
           <ScopeSection name={log.scope_name} version={log.scope_version} />
         )}
       </PanelBody>
-    </box>
+    </Panel>
   );
 }
