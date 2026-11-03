@@ -4,7 +4,7 @@ import { TraceDetails } from "./trace-details.tsx";
 import { TraceList } from "./trace-list.tsx";
 
 export function TracesView() {
-  const { openTraceId } = useNavigation();
+  const { openTraceId, openSpanId } = useNavigation();
 
   return (
     <>
@@ -13,7 +13,13 @@ export function TracesView() {
           <TraceList />
         </FocusScope>
       </box>
-      {openTraceId !== undefined && <TraceDetails traceId={openTraceId} />}
+      {openTraceId !== undefined && (
+        <TraceDetails
+          key={`${openTraceId} ${openSpanId ?? ""}`}
+          traceId={openTraceId}
+          initialSpanId={openSpanId}
+        />
+      )}
     </>
   );
 }

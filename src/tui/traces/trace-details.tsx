@@ -10,11 +10,12 @@ import { useTraceSpans } from "./trace-queries.ts";
 
 interface TraceDetailsProps {
   traceId: string;
+  initialSpanId: string | undefined;
 }
 
-export function TraceDetails({ traceId }: TraceDetailsProps) {
+export function TraceDetails({ traceId, initialSpanId }: TraceDetailsProps) {
   const focused = useFocused();
-  const { openSpanId, canGoBack, closeTrace, openLogs, goBack } = useNavigation();
+  const { canGoBack, closeTrace, openLogs, goBack } = useNavigation();
 
   const traceSpans = useTraceSpans(traceId);
 
@@ -75,7 +76,7 @@ export function TraceDetails({ traceId }: TraceDetailsProps) {
         <TraceHeader traceId={traceId} root={root} spans={spans} durationMs={durationMs} />
         <SpanTable
           traceId={traceId}
-          initialSpanId={openSpanId}
+          initialSpanId={initialSpanId}
           spans={spans}
           traceDurationMs={durationMs}
         />

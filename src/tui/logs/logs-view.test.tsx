@@ -75,6 +75,34 @@ const otlpLogs = logsRequest(
   },
 );
 
+const checkoutTrace = tracesRequest(
+  {
+    service: "checkout",
+    spans: [
+      {
+        traceId: checkoutTraceId,
+        spanId: orderSpanId,
+        name: "POST /checkout",
+        start: at(0),
+        end: at(2500),
+      },
+    ],
+  },
+  {
+    service: "payment",
+    spans: [
+      {
+        traceId: checkoutTraceId,
+        spanId: chargeSpanId,
+        parentSpanId: orderSpanId,
+        name: "charge",
+        start: at(500),
+        end: at(2000),
+      },
+    ],
+  },
+);
+
 const NOTICE_ROW = "12:00:06.000 notice ● frontend cache warmed";
 const LOGIN_ROW = "12:00:05.000 INFO ● frontend user.login signed in via sso";
 const FATAL_ROW = "12:00:04.000 FATAL ● worker out of memory";
@@ -326,37 +354,39 @@ test("opens the selected log's trace in the traces view and goes back to the log
 
 test("selects the log's span in the trace it opens", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.sendHttp(
-    "/v1/traces",
-    tracesRequest(
-      {
-        service: "checkout",
-        spans: [
-          {
-            traceId: checkoutTraceId,
-            spanId: orderSpanId,
-            name: "POST /checkout",
-            start: at(0),
-            end: at(2500),
-          },
-        ],
-      },
-      {
-        service: "payment",
-        spans: [
-          {
-            traceId: checkoutTraceId,
-            spanId: chargeSpanId,
-            parentSpanId: orderSpanId,
-            name: "charge",
-            start: at(500),
-            end: at(2000),
-          },
-        ],
-      },
-    ),
-  );
+  await receiver.sendHttp("/v1/traces", checkoutTrace);
   await using app = await renderLogList(receiver);
+  app.mockInput.pressKey("e");
+  await app.waitForSelection(FATAL_ROW);
+  app.mockInput.pressKey("e");
+  await app.waitForSelection(ERROR_ROW);
+
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => frame.includes("2 spans"));
+
+  expect(await app.waitForSelection("charge")).toBe("● payment charge 1.50s");
+});
+
+test("selects the log's span in a trace that is already open", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", checkoutTrace);
+  await receiver.sendHttp("/v1/logs", otlpLogs);
+  await using app = await renderApp(receiver);
+  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => frame.includes("/ search"));
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => frame.includes("2 spans"));
+  expect(await app.waitForSelection("POST /checkout")).toBe("● checkout POST /checkout 2.50s");
+
+  app.mockInput.pressTab({ shift: true });
+  await app.waitForFrame((frame) => !frame.includes("escape back"));
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => frame.includes("/ search"));
   app.mockInput.pressKey("e");
   await app.waitForSelection(FATAL_ROW);
   app.mockInput.pressKey("e");
