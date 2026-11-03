@@ -3,6 +3,7 @@ import { useBindings } from "@opentui/keymap/react";
 import { useRef } from "react";
 
 import { formatTime } from "../../utils/format-time.ts";
+import { prettyPrintJson } from "../../utils/pretty-print-json.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
@@ -15,19 +16,6 @@ import { severityColor } from "./severity.ts";
 
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
-
-const JSON_INDENT = 2;
-
-function formatBody(body: string) {
-  try {
-    const value: unknown = JSON.parse(body);
-    return typeof value === "object" && value !== null
-      ? JSON.stringify(value, null, JSON_INDENT)
-      : body;
-  } catch {
-    return body;
-  }
-}
 
 interface LogPanelProps {
   log: Log;
@@ -119,7 +107,7 @@ export function LogPanel({ log }: LogPanelProps) {
       >
         {log.body !== null && (
           <Section title="Body">
-            <text fg={THEME.text}>{formatBody(log.body)}</text>
+            <text fg={THEME.text}>{prettyPrintJson(log.body)}</text>
           </Section>
         )}
         {log.attributes.length > 0 && (
