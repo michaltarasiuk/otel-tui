@@ -20,7 +20,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext"],
     "jsx": "react-jsx",
     "jsxImportSource": "@opentui/react",
     "moduleDetection": "force",
