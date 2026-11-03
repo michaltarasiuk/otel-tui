@@ -7,6 +7,7 @@ import { LineChart } from "./line-chart.tsx";
 
 const SIZE = { width: 20, height: 4 };
 const CHART_ROWS = 2;
+
 const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 
 interface ChartLine {
@@ -40,6 +41,7 @@ function line(values: (number | null)[]) {
 }
 
 const SLOTS = 20;
+
 const stepWithGap = [1, 1, 1, 1, ...Array<null>(8).fill(null), 3, 3, 3, 3];
 
 test("draws a line in braille between labels for its highest and lowest values", async () => {

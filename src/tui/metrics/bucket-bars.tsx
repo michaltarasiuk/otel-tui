@@ -7,8 +7,10 @@ import { type Bucket, bucketsOf, limitBuckets, type Distribution } from "./distr
 import { formatMetricValue } from "./metric-value.ts";
 
 const MAX_BUCKETS = 16;
+
 const LABEL_WIDTH = 11;
 const COUNT_WIDTH = 9;
+
 const BAR_MARK = "■";
 
 function nonEmptyRange(buckets: Bucket[]) {

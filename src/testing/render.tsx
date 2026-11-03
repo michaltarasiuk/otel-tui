@@ -12,9 +12,10 @@ const FRAME_TIMEOUT_MS = 3000;
 const FRAME_POLL_INTERVAL_MS = 10;
 const BINDINGS_REGISTERED_AFTER_COMMIT_MS = 10;
 
-const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
 const SCROLLBAR_CHARACTERS = /[\u2580-\u259F]/g;
 const FOOTER_LINES = 1;
+
+const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
 
 interface RenderOptions {
   width: number;

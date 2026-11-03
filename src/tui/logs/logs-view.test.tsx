@@ -6,6 +6,7 @@ import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts"
 import { panelLines, textLines } from "../../testing/render.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
+
 const checkoutTraceId = "2".repeat(32);
 const orderSpanId = "2a".repeat(8);
 const chargeSpanId = "2b".repeat(8);

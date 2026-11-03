@@ -15,6 +15,7 @@ import { severityColor } from "./severity.ts";
 
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
+
 const JSON_INDENT = 2;
 
 function formatBody(body: string) {

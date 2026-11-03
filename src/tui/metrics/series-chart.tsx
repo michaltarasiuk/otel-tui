@@ -16,6 +16,7 @@ import type { NumberPoint, Series, SeriesPoints } from "./series.ts";
 
 const CHART_HEIGHT = 8;
 const TIME_AXIS_HEIGHT = 1;
+
 const MIN_WINDOW_MS = MILLISECONDS_PER_MINUTE;
 
 const black = RGBA.fromHex("#000000");

@@ -8,10 +8,10 @@ import { hiddenTraces, TIME_SCALE_LABEL, timeAxis, timeColumns } from "./time-hi
 
 const PADDING_X = 1;
 export const COLUMN_WIDTH = 2;
+
 const BAR_HEIGHT = 4;
 const TITLE_HEIGHT = 1;
 const AXIS_HEIGHT = 1;
-
 export const TRACE_HISTOGRAM_HEIGHT = TITLE_HEIGHT + BAR_HEIGHT + AXIS_HEIGHT;
 
 const SEGMENT_COLORS = {

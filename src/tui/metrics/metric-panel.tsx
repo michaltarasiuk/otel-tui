@@ -16,6 +16,7 @@ import type { Series } from "./series.ts";
 
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
+
 const LISTED_VALUE_COUNT = 3;
 
 function describeValues(values: string[]) {

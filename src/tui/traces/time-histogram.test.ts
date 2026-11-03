@@ -13,8 +13,9 @@ import {
   timeRangeLabel,
 } from "./time-histogram.ts";
 
-const noon = Date.parse("2026-10-28T12:00:00.000Z");
 const SECOND = MILLISECONDS_PER_SECOND;
+
+const noon = Date.parse("2026-10-28T12:00:00.000Z");
 
 function column(startMs: number, traceCount = 0, errorCount = 0) {
   return {

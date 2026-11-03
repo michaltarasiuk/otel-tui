@@ -6,8 +6,10 @@ import { useListState } from "./use-list-state.ts";
 import { WindowedRows } from "./windowed-rows.tsx";
 
 const SIZE = { width: 20, height: 5 };
+
 const PAGE_DOWN = "\x1b[6~";
 const PAGE_UP = "\x1b[5~";
+
 const SCROLL_INDICATOR = "█";
 
 interface NumberedRowsProps {

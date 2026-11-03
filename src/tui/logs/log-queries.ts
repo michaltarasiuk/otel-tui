@@ -10,6 +10,7 @@ import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
 
 const MAX_LOGS = 500;
+
 const ANY_SEVERITY_NUMBER = 0;
 
 interface LogQuery {

@@ -15,6 +15,7 @@ import type { Span, SpanDetails } from "./span.ts";
 import { useSpanDetails } from "./trace-queries.ts";
 
 const NESTED_INDENT = 2;
+
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
 

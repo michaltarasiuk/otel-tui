@@ -17,6 +17,7 @@ import { serviceColor, THEME } from "../theme.ts";
 import { COLUMN_WIDTH } from "./trace-histogram.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
+
 const cartTraceId = "1".repeat(32);
 const checkoutTraceId = "2".repeat(32);
 const healthTraceId = "3".repeat(32);
@@ -310,11 +311,13 @@ test("jumps to the next trace with errors in either direction", async () => {
 });
 
 const LIVE_TIME_MS = 50_000;
-const bar = "█".repeat(COLUMN_WIDTH);
+
 const TIMELINE_CART_ROW = "12:00:00.000 ● frontend GET /cart 1 120.0ms";
 const TIMELINE_CHECKOUT_ROW = "12:00:20.000 ● checkout POST /checkout 1 1 500.0ms";
 const TIMELINE_HEALTH_ROW = "12:00:40.000 ● frontend GET /health 1 1.0ms";
 const TIMELINE_OLD_ROW = "11:20:00.000 ● frontend GET /old 1 10.0ms";
+
+const bar = "█".repeat(COLUMN_WIDTH);
 const MINUTE_TICKS = "11:52 11:53 11:54 11:55 11:56 11:57 11:58 11:59 12:00";
 
 const timelineTraces = tracesRequest(

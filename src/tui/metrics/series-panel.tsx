@@ -19,6 +19,7 @@ import type { Exemplar, Series } from "./series.ts";
 
 const HALF_VIEWPORT = 0.5;
 const SCROLLBAR_WIDTH = 1;
+
 const EXEMPLAR_VALUE_WIDTH = 10;
 
 interface ExemplarListProps {

@@ -33,6 +33,7 @@ const BYTES_PER_STEP = 1024;
 
 const dimensionlessUnits = new Set(["", "1"]);
 const ANNOTATION_UNIT = /^\{[^}]*\}$/;
+
 const COMPACT_THRESHOLD = 1e6;
 const GROUPING_THRESHOLD = 1000;
 

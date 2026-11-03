@@ -12,6 +12,7 @@ const DOT_BITS = [
   [0x04, 0x20],
   [0x40, 0x80],
 ];
+
 const LABEL_WIDTH = 9;
 const LABEL_GAP = 1;
 

@@ -4,7 +4,9 @@ import type { Series } from "./series.ts";
 
 const MIN_COLUMN_WEIGHT = 8;
 const MAX_COLUMN_WEIGHT = 32;
+
 const SOURCES = ["attributes", "resource_attributes"] as const;
+
 const LABEL_SEPARATOR = " · ";
 const UNLABELED_SERIES = "no attributes";
 
