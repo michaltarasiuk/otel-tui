@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { containsPattern } from "../../utils/contains-pattern.ts";
+import { substringPattern } from "../../db/like-pattern.ts";
 import { useConnection } from "../connection.ts";
 import { useVisible } from "../pane.tsx";
 import { POLL_INTERVAL_MS } from "../polling.ts";
@@ -36,7 +36,7 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
     queryFn: async () => {
       const reader = await connection.runAndReadAll(traceList, {
         limit: MAX_TRACES,
-        pattern: containsPattern(search),
+        pattern: substringPattern(search),
         errorsOnly,
         minTimeMs: timeRange?.from ?? null,
         maxTimeMs: timeRange?.to ?? null,
@@ -61,7 +61,7 @@ export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
     queryFn: async () => {
       const newestBucketMs = bucketStart(Date.now());
       const reader = await connection.runAndReadAll(traceTimeline, {
-        pattern: containsPattern(search),
+        pattern: substringPattern(search),
         errorsOnly,
         bucketMs: TIME_BUCKET_MS,
         endMs: newestBucketMs + TIME_BUCKET_MS,

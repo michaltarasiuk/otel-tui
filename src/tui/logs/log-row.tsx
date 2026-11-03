@@ -1,5 +1,5 @@
-import { collapseSpaces } from "../../utils/collapse-spaces.ts";
-import { formatTime } from "../../utils/format-time.ts";
+import { collapseWhitespace } from "../../utils/text.ts";
+import { formatTime } from "../../utils/time.ts";
 import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH, TIME_WIDTH } from "../columns.ts";
 import { ServiceName } from "../service-name.tsx";
 import { TableRow } from "../table-row.tsx";
@@ -49,7 +49,7 @@ export function LogRow({ log, selected }: LogRowProps) {
       </text>
       <text flexGrow={1} fg={THEME.text} wrapMode="none" truncate>
         {log.event_name !== null && <span fg={secondaryColor}>{log.event_name} </span>}
-        {log.body !== null && collapseSpaces(log.body)}
+        {log.body !== null && collapseWhitespace(log.body)}
       </text>
     </TableRow>
   );

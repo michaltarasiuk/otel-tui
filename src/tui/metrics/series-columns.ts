@@ -1,4 +1,4 @@
-import { clamp } from "../../utils/clamp.ts";
+import { clamp } from "../../utils/math.ts";
 import { attributeValues, compareValues } from "./series-attributes.ts";
 import type { Series } from "./series.ts";
 

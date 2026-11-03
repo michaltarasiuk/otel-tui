@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import { tracesRequest } from "../../testing/otlp.ts";
 import { startTestReceiver } from "../../testing/receiver.ts";
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_SECOND } from "../../utils/time-units.ts";
+import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import type { HistogramColumn } from "./histogram.ts";
 import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
 import traceTimeline from "./trace-timeline.sql" with { type: "text" };

@@ -6,7 +6,7 @@ import { createRoot, flushSync } from "@opentui/react";
 
 import { THEME } from "../tui/theme.ts";
 import { RENDERER_CONFIG } from "../tui/tui.tsx";
-import { collapseSpaces } from "../utils/collapse-spaces.ts";
+import { collapseWhitespace } from "../utils/text.ts";
 
 const FRAME_TIMEOUT_MS = 3000;
 const FRAME_POLL_INTERVAL_MS = 10;
@@ -88,7 +88,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
 export function textLines(frame: string) {
   return frame
     .split("\n")
-    .map((line) => collapseSpaces(line))
+    .map((line) => collapseWhitespace(line))
     .filter((line) => line !== "");
 }
 
@@ -101,7 +101,7 @@ export function panelLines(frame: string) {
 function selectedLines({ lines }: CapturedFrame) {
   return lines.flatMap(({ spans }, line) =>
     spans.some((span) => span.bg.equals(selectedBackground))
-      ? [{ line, text: collapseSpaces(spans.map((span) => span.text).join("")) }]
+      ? [{ line, text: collapseWhitespace(spans.map((span) => span.text).join("")) }]
       : [],
   );
 }

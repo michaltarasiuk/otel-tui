@@ -1,4 +1,4 @@
-import { formatTime } from "../../utils/format-time.ts";
+import { formatTime } from "../../utils/time.ts";
 import {
   HEADER_CELL_PROPS,
   secondaryCellColor,

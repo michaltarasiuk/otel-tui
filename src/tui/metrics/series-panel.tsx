@@ -1,4 +1,4 @@
-import { formatTime } from "../../utils/format-time.ts";
+import { formatTime } from "../../utils/time.ts";
 import { COLUMN_GAP, TIME_WIDTH } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { Facts, Heading } from "../heading.tsx";

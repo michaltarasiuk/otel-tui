@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { MILLISECONDS_PER_MINUTE, MILLISECONDS_PER_SECOND } from "../../utils/time-units.ts";
+import { MILLISECONDS_PER_MINUTE, MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import type { HistogramColumn } from "./histogram.ts";
 import {
   bucketStart,

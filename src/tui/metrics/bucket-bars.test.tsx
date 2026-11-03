@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
 import { render } from "../../testing/render.tsx";
-import { collapseSpaces } from "../../utils/collapse-spaces.ts";
+import { collapseWhitespace } from "../../utils/text.ts";
 import { BucketBars } from "./bucket-bars.tsx";
 import { type Distribution, explicitBuckets, exponentialBuckets } from "./distribution.ts";
 
@@ -64,7 +64,7 @@ test("merges exponential buckets until no more than sixteen remain", async () =>
   const positive = Array.from({ length: 40 }, (_, index) => ({ index, count: 1 }));
   await using bars = await renderBars(withBuckets(exponentialBuckets(3, 0, 0, positive, [])), "");
 
-  expect(bars.rows.map((row) => collapseSpaces(row.replace(/■+/, "")))).toEqual([
+  expect(bars.rows.map((row) => collapseWhitespace(row.replace(/■+/, "")))).toEqual([
     "≤ 1.41 4",
     "≤ 2 4",
     "≤ 2.83 4",

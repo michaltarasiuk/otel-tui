@@ -2,7 +2,7 @@ import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { Fragment, useRef, useState } from "react";
 
-import { clamp } from "../utils/clamp.ts";
+import { clamp } from "../utils/math.ts";
 import { IGNORE_CONTENT_SIZE } from "./flex.ts";
 import { useFocused } from "./focus.tsx";
 import { THEME } from "./theme.ts";

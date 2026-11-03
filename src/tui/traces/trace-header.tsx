@@ -1,6 +1,5 @@
-import { formatCount } from "../../utils/format-count.ts";
-import { formatDuration } from "../../utils/format-duration.ts";
-import { formatTime } from "../../utils/format-time.ts";
+import { formatCount } from "../../utils/text.ts";
+import { formatDuration, formatTime } from "../../utils/time.ts";
 import { Facts, Heading } from "../heading.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";

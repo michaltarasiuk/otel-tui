@@ -3,7 +3,7 @@ import { useBindings } from "@opentui/keymap/react";
 import { useRef, useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
-import { formatShownCount } from "../../utils/format-shown-count.ts";
+import { formatShownCount } from "../../utils/text.ts";
 import { FilterBar } from "../filter-bar.tsx";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";

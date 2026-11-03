@@ -1,7 +1,7 @@
 import { DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 import { z } from "zod";
 
-import { MILLISECONDS_PER_SECOND } from "../utils/time-units.ts";
+import { MILLISECONDS_PER_SECOND } from "../utils/time.ts";
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([

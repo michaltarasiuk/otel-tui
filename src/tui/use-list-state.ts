@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { clamp } from "../utils/clamp.ts";
-import { wrapIndex } from "../utils/wrap-index.ts";
+import { clamp, wrapIndex } from "../utils/math.ts";
 
 interface ListStateOptions<T> {
   items: T[];

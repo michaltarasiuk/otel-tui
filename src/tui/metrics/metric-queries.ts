@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { containsPattern } from "../../utils/contains-pattern.ts";
+import { substringPattern } from "../../db/like-pattern.ts";
 import { useConnection } from "../connection.ts";
 import { useVisible } from "../pane.tsx";
 import { POLL_INTERVAL_MS } from "../polling.ts";
@@ -51,7 +51,7 @@ export function useMetricList({ search, sort }: MetricQuery) {
     queryFn: async () => {
       const reader = await connection.runAndReadAll(metricList, {
         limit: MAX_METRICS,
-        pattern: containsPattern(search),
+        pattern: substringPattern(search),
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });

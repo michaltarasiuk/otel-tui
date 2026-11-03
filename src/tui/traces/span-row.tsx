@@ -1,4 +1,4 @@
-import { formatDuration } from "../../utils/format-duration.ts";
+import { formatDuration } from "../../utils/time.ts";
 import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH } from "../columns.ts";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
 import { ServiceName } from "../service-name.tsx";

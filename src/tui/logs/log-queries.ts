@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { containsPattern } from "../../utils/contains-pattern.ts";
+import { substringPattern } from "../../db/like-pattern.ts";
 import { useConnection } from "../connection.ts";
 import { useVisible } from "../pane.tsx";
 import { POLL_INTERVAL_MS } from "../polling.ts";
@@ -29,7 +29,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
     queryFn: async () => {
       const reader = await connection.runAndReadAll(logList, {
         limit: MAX_LOGS,
-        pattern: containsPattern(search),
+        pattern: substringPattern(search),
         minSeverityNumber:
           minSeverity === undefined ? ANY_SEVERITY_NUMBER : lowestSeverityNumber(minSeverity),
         traceId: traceId ?? null,

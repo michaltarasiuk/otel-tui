@@ -1,7 +1,7 @@
 import { TextAttributes } from "@opentui/core";
 
-import { formatTime } from "../../utils/format-time.ts";
-import { prettyPrintJson } from "../../utils/pretty-print-json.ts";
+import { prettyPrintJson } from "../../utils/text.ts";
+import { formatTime } from "../../utils/time.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";

@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-import { formatTime } from "../../utils/format-time.ts";
 import {
   MILLISECONDS_PER_DAY,
   MILLISECONDS_PER_HOUR,
   MILLISECONDS_PER_MINUTE,
   MILLISECONDS_PER_SECOND,
-} from "../../utils/time-units.ts";
+  formatTime,
+} from "../../utils/time.ts";
 import type { HistogramColumn, HistogramRange } from "./histogram.ts";
 
 const LABEL_GAP = 2;

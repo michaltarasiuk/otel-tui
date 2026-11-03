@@ -4,7 +4,7 @@ import type { DuckDBConnection } from "@duckdb/node-api";
 
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../testing/receiver.ts";
-import { MILLISECONDS_PER_MINUTE } from "../utils/time-units.ts";
+import { MILLISECONDS_PER_MINUTE } from "../utils/time.ts";
 import { PRUNE_INTERVAL_MS } from "./receiver.ts";
 
 const TABLES = [

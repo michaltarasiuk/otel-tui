@@ -1,4 +1,4 @@
-import { MILLISECONDS_PER_SECOND } from "../../utils/time-units.ts";
+import { MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import { type Distribution, hasNegativeCounts, subtractDistributions } from "./distribution.ts";
 import type { DistributionPoint, NumberPoint } from "./series.ts";
 

@@ -1,10 +1,10 @@
-import { formatDuration } from "../../utils/format-duration.ts";
 import {
   MILLISECONDS_PER_DAY,
   MILLISECONDS_PER_HOUR,
   MILLISECONDS_PER_MINUTE,
   MILLISECONDS_PER_SECOND,
-} from "../../utils/time-units.ts";
+  formatDuration,
+} from "../../utils/time.ts";
 
 const MILLISECONDS_PER_UNIT: Record<string, number> = {
   ns: 1e-6,

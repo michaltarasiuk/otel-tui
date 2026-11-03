@@ -1,7 +1,6 @@
 import { RGBA } from "@opentui/core";
 
-import { formatTime } from "../../utils/format-time.ts";
-import { MILLISECONDS_PER_MINUTE } from "../../utils/time-units.ts";
+import { MILLISECONDS_PER_MINUTE, formatTime } from "../../utils/time.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { Section } from "../section.tsx";
 import { THEME } from "../theme.ts";

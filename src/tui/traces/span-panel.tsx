@@ -1,5 +1,4 @@
-import { formatDuration } from "../../utils/format-duration.ts";
-import { formatTime } from "../../utils/format-time.ts";
+import { formatDuration, formatTime } from "../../utils/time.ts";
 import { EntryList } from "../entry-list.tsx";
 import { Facts, Heading } from "../heading.tsx";
 import { Panel, PanelBody } from "../panel.tsx";

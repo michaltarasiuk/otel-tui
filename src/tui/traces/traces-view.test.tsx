@@ -12,7 +12,7 @@ import {
 } from "../../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
 import { panelLines, textLines } from "../../testing/render.tsx";
-import { collapseSpaces } from "../../utils/collapse-spaces.ts";
+import { collapseWhitespace } from "../../utils/text.ts";
 import { serviceColor, THEME } from "../theme.ts";
 import { COLUMN_WIDTH } from "./trace-histogram.tsx";
 
@@ -560,7 +560,7 @@ test("opens a trace as a span waterfall", async () => {
     "● checkout 12:00:01.000 3 spans 2 errors 500.0ms",
     "Service Name Duration 0 500.0ms",
   ]);
-  expect(spanRows(frame).map((row) => collapseSpaces(row))).toEqual([
+  expect(spanRows(frame).map((row) => collapseWhitespace(row))).toEqual([
     "● checkout POST /checkout 450.0ms",
     "● payment charge 300.0ms",
     "● email send receipt 40.0ms",
