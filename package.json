@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
-    "lint": "oxlint --deny-warnings .",
+    "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",

@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "react"],
+  "options": {
+    "denyWarnings": true
+  },
   "rules": {
     "react/exhaustive-deps": ["warn", { "additionalHooks": "useBindings" }]
   }
