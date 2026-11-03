@@ -7,10 +7,25 @@
   },
   "rules": {
     "import/no-cycle": "warn",
-    "react/exhaustive-deps": ["warn", { "additionalHooks": "useBindings" }],
+    "react/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "useBindings"
+      }
+    ],
     "typescript/consistent-type-definitions": "warn",
-    "typescript/restrict-template-expressions": ["warn", { "allowNever": true }],
-    "typescript/strict-boolean-expressions": ["warn", { "allowNullableObject": false }],
+    "typescript/restrict-template-expressions": [
+      "warn",
+      {
+        "allowNever": true
+      }
+    ],
+    "typescript/strict-boolean-expressions": [
+      "warn",
+      {
+        "allowNullableObject": false
+      }
+    ],
     "typescript/use-unknown-in-catch-callback-variable": "warn",
     "unicorn/no-array-callback-reference": "warn"
   }
