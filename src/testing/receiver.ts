@@ -50,7 +50,7 @@ export async function startTestReceiver({
   async function sendGrpc(method: string) {
     const session = connect(receiver.urls.grpc);
     try {
-      const status = await new Promise((resolve, reject) => {
+      const status = await new Promise<string | string[]>((resolve, reject) => {
         function resolveStatus(headers: IncomingHttpHeaders) {
           const status = headers["grpc-status"];
           if (status !== undefined) {
@@ -70,7 +70,7 @@ export async function startTestReceiver({
           .end(emptyGrpcMessageFrame);
       });
       if (status !== GRPC_STATUS_OK) {
-        throw new Error(`gRPC ${method} failed with status ${status}`);
+        throw new Error(`gRPC ${method} failed with status ${String(status)}`);
       }
     } finally {
       session.close();
