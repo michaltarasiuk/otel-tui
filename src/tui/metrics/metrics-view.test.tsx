@@ -3,13 +3,12 @@ import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 import { renderApp } from "../../testing/app.tsx";
 import { metricsRequest, TEMPORALITY } from "../../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
-import { panelLines, textLines } from "../../testing/render.tsx";
+import { BRAILLE_DOTS, panelLines, textLines } from "../../testing/render.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
 const DETAILS_SIZE = { width: 120, height: 45 };
 
-const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 const METRIC_COUNT = / metrics? *$/m;
 
 function atSecond(seconds: number) {

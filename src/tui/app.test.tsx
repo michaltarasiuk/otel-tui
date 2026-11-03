@@ -5,12 +5,11 @@ import { type CapturedFrame, RGBA } from "@opentui/core";
 import { renderApp } from "../testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver } from "../testing/receiver.ts";
-import { textLines } from "../testing/render.tsx";
+import { selectedBackground, textLines } from "../testing/render.tsx";
 import { THEME } from "./theme.ts";
 
 const TAB_NAMES = ["Traces", "Metrics", "Logs"];
 
-const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
 const textForeground = RGBA.fromHex(THEME.text);
 
 interface TabStyle {

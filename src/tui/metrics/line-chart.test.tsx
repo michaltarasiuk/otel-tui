@@ -2,13 +2,11 @@ import { expect, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
-import { render, textLines } from "../../testing/render.tsx";
+import { BRAILLE_DOTS, render, textLines } from "../../testing/render.tsx";
 import { LineChart } from "./line-chart.tsx";
 
 const SIZE = { width: 20, height: 4 };
 const CHART_ROWS = 2;
-
-const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 
 interface ChartLine {
   color: string;
