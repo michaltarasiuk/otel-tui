@@ -211,7 +211,8 @@ async function renderTraceList(receiver: TestReceiver) {
 
 async function openTrace(receiver: TestReceiver, row: string) {
   const app = await renderTraceList(receiver);
-  for (const nextRow of NEWEST_FIRST.slice(1, NEWEST_FIRST.indexOf(row) + 1)) {
+  const rowIndex = NEWEST_FIRST.indexOf(row);
+  for (const nextRow of NEWEST_FIRST.slice(1, rowIndex + 1)) {
     app.mockInput.pressArrow("down");
     await app.waitForSelection(nextRow);
   }

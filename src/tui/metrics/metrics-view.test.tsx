@@ -203,7 +203,8 @@ async function renderMetricList(receiver: TestReceiver, size?: { width: number; 
 
 async function openMetric(receiver: TestReceiver, row: string) {
   const app = await renderMetricList(receiver, DETAILS_SIZE);
-  for (const nextRow of BY_NAME.slice(1, BY_NAME.indexOf(row) + 1)) {
+  const rowIndex = BY_NAME.indexOf(row);
+  for (const nextRow of BY_NAME.slice(1, rowIndex + 1)) {
     app.mockInput.pressArrow("down");
     await app.waitForSelection(nextRow);
   }
@@ -440,7 +441,8 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
   expect(panel.filter((line) => line.includes("■")).map((line) => line.replace(/ ■+/, ""))).toEqual(
     ["≤ 10.0ms 1", "≤ 50.0ms 5", "≤ 100.0ms 3", "> 100.0ms 1"],
   );
-  expect(panel.slice(panel.indexOf("Exemplars"), panel.indexOf("Exemplars") + 3)).toEqual([
+  const exemplarsIndex = panel.indexOf("Exemplars");
+  expect(panel.slice(exemplarsIndex, exemplarsIndex + 3)).toEqual([
     "Exemplars",
     `12:00:19.000 140.0ms ${"2".repeat(32)} ${"2b".repeat(8)}`,
     "12:00:09.000 75.0ms no trace",
@@ -589,7 +591,8 @@ test("scrolls the metric panel down and back up", async () => {
 test("scrolls the series panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
-  for (const row of BY_NAME.slice(1, BY_NAME.indexOf(DURATION_ROW) + 1)) {
+  const durationRowIndex = BY_NAME.indexOf(DURATION_ROW);
+  for (const row of BY_NAME.slice(1, durationRowIndex + 1)) {
     app.mockInput.pressArrow("down");
     await app.waitForSelection(row);
   }

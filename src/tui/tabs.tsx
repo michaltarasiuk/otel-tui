@@ -22,7 +22,8 @@ export function Tabs() {
   const tabsRef = useRef<TabSelectRenderable>(null);
 
   useEffect(() => {
-    tabsRef.current?.setSelectedIndex(TABS.findIndex((option) => option.value === tab));
+    const selectedIndex = TABS.findIndex((option) => option.value === tab);
+    tabsRef.current?.setSelectedIndex(selectedIndex);
   }, [tab]);
 
   return (

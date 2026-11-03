@@ -208,7 +208,8 @@ test("pretty-prints a JSON body", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  for (const row of NEWEST_FIRST.slice(1, NEWEST_FIRST.indexOf(JSON_ROW) + 1)) {
+  const jsonRowIndex = NEWEST_FIRST.indexOf(JSON_ROW);
+  for (const row of NEWEST_FIRST.slice(1, jsonRowIndex + 1)) {
     app.mockInput.pressArrow("down");
     await app.waitForSelection(row);
   }

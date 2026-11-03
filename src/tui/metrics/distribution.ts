@@ -86,10 +86,8 @@ function combineBuckets(
     if (!haveSameBounds(a, b)) {
       return null;
     }
-    return explicitBuckets(
-      a.bounds,
-      a.counts.map((count, i) => count + sign * (b.counts[i] ?? 0)),
-    );
+    const counts = a.counts.map((count, i) => count + sign * (b.counts[i] ?? 0));
+    return explicitBuckets(a.bounds, counts);
   }
   if (a.kind === "exponential" && b.kind === "exponential") {
     const scale = Math.min(a.scale, b.scale);

@@ -18,23 +18,23 @@ export interface AttributeColumn {
 
 export function attributeColumns(series: Series[]) {
   const sources = series.length === 1 ? (["attributes"] as const) : SOURCES;
-  return sources.flatMap((source) =>
-    attributeValues(series.map((row) => row[source]))
+  return sources.flatMap((source) => {
+    const attributeSets = series.map((row) => row[source]);
+    return attributeValues(attributeSets)
       .filter(
         ({ values, setCount }) =>
           series.length === 1 || values.length > 1 || setCount < series.length,
       )
       .sort((a, b) => a.values.length - b.values.length || a.key.localeCompare(b.key))
-      .map(({ key, values }) => ({
-        key,
-        source,
-        weight: clamp(
-          Math.max(...values.map((value) => value.length)),
-          MIN_COLUMN_WEIGHT,
-          MAX_COLUMN_WEIGHT,
-        ),
-      })),
-  );
+      .map(({ key, values }) => {
+        const longestValue = Math.max(...values.map((value) => value.length));
+        return {
+          key,
+          source,
+          weight: clamp(longestValue, MIN_COLUMN_WEIGHT, MAX_COLUMN_WEIGHT),
+        };
+      });
+  });
 }
 
 export function cellValue(series: Series, { key, source }: AttributeColumn) {

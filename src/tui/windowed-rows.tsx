@@ -27,6 +27,7 @@ export function WindowedRows<T>({ list, children }: WindowedRowsProps<T>) {
     0,
     items.length - visibleRowCount,
   );
+  const visibleItems = items.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount);
 
   const hiddenRowCount = items.length - visibleRowCount;
   const scrollThumbTop = Math.round((firstVisibleIndex / hiddenRowCount) * (visibleRowCount - 1));
@@ -102,7 +103,7 @@ export function WindowedRows<T>({ list, children }: WindowedRowsProps<T>) {
         }
       }}
     >
-      {items.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount).map((item, offset) => (
+      {visibleItems.map((item, offset) => (
         <Fragment key={getKey(item)}>
           {children(item, firstVisibleIndex + offset === selectedIndex)}
         </Fragment>

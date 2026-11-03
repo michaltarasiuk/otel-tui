@@ -25,7 +25,8 @@ export function severityLevel(severityNumber: number | null) {
 }
 
 export function lowestSeverityNumber(level: SeverityLevel) {
-  return SEVERITY_LEVELS.indexOf(level) * SEVERITY_NUMBERS_PER_LEVEL + 1;
+  const levelIndex = SEVERITY_LEVELS.indexOf(level);
+  return levelIndex * SEVERITY_NUMBERS_PER_LEVEL + 1;
 }
 
 export function isErrorLevel(level: SeverityLevel | null) {

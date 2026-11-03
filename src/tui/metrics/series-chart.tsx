@@ -49,39 +49,30 @@ function chartLines(metric: Metric, data: SeriesPoints, color: string, window: C
   const delta = isDelta(metric);
   if (data.kind === "distribution") {
     const intervals = distributionIntervals(data.points, delta);
-    const lines = quantileLines(
-      intervals,
-      PERCENTILES.map((percentile) => percentile.quantile),
-      window,
-    );
+    const quantiles = PERCENTILES.map((percentile) => percentile.quantile);
+    const lines = quantileLines(intervals, quantiles, window);
+    const endTimes = intervals.map((interval) => interval.end);
     return {
       lines: PERCENTILES.map(({ key }, index) => ({
         color: percentileColor(color, key),
         values: lines[index] ?? [],
       })),
-      gapSlots: gapSlots(
-        intervals.map((interval) => interval.end),
-        window,
-      ),
+      gapSlots: gapSlots(endTimes, window),
     };
   }
   if (metric.type === "counter") {
     const intervals = counterIntervals(data.points, delta);
+    const endTimes = intervals.map((interval) => interval.end);
     return {
       lines: [{ color, values: rateLine(intervals, window) }],
-      gapSlots: gapSlots(
-        intervals.map((interval) => interval.end),
-        window,
-      ),
+      gapSlots: gapSlots(endTimes, window),
     };
   }
   const samples = delta ? runningTotals(data.points) : data.points;
+  const sampleTimes = samples.map((sample) => sample.time);
   return {
     lines: [{ color, values: meanLine(samples, window) }],
-    gapSlots: gapSlots(
-      samples.map((sample) => sample.time),
-      window,
-    ),
+    gapSlots: gapSlots(sampleTimes, window),
   };
 }
 

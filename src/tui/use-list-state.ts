@@ -12,10 +12,8 @@ export function useListState<T>({ items, getKey, initialSelectedKey }: ListState
   const [selectedKey, setSelectedKey] = useState(initialSelectedKey);
 
   function indexOf(key: string | undefined) {
-    return Math.max(
-      0,
-      items.findIndex((item) => getKey(item) === key),
-    );
+    const index = items.findIndex((item) => getKey(item) === key);
+    return Math.max(0, index);
   }
 
   function select(pick: (selectedIndex: number) => T | undefined) {

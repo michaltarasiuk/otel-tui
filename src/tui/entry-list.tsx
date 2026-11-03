@@ -10,7 +10,8 @@ interface EntryListProps {
 }
 
 export function EntryList({ entries }: EntryListProps) {
-  const keyWidth = Math.min(KEY_MAX_WIDTH, Math.max(...entries.map(({ key }) => key.length)));
+  const longestKey = Math.max(...entries.map(({ key }) => key.length));
+  const keyWidth = Math.min(KEY_MAX_WIDTH, longestKey);
 
   return entries.map(({ key, value }) => (
     <box key={key} flexDirection="row" gap={COLUMN_GAP}>
