@@ -34,8 +34,12 @@ function enableRefetchWithoutWindow() {
 enableRefetchWithoutWindow();
 
 export async function waitForInFlightQueries(queryClient: QueryClient) {
-  const queries = queryClient.getQueryCache().findAll({ fetchStatus: "fetching" });
-  await Promise.allSettled(queries.map((query) => query.promise));
+  const promises = queryClient
+    .getQueryCache()
+    .findAll({ fetchStatus: "fetching" })
+    .map((query) => query.promise)
+    .filter((promise) => promise !== undefined);
+  await Promise.allSettled(promises);
 }
 
 interface TuiRootProps {
