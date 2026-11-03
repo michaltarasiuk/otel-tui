@@ -1,5 +1,5 @@
-import { FocusScope } from "../focus.tsx";
 import { useNavigation } from "../navigation.tsx";
+import { Pane } from "../pane.tsx";
 import { TraceDetails } from "./trace-details.tsx";
 import { TraceList } from "./trace-list.tsx";
 
@@ -8,11 +8,9 @@ export function TracesView() {
 
   return (
     <>
-      <box visible={openTraceId === undefined} flexGrow={1}>
-        <FocusScope focused={openTraceId === undefined}>
-          <TraceList />
-        </FocusScope>
-      </box>
+      <Pane visible={openTraceId === undefined}>
+        <TraceList />
+      </Pane>
       {openTraceId !== undefined && (
         <TraceDetails
           key={`${openTraceId} ${openSpanId ?? ""}`}
