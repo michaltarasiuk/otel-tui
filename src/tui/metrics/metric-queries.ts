@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
+import { useVisible } from "../pane.tsx";
 import { POLL_INTERVAL_MS } from "../polling.ts";
 import exponentialHistogramPoints from "./exponential-histogram-points.sql" with { type: "text" };
 import exponentialHistogramSeries from "./exponential-histogram-series.sql" with { type: "text" };
@@ -43,6 +44,7 @@ interface MetricQuery {
 
 export function useMetricList({ search, sort }: MetricQuery) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", { search, sort }],
@@ -56,6 +58,7 @@ export function useMetricList({ search, sort }: MetricQuery) {
       const rows = reader.getRowObjectsJS();
       return Metric.array().parse(rows);
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -63,6 +66,7 @@ export function useMetricList({ search, sort }: MetricQuery) {
 
 export function useMetricTotalCount() {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", "count"],
@@ -70,12 +74,14 @@ export function useMetricTotalCount() {
       const reader = await connection.runAndReadAll(metricCount);
       return z.number().parse(reader.value(0, 0));
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useMetricSeries(metric: Metric) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", metric.metric_id, "series"],
@@ -104,12 +110,14 @@ export function useMetricSeries(metric: Metric) {
           throw new Error(`Unknown metric type: ${metric.type}`);
       }
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useSeriesPoints(metric: Metric, seriesId: string) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "points"],
@@ -147,12 +155,14 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
           throw new Error(`Unknown metric type: ${metric.type}`);
       }
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useSeriesExemplars(metric: Metric, seriesId: string) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "exemplars"],
@@ -165,6 +175,7 @@ export function useSeriesExemplars(metric: Metric, seriesId: string) {
       });
       return Exemplar.array().parse(reader.getRowObjectsJS());
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }

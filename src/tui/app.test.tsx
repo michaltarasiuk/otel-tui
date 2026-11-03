@@ -1,12 +1,16 @@
-import { expect, test } from "bun:test";
+import { afterEach, expect, type Mock, mock, spyOn, test } from "bun:test";
 
+import { DuckDBConnection } from "@duckdb/node-api";
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
 import { renderApp } from "../testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver } from "../testing/receiver.ts";
 import { selectedBackground, textLines } from "../testing/render.tsx";
+import logList from "./logs/log-list.sql" with { type: "text" };
+import metricList from "./metrics/metric-list.sql" with { type: "text" };
 import { THEME } from "./theme.ts";
+import traceList from "./traces/trace-list.sql" with { type: "text" };
 
 const TAB_NAMES = ["Traces", "Metrics", "Logs"];
 
@@ -35,6 +39,14 @@ function tabStyles({ lines: [tabBar] }: CapturedFrame) {
 function footer(frame: string) {
   return textLines(frame).at(-1) ?? "";
 }
+
+function queriesRun(runAndReadAll: Mock<DuckDBConnection["runAndReadAll"]>) {
+  return runAndReadAll.mock.calls.map(([sql]) => sql);
+}
+
+afterEach(() => {
+  mock.restore();
+});
 
 test("starts on the traces tab with the tab bar focused", async () => {
   await using receiver = await startTestReceiver();
@@ -105,6 +117,20 @@ test("keeps showing the current tab while the view has focus", async () => {
     Metrics: { highlighted: false, fg: "muted" },
     Logs: { highlighted: false, fg: "text" },
   });
+});
+
+test("queries only the view on screen", async () => {
+  const runAndReadAll = spyOn(DuckDBConnection.prototype, "runAndReadAll");
+  await using receiver = await startTestReceiver();
+  await using app = await renderApp(receiver);
+
+  await app.waitForFrame(() => queriesRun(runAndReadAll).includes(traceList));
+  expect(queriesRun(runAndReadAll)).not.toContain(metricList);
+  expect(queriesRun(runAndReadAll)).not.toContain(logList);
+
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame(() => queriesRun(runAndReadAll).includes(metricList));
+  expect(queriesRun(runAndReadAll)).not.toContain(logList);
 });
 
 test("shows where the receiver listens beside the tabs", async () => {

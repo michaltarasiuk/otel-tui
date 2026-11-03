@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
+import { useVisible } from "../pane.tsx";
 import { POLL_INTERVAL_MS } from "../polling.ts";
 import type { HistogramRange } from "./histogram.ts";
 import spanDetails from "./span-details.sql" with { type: "text" };
@@ -28,6 +29,7 @@ interface TraceQuery extends TraceFilter {
 
 export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", { search, errorsOnly, timeRange, sort }],
@@ -44,6 +46,7 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
       const rows = reader.getRowObjectsJS();
       return Trace.array().parse(rows);
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -51,6 +54,7 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
 
 export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", "timeline", { search, errorsOnly }],
@@ -65,6 +69,7 @@ export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
       const rows = reader.getRowObjectsJS();
       return { newestBucketMs, occupied: TimeBucket.array().parse(rows) };
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -72,6 +77,7 @@ export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
 
 export function useTraceTotalCount() {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", "count"],
@@ -79,12 +85,14 @@ export function useTraceTotalCount() {
       const reader = await connection.runAndReadAll(traceCount);
       return z.number().parse(reader.value(0, 0));
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useTraceSpans(traceId: string) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", traceId, "spans"],
@@ -92,12 +100,14 @@ export function useTraceSpans(traceId: string) {
       const reader = await connection.runAndReadAll(traceSpans, { traceId });
       return Span.array().parse(reader.getRowObjectsJS());
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useSpanDetails(traceId: string, spanId: string) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", traceId, "spans", spanId],
@@ -106,6 +116,7 @@ export function useSpanDetails(traceId: string, spanId: string) {
       const [row] = reader.getRowObjectsJS();
       return row === undefined ? null : SpanDetails.parse(row);
     },
+    enabled: visible,
     staleTime: Infinity,
   });
 }

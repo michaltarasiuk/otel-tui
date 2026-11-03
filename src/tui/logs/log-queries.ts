@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { containsPattern } from "../../utils/contains-pattern.ts";
 import { useConnection } from "../connection.ts";
+import { useVisible } from "../pane.tsx";
 import { POLL_INTERVAL_MS } from "../polling.ts";
 import logCount from "./log-count.sql" with { type: "text" };
 import logList from "./log-list.sql" with { type: "text" };
@@ -21,6 +22,7 @@ interface LogQuery {
 
 export function useLogList({ search, minSeverity, traceId }: LogQuery) {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["logs", { search, minSeverity, traceId }],
@@ -35,6 +37,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
       const rows = reader.getRowObjectsJS();
       return Log.array().parse(rows);
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -42,6 +45,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
 
 export function useLogTotalCount() {
   const connection = useConnection();
+  const visible = useVisible();
 
   return useQuery({
     queryKey: ["logs", "count"],
@@ -49,6 +53,7 @@ export function useLogTotalCount() {
       const reader = await connection.runAndReadAll(logCount);
       return z.number().parse(reader.value(0, 0));
     },
+    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
