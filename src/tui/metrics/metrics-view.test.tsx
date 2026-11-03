@@ -15,123 +15,162 @@ function atSecond(seconds: number) {
   return new Date(baseTime + seconds * 1000);
 }
 
-function routeRequests(route: string, values: number[]) {
+function flagRequests(flag: string, values: number[]) {
   return values.map((value, index) => ({
-    attributes: { "http.route": route },
+    attributes: { "feature_flag.key": flag },
     start: atSecond(0),
     time: atSecond(10 * (index + 1)),
     value,
   }));
 }
 
-const otlpMetrics = metricsRequest({
-  service: "checkout",
-  scope: { name: "shop", version: "1.0.0" },
-  metrics: [
-    {
-      name: "http.server.requests",
-      unit: "{request}",
-      description: "Requests served",
-      monotonic: true,
-      temporality: TEMPORALITY.cumulative,
-      sum: [
-        ...routeRequests("/cart", [100, 150, 250]),
-        ...routeRequests("/checkout", [20, 30, 50]),
-      ],
-    },
-    {
-      name: "jobs.completed",
-      unit: "{job}",
-      monotonic: true,
-      temporality: TEMPORALITY.delta,
-      sum: [
-        { start: atSecond(0), time: atSecond(10), value: 3 },
-        { start: atSecond(10), time: atSecond(20), value: 4 },
-        { start: atSecond(20), time: atSecond(30), value: 5 },
-      ],
-    },
-    {
-      name: "process.memory.usage",
-      unit: "By",
-      gauge: [
-        { time: atSecond(10), value: 1_048_576 },
-        { time: atSecond(20), value: 2_097_152 },
-        { time: atSecond(30), value: 1_572_864 },
-      ],
-    },
-    {
-      name: "queue.size",
-      unit: "{job}",
-      monotonic: false,
-      temporality: TEMPORALITY.cumulative,
-      sum: [
-        { start: atSecond(0), time: atSecond(10), value: 5 },
-        { start: atSecond(0), time: atSecond(20), value: 3 },
-        { start: atSecond(0), time: atSecond(30), value: 8 },
-      ],
-    },
-    {
-      name: "http.server.duration",
-      unit: "ms",
-      temporality: TEMPORALITY.delta,
-      histogram: [
-        {
-          start: atSecond(0),
-          time: atSecond(10),
-          count: 5,
-          sum: 150,
-          min: 5,
-          max: 80,
-          bounds: [10, 50, 100],
-          counts: [1, 3, 1, 0],
-          exemplars: [{ time: atSecond(9), value: 75 }],
-        },
-        {
-          start: atSecond(10),
-          time: atSecond(20),
-          count: 5,
-          sum: 400,
-          min: 20,
-          max: 150,
-          bounds: [10, 50, 100],
-          counts: [0, 2, 2, 1],
-          exemplars: [
-            { time: atSecond(19), value: 140, traceId: "2".repeat(32), spanId: "2b".repeat(8) },
-          ],
-        },
-      ],
-    },
-    {
-      name: "rpc.payload.size",
-      unit: "By",
-      temporality: TEMPORALITY.cumulative,
-      exponentialHistogram: [
-        {
-          start: atSecond(0),
-          time: atSecond(10),
-          count: 3,
-          scale: 0,
-          positive: { offset: 9, counts: [1, 2] },
-        },
-        {
-          start: atSecond(0),
-          time: atSecond(20),
-          count: 6,
-          scale: 0,
-          positive: { offset: 9, counts: [2, 4] },
-        },
-      ],
-    },
-  ],
-});
+const otlpMetrics = metricsRequest(
+  {
+    service: "shipping",
+    scope: { name: "otel_demo.shipping.quote" },
+    metrics: [
+      {
+        name: "demo.shipping.items_shipped",
+        monotonic: true,
+        temporality: TEMPORALITY.delta,
+        sum: [
+          { start: atSecond(0), time: atSecond(10), value: 3 },
+          { start: atSecond(10), time: atSecond(20), value: 4 },
+          { start: atSecond(20), time: atSecond(30), value: 5 },
+        ],
+      },
+    ],
+  },
+  {
+    service: "shipping",
+    scope: { name: "opentelemetry-instrumentation-actix-web", version: "0.24.0" },
+    metrics: [
+      {
+        name: "http.server.request.body.size",
+        unit: "By",
+        temporality: TEMPORALITY.cumulative,
+        exponentialHistogram: [
+          {
+            start: atSecond(0),
+            time: atSecond(10),
+            count: 3,
+            scale: 0,
+            positive: { offset: 9, counts: [1, 2] },
+          },
+          {
+            start: atSecond(0),
+            time: atSecond(20),
+            count: 6,
+            scale: 0,
+            positive: { offset: 9, counts: [2, 4] },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    service: "cart",
+    scope: { name: "OpenFeature", version: "2.14.1.0" },
+    metrics: [
+      {
+        name: "feature_flag.evaluation_requests_total",
+        unit: "{request}",
+        description: "feature flag evaluation request counter",
+        monotonic: true,
+        temporality: TEMPORALITY.cumulative,
+        sum: [
+          ...flagRequests("cartFailure", [100, 150, 250]),
+          ...flagRequests("failedReadinessProbe", [20, 30, 50]),
+        ],
+      },
+    ],
+  },
+  {
+    service: "cart",
+    scope: { name: "Microsoft.AspNetCore.Hosting" },
+    metrics: [
+      {
+        name: "http.server.request.duration",
+        unit: "s",
+        temporality: TEMPORALITY.delta,
+        histogram: [
+          {
+            start: atSecond(0),
+            time: atSecond(10),
+            count: 5,
+            sum: 0.15,
+            min: 0.005,
+            max: 0.08,
+            bounds: [0.01, 0.05, 0.1],
+            counts: [1, 3, 1, 0],
+            exemplars: [{ time: atSecond(9), value: 0.075 }],
+          },
+          {
+            start: atSecond(10),
+            time: atSecond(20),
+            count: 5,
+            sum: 0.4,
+            min: 0.02,
+            max: 0.15,
+            bounds: [0.01, 0.05, 0.1],
+            counts: [0, 2, 2, 1],
+            exemplars: [
+              { time: atSecond(19), value: 0.14, traceId: "2".repeat(32), spanId: "2b".repeat(8) },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    service: "cart",
+    scope: { name: "OpenTelemetry.Instrumentation.Process", version: "1.18.0-rc.1" },
+    metrics: [
+      {
+        name: "process.thread.count",
+        unit: "{thread}",
+        monotonic: false,
+        temporality: TEMPORALITY.cumulative,
+        sum: [
+          { start: atSecond(0), time: atSecond(10), value: 5 },
+          { start: atSecond(0), time: atSecond(20), value: 3 },
+          { start: atSecond(0), time: atSecond(30), value: 8 },
+        ],
+      },
+    ],
+  },
+  {
+    service: "frontend",
+    scope: { name: "@opentelemetry/instrumentation-runtime-node", version: "0.35.0" },
+    metrics: [
+      {
+        name: "v8js.memory.heap.used",
+        unit: "By",
+        gauge: [
+          { time: atSecond(10), value: 1_048_576 },
+          { time: atSecond(20), value: 2_097_152 },
+          { time: atSecond(30), value: 1_572_864 },
+        ],
+      },
+    ],
+  },
+);
 
-const DURATION_ROW = "12:00:20.000 ● checkout http.server.duration histogram ms 1";
-const REQUESTS_ROW = "12:00:30.000 ● checkout http.server.requests counter {request} 2";
-const JOBS_ROW = "12:00:30.000 ● checkout jobs.completed counter {job} 1";
-const MEMORY_ROW = "12:00:30.000 ● checkout process.memory.usage gauge By 1";
-const QUEUE_ROW = "12:00:30.000 ● checkout queue.size updowncounter {job} 1";
-const PAYLOAD_ROW = "12:00:20.000 ● checkout rpc.payload.size exp histogram By 1";
-const BY_NAME = [DURATION_ROW, REQUESTS_ROW, JOBS_ROW, MEMORY_ROW, QUEUE_ROW, PAYLOAD_ROW];
+const ITEMS_SHIPPED_ROW = "12:00:30.000 ● shipping demo.shipping.items_shipped counter 1";
+const FLAG_REQUESTS_ROW =
+  "12:00:30.000 ● cart feature_flag.evaluation_requests_total counter {request} 2";
+const BODY_SIZE_ROW = "12:00:20.000 ● shipping http.server.request.body.size exp histogram By 1";
+const DURATION_ROW = "12:00:20.000 ● cart http.server.request.duration histogram s 1";
+const THREADS_ROW = "12:00:30.000 ● cart process.thread.count updowncounter {thread} 1";
+const HEAP_ROW = "12:00:30.000 ● frontend v8js.memory.heap.used gauge By 1";
+const BY_NAME = [
+  ITEMS_SHIPPED_ROW,
+  FLAG_REQUESTS_ROW,
+  BODY_SIZE_ROW,
+  DURATION_ROW,
+  THREADS_ROW,
+  HEAP_ROW,
+];
 
 beforeEach(() => {
   setSystemTime(atSecond(60));
@@ -203,20 +242,20 @@ test("sorts by series count, last update, and name", async () => {
   }
 
   await pressSortKey(false, "Time Service Name Type Unit ▼ Series", [
-    REQUESTS_ROW,
+    FLAG_REQUESTS_ROW,
+    ITEMS_SHIPPED_ROW,
+    BODY_SIZE_ROW,
     DURATION_ROW,
-    JOBS_ROW,
-    MEMORY_ROW,
-    QUEUE_ROW,
-    PAYLOAD_ROW,
+    THREADS_ROW,
+    HEAP_ROW,
   ]);
   await pressSortKey(false, "Time ▼ Service Name Type Unit Series", [
-    REQUESTS_ROW,
-    JOBS_ROW,
-    MEMORY_ROW,
-    QUEUE_ROW,
+    ITEMS_SHIPPED_ROW,
+    FLAG_REQUESTS_ROW,
+    THREADS_ROW,
+    HEAP_ROW,
+    BODY_SIZE_ROW,
     DURATION_ROW,
-    PAYLOAD_ROW,
   ]);
   await pressSortKey(false, "Time Service Name ▲ Type Unit Series", BY_NAME);
   await pressSortKey(true, "Time Service Name ▼ Type Unit Series", BY_NAME.toReversed());
@@ -236,9 +275,9 @@ test("searches names, descriptions, and attributes", async () => {
     await app.waitForFrame((frame) => metricRows(frame).length === 6);
   }
 
-  await search("payload", [PAYLOAD_ROW]);
-  await search("requests served", [REQUESTS_ROW]);
-  await search("/checkout", [REQUESTS_ROW]);
+  await search("body", [BODY_SIZE_ROW]);
+  await search("evaluation request counter", [FLAG_REQUESTS_ROW]);
+  await search("failedReadinessProbe", [FLAG_REQUESTS_ROW]);
 });
 
 test("keeps an applied search while browsing", async () => {
@@ -254,7 +293,7 @@ test("keeps an applied search while browsing", async () => {
 
   app.mockInput.pressArrow("down");
 
-  expect(await app.waitForSelection("http.server.requests")).toBe(REQUESTS_ROW);
+  expect(await app.waitForSelection("http.server.request.duration")).toBe(DURATION_ROW);
   await app.waitForFrame((frame) => textLines(frame)[1] === "/http 2 of 6 metrics");
 });
 
@@ -263,18 +302,20 @@ test("summarizes the selected metric's attribute values", async () => {
   await using app = await renderMetricList(receiver);
 
   app.mockInput.pressArrow("down");
-  const frame = await app.waitForFrame((frame) => panelLines(frame).includes("shop 1.0.0"));
+  const frame = await app.waitForFrame((frame) =>
+    panelLines(frame).includes("OpenFeature 2.14.1.0"),
+  );
 
   expect(panelLines(frame)).toEqual([
-    "http.server.requests counter",
-    "● checkout unit {request} cumulative 2 series",
-    "Requests served",
+    "feature_flag.evaluation_requests_total counter",
+    "● cart unit {request} cumulative 2 series",
+    "feature flag evaluation request counter",
     "Attributes",
-    "http.route /cart, /checkout",
+    "feature_flag.key cartFailure, failedReadinessProbe",
     "Resource",
-    "service.name checkout",
+    "service.name cart",
     "Scope",
-    "shop 1.0.0",
+    "OpenFeature 2.14.1.0",
   ]);
 });
 
@@ -284,10 +325,10 @@ test("lists a few attribute values and counts the rest", async () => {
   await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
-      service: "worker",
+      service: "recommendation",
       metrics: [
         {
-          name: "cpu.utilization",
+          name: "system.cpu.utilization",
           unit: "1",
           gauge: cores.map((cpu) => ({ attributes: { cpu }, time: atSecond(10), value: 0.5 })),
         },
@@ -303,43 +344,43 @@ test("lists a few attribute values and counts the rest", async () => {
 
 test("opens a counter's series with their rates and totals", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, REQUESTS_ROW);
+  await using app = await openMetric(receiver, FLAG_REQUESTS_ROW);
 
   const frame = await app.waitForFrame(
-    (frame) => BRAILLE_DOTS.test(frame) && textLines(frame).includes("/checkout 2/s 50"),
+    (frame) => BRAILLE_DOTS.test(frame) && textLines(frame).includes("failedReadinessProbe 2/s 50"),
   );
 
   expect(textLines(frame).slice(1, 7)).toEqual([
-    "http.server.requests counter",
-    "● checkout unit {request} cumulative 2 series",
-    "Requests served",
-    "http.route Rate Total",
-    "/cart 10/s 250",
-    "/checkout 2/s 50",
+    "feature_flag.evaluation_requests_total counter",
+    "● cart unit {request} cumulative 2 series",
+    "feature flag evaluation request counter",
+    "feature_flag.key Rate Total",
+    "cartFailure 10/s 250",
+    "failedReadinessProbe 2/s 50",
   ]);
   const panel = panelLines(frame);
-  expect(panel.slice(0, 3)).toEqual(["/cart 12:00:30.000", "rate 10/s total 250", "Rate"]);
+  expect(panel.slice(0, 3)).toEqual(["cartFailure 12:00:30.000", "rate 10/s total 250", "Rate"]);
   expect(panel[3]).toStartWith("10/s ");
   expect(panel.slice(-8)).toEqual([
     "0/s",
     "12:00:00.000 now",
     "Attributes",
-    "http.route /cart",
+    "feature_flag.key cartFailure",
     "Resource",
-    "service.name checkout",
+    "service.name cart",
     "Scope",
-    "shop 1.0.0",
+    "OpenFeature 2.14.1.0",
   ]);
 });
 
 test("shows the series picked in the table", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, REQUESTS_ROW);
-  await app.waitForFrame((frame) => textLines(frame).includes("/checkout 2/s 50"));
+  await using app = await openMetric(receiver, FLAG_REQUESTS_ROW);
+  await app.waitForFrame((frame) => textLines(frame).includes("failedReadinessProbe 2/s 50"));
 
   app.mockInput.pressArrow("down");
   const frame = await app.waitForFrame(
-    (frame) => panelLines(frame)[0] === "/checkout 12:00:30.000",
+    (frame) => panelLines(frame)[0] === "failedReadinessProbe 12:00:30.000",
   );
 
   expect(panelLines(frame)[1]).toBe("rate 2/s total 50");
@@ -347,7 +388,7 @@ test("shows the series picked in the table", async () => {
 
 test("adds up a delta counter's points", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, JOBS_ROW);
+  await using app = await openMetric(receiver, ITEMS_SHIPPED_ROW);
 
   const frame = await app.waitForFrame((frame) => textLines(frame).includes("none 0.5/s 12"));
 
@@ -356,7 +397,7 @@ test("adds up a delta counter's points", async () => {
 
 test("shows the last, lowest, and highest value of gauges and updowncounters", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, MEMORY_ROW);
+  await using app = await openMetric(receiver, HEAP_ROW);
   let frame = await app.waitForFrame((frame) =>
     textLines(frame).includes("none 1.5 MiB 1.0 MiB 2.0 MiB"),
   );
@@ -367,8 +408,8 @@ test("shows the last, lowest, and highest value of gauges and updowncounters", a
 
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => frame.includes("6 metrics"));
-  app.mockInput.pressArrow("down");
-  await app.waitForSelection(QUEUE_ROW);
+  app.mockInput.pressArrow("up");
+  await app.waitForSelection(THREADS_ROW);
   app.mockInput.pressEnter();
   frame = await app.waitForFrame((frame) => textLines(frame).includes("none 8 3 8"));
   expect(panelLines(frame)[1]).toBe("last 8 min 3 max 8");
@@ -408,7 +449,7 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
 
 test("shows an exponential histogram's buckets", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, PAYLOAD_ROW);
+  await using app = await openMetric(receiver, BODY_SIZE_ROW);
 
   const frame = await app.waitForFrame((frame) => frame.includes("Buckets"));
 
@@ -425,10 +466,10 @@ test("waits for a second export before plotting a counter's rate", async () => {
   await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
-      service: "checkout",
+      service: "currency",
       metrics: [
         {
-          name: "orders",
+          name: "demo.exchange.conversions_counter",
           monotonic: true,
           temporality: TEMPORALITY.cumulative,
           sum: [{ start: atSecond(0), time: atSecond(10), value: 5 }],
@@ -447,12 +488,12 @@ test("waits for a second export before plotting a counter's rate", async () => {
 
 test("goes back to the list with the opened metric still selected", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, JOBS_ROW);
+  await using app = await openMetric(receiver, ITEMS_SHIPPED_ROW);
 
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => frame.includes("6 metrics"));
 
-  expect(await app.waitForSelection("jobs.completed")).toBe(JOBS_ROW);
+  expect(await app.waitForSelection("demo.shipping.items_shipped")).toBe(ITEMS_SHIPPED_ROW);
 });
 
 test("adds up a delta updowncounter's changes", async () => {
@@ -460,7 +501,7 @@ test("adds up a delta updowncounter's changes", async () => {
   await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
-      service: "checkout",
+      service: "cart",
       metrics: [
         {
           name: "http.server.active_requests",
@@ -495,11 +536,11 @@ test("opens a delta histogram that exports no buckets", async () => {
   await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
-      service: "checkout",
+      service: "cart",
       metrics: [
         {
-          name: "http.server.duration",
-          unit: "ms",
+          name: "http.server.request.duration",
+          unit: "s",
           temporality: TEMPORALITY.delta,
           histogram: [
             { start: atSecond(0), time: atSecond(10), count: 3, bounds: [], counts: [] },
@@ -524,28 +565,34 @@ test("opens a delta histogram that exports no buckets", async () => {
 test("scrolls the metric panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   const attributes = Object.fromEntries(
-    Array.from({ length: 30 }, (_, index) => [`label.${index + 1}`, "value"]),
+    Array.from({ length: 30 }, (_, index) => [`demo.product.id.${index + 1}`, "0PUK6V6EV0"]),
   );
   await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
-      service: "checkout",
-      metrics: [{ name: "queue.depth", gauge: [{ attributes, time: atSecond(10), value: 1 }] }],
+      service: "product-catalog",
+      metrics: [
+        { name: "db.sql.connection.open", gauge: [{ attributes, time: atSecond(10), value: 1 }] },
+      ],
     }),
   );
   await using app = await renderMetrics(receiver);
-  await app.waitForFrame((frame) => panelLines(frame).includes("label.1 value"));
+  await app.waitForFrame((frame) => panelLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 
   app.mockInput.pressKey("d", { ctrl: true });
-  await app.waitForFrame((frame) => !panelLines(frame).includes("label.1 value"));
+  await app.waitForFrame((frame) => !panelLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 
   app.mockInput.pressKey("u", { ctrl: true });
-  await app.waitForFrame((frame) => panelLines(frame).includes("label.1 value"));
+  await app.waitForFrame((frame) => panelLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 });
 
 test("scrolls the series panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
+  for (const row of BY_NAME.slice(1, BY_NAME.indexOf(DURATION_ROW) + 1)) {
+    app.mockInput.pressArrow("down");
+    await app.waitForSelection(row);
+  }
   app.mockInput.pressEnter();
   await app.waitForFrame(
     (frame) => panelLines(frame).includes("Exemplars") && BRAILLE_DOTS.test(frame),
@@ -570,11 +617,11 @@ test("shows an error when metrics cannot be loaded", async () => {
 
 test("says when an open metric is no longer available", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openMetric(receiver, JOBS_ROW);
+  await using app = await openMetric(receiver, ITEMS_SHIPPED_ROW);
   await app.waitForFrame((frame) => textLines(frame).includes("none 0.5/s 12"));
 
   const connection = await receiver.connect();
-  await connection.run("DELETE FROM otlp_metrics_sum WHERE name = 'jobs.completed'");
+  await connection.run("DELETE FROM otlp_metrics_sum WHERE name = 'demo.shipping.items_shipped'");
 
   await app.waitForFrame((frame) => frame.includes("This metric is no longer available"));
 });

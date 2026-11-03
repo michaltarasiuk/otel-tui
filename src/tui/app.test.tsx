@@ -157,8 +157,8 @@ test("counts the items received and says when the last arrived", async () => {
     logsRequest({
       service: "checkout",
       logs: [
-        { time: new Date(0), body: "order placed" },
-        { time: new Date(1), body: "order shipped" },
+        { time: new Date(0), body: "[PlaceOrder]" },
+        { time: new Date(1), body: "payment went through" },
       ],
     }),
   );
@@ -177,7 +177,7 @@ test("hints the view's described keys, the selected row's actions first", async 
         {
           traceId: "1".repeat(32),
           spanId: "1".repeat(16),
-          name: "POST /checkout",
+          name: "oteldemo.CheckoutService/PlaceOrder",
           start: new Date(0),
           end: new Date(10),
         },
@@ -185,7 +185,7 @@ test("hints the view's described keys, the selected row's actions first", async 
     }),
   );
   await using app = await renderApp(receiver, { width: 160, height: 10 });
-  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
@@ -205,7 +205,7 @@ test("hints the jump to the next error only when a trace has errors", async () =
         {
           traceId: "1".repeat(32),
           spanId: "1".repeat(16),
-          name: "POST /checkout",
+          name: "oteldemo.CheckoutService/PlaceOrder",
           start: new Date(0),
           end: new Date(10),
           status: { code: STATUS_CODE.error },
@@ -214,7 +214,7 @@ test("hints the jump to the next error only when a trace has errors", async () =
     }),
   );
   await using app = await renderApp(receiver, { width: 160, height: 10 });
-  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
@@ -230,22 +230,30 @@ test("follows to the traces tab when a log opens its trace", async () => {
     "/v1/traces",
     tracesRequest({
       service: "checkout",
-      spans: [{ traceId, spanId, name: "POST /checkout", start: new Date(0), end: new Date(10) }],
+      spans: [
+        {
+          traceId,
+          spanId,
+          name: "oteldemo.CheckoutService/PlaceOrder",
+          start: new Date(0),
+          end: new Date(10),
+        },
+      ],
     }),
   );
   await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
       service: "checkout",
-      logs: [{ time: new Date(5), body: "order placed", traceId, spanId }],
+      logs: [{ time: new Date(5), body: "[PlaceOrder]", traceId, spanId }],
     }),
   );
   await using app = await renderApp(receiver);
-  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("order placed"));
+  await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("return open trace"));
 
@@ -270,7 +278,7 @@ test("forgets where a trace was opened from after switching tabs", async () => {
         {
           traceId,
           spanId: "2a".repeat(8),
-          name: "POST /checkout",
+          name: "oteldemo.CheckoutService/PlaceOrder",
           start: new Date(0),
           end: new Date(10),
         },
@@ -281,15 +289,15 @@ test("forgets where a trace was opened from after switching tabs", async () => {
     "/v1/logs",
     logsRequest({
       service: "checkout",
-      logs: [{ time: new Date(5), body: "order placed", traceId }],
+      logs: [{ time: new Date(5), body: "[PlaceOrder]", traceId }],
     }),
   );
   await using app = await renderApp(receiver);
-  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("order placed"));
+  await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("return open trace"));
   app.mockInput.pressEnter();

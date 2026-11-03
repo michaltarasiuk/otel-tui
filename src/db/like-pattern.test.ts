@@ -12,6 +12,6 @@ test("matches everything for an empty search", () => {
 
 test("escapes like wildcards and the escape character", () => {
   expect(substringPattern("100%")).toBe("%100\\%%");
-  expect(substringPattern("user_id")).toBe("%user\\_id%");
+  expect(substringPattern("get_product_list")).toBe("%get\\_product\\_list%");
   expect(substringPattern("C:\\temp")).toBe("%C:\\\\temp%");
 });

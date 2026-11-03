@@ -30,62 +30,87 @@ function series(
   };
 }
 
+const FRONTEND_INSTANCE_ID = "efe50e2b-c27e-4d60-b585-525713841890";
+
 describe("attributeColumns", () => {
   test("shows every attribute of a lone series and no resource attributes", () => {
-    const lone = series("1", { method: "GET", "http.route": "/a" }, { "host.name": "web-1" });
+    const lone = series(
+      "1",
+      { "http.request.method": "GET", "http.route": "/api/cart" },
+      { "host.name": "colima" },
+    );
 
     expect(attributeColumns([lone])).toEqual([
-      { key: "http.route", source: "attributes", weight: 8 },
-      { key: "method", source: "attributes", weight: 8 },
+      { key: "http.request.method", source: "attributes", weight: 8 },
+      { key: "http.route", source: "attributes", weight: 9 },
     ]);
   });
 
   test("shows only attributes that tell series apart, fewest values first", () => {
     const rows = [
-      series("1", { "http.route": "/a", method: "GET" }, { "host.name": "web-1", team: "shop" }),
-      series("2", { "http.route": "/b", method: "GET" }, { "host.name": "web-1", team: "shop" }),
+      series(
+        "1",
+        { "http.route": "/api/cart", "http.request.method": "GET" },
+        { "service.instance.id": FRONTEND_INSTANCE_ID, "service.namespace": "opentelemetry-demo" },
+      ),
+      series(
+        "2",
+        { "http.route": "/api/currency", "http.request.method": "GET" },
+        { "service.instance.id": FRONTEND_INSTANCE_ID, "service.namespace": "opentelemetry-demo" },
+      ),
       series(
         "3",
-        { "http.route": "/c", method: "GET", status: "500" },
-        { "host.name": "web-2", team: "shop" },
+        {
+          "http.route": "/api/data",
+          "http.request.method": "GET",
+          "http.response.status_code": "500",
+        },
+        {
+          "service.instance.id": "a1d5c3f0-6f2e-4b8a-9c47-2f0e8d6b1a93",
+          "service.namespace": "opentelemetry-demo",
+        },
       ),
     ];
 
     expect(attributeColumns(rows)).toEqual([
-      { key: "status", source: "attributes", weight: 8 },
-      { key: "http.route", source: "attributes", weight: 8 },
-      { key: "host.name", source: "resource_attributes", weight: 8 },
+      { key: "http.response.status_code", source: "attributes", weight: 8 },
+      { key: "http.route", source: "attributes", weight: 13 },
+      { key: "service.instance.id", source: "resource_attributes", weight: 32 },
     ]);
   });
 
   test("weighs a column by its longest value within limits", () => {
     const rows = [
-      series("1", { "http.route": "/api/v1/orders/{id}/items", "user.agent": "curl" }),
+      series("1", {
+        "http.route": "/api/products/[productId]/index",
+        "user_agent.original": "python-requests/2.34.2",
+      }),
       series("2", {
         "http.route": "/",
-        "user.agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0)",
+        "user_agent.original":
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36",
       }),
     ];
 
-    expect(attributeColumns(rows).map((column) => column.weight)).toEqual([25, 32]);
+    expect(attributeColumns(rows).map((column) => column.weight)).toEqual([31, 32]);
   });
 });
 
 describe("seriesLabel", () => {
-  const method: AttributeColumn = { key: "method", source: "attributes", weight: 8 };
+  const method: AttributeColumn = { key: "http.request.method", source: "attributes", weight: 8 };
   const route: AttributeColumn = { key: "http.route", source: "attributes", weight: 8 };
 
   test("joins the series' column values", () => {
-    const row = series("1", { method: "GET", "http.route": "/a" });
+    const row = series("1", { "http.request.method": "GET", "http.route": "/api/cart" });
 
-    expect(seriesLabel(row, [method, route])).toBe("GET · /a");
+    expect(seriesLabel(row, [method, route])).toBe("GET · /api/cart");
   });
 
   test("skips columns the series has no value for", () => {
-    const row = series("1", { "http.route": "/a" });
+    const row = series("1", { "http.route": "/api/cart" });
 
     expect(cellValue(row, method)).toBe("");
-    expect(seriesLabel(row, [method, route])).toBe("/a");
+    expect(seriesLabel(row, [method, route])).toBe("/api/cart");
   });
 
   test("names a series without attributes", () => {
@@ -96,14 +121,14 @@ describe("seriesLabel", () => {
 describe("sortByColumns", () => {
   test("orders series by each column in turn, then by ID", () => {
     const rows = [
-      series("4", { method: "POST", "http.route": "/a" }),
-      series("3", { method: "GET", "http.route": "/b" }),
-      series("2", { method: "GET", "http.route": "/a" }),
-      series("1", { method: "GET", "http.route": "/a" }),
+      series("1", { "http.request.method": "POST", "http.route": "/api/cart" }),
+      series("2", { "http.request.method": "GET", "http.route": "/api/currency" }),
+      series("4", { "http.request.method": "GET", "http.route": "/api/cart" }),
+      series("3", { "http.request.method": "GET", "http.route": "/api/cart" }),
     ];
     const columns = attributeColumns(rows);
 
-    expect(columns.map((column) => column.key)).toEqual(["http.route", "method"]);
-    expect(sortByColumns(rows, columns).map((row) => row.series_id)).toEqual(["1", "2", "4", "3"]);
+    expect(columns.map((column) => column.key)).toEqual(["http.request.method", "http.route"]);
+    expect(sortByColumns(rows, columns).map((row) => row.series_id)).toEqual(["3", "4", "2", "1"]);
   });
 });

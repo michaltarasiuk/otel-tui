@@ -20,14 +20,19 @@ const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
 const cartTraceId = "1".repeat(32);
 const checkoutTraceId = "2".repeat(32);
-const healthTraceId = "3".repeat(32);
+const statusTraceId = "3".repeat(32);
 const rootlessTraceId = "4".repeat(32);
 const missingParentId = "5".repeat(16);
 
-const CART_ROW = "12:00:00.000 ● frontend GET /cart 3 120.0ms";
-const CHECKOUT_ROW = "12:00:01.000 ● checkout POST /checkout 3 2 500.0ms";
-const HEALTH_ROW = "12:00:02.000 ● frontend GET /health 1 1.0ms";
-const NEWEST_FIRST = [HEALTH_ROW, CHECKOUT_ROW, CART_ROW];
+const PLACE_ORDER = "oteldemo.CheckoutService/PlaceOrder";
+const GET_CART = "POST /oteldemo.CartService/GetCart";
+const CHARGE_DECLINED = "Credit card info is invalid.";
+const CHARGE_FAILED = `failed to charge card: could not charge the card: rpc error: code = Unknown desc = ${CHARGE_DECLINED}`;
+
+const CART_ROW = "12:00:00.000 ● frontend GET /api/cart 3 120.0ms";
+const CHECKOUT_ROW = `12:00:01.000 ● checkout ${PLACE_ORDER} 3 2 500.0ms`;
+const STATUS_ROW = "12:00:02.000 ● image-provider GET /status 1 1.0ms";
+const NEWEST_FIRST = [STATUS_ROW, CHECKOUT_ROW, CART_ROW];
 
 afterEach(() => {
   setSystemTime();
@@ -40,22 +45,27 @@ function at(ms: number) {
 const otlpTraces = tracesRequest(
   {
     service: "frontend",
-    attributes: { "host.name": "web-1" },
-    scope: { name: "shop", version: "1.0.0" },
+    attributes: { "host.name": "colima" },
+    scope: { name: "next.js", version: "0.0.1" },
     spans: [
       {
         traceId: cartTraceId,
         spanId: "1a".repeat(8),
-        name: "GET /cart",
+        name: "GET /api/cart",
         kind: SPAN_KIND.server,
         start: at(0),
         end: at(120),
-        attributes: { "http.route": "/cart" },
+        attributes: { "http.route": "/api/cart" },
       },
+    ],
+  },
+  {
+    service: "image-provider",
+    spans: [
       {
-        traceId: healthTraceId,
+        traceId: statusTraceId,
         spanId: "3a".repeat(8),
-        name: "GET /health",
+        name: "GET /status",
         start: at(2000),
         end: at(2001),
       },
@@ -68,25 +78,29 @@ const otlpTraces = tracesRequest(
         traceId: cartTraceId,
         spanId: "1b".repeat(8),
         parentSpanId: "1a".repeat(8),
-        name: "GetCart",
+        name: GET_CART,
         kind: SPAN_KIND.server,
         start: at(10),
         end: at(90),
         events: [
-          { name: "request queued", time: at(8) },
-          { name: "cache miss", time: at(15), attributes: { "cache.key": "cart:42" } },
-          { name: "cart loaded" },
+          { name: "Enqueued", time: at(8) },
+          {
+            name: "feature_flag.evaluation",
+            time: at(15),
+            attributes: { "feature_flag.key": "cartFailure" },
+          },
+          { name: "Fetch cart" },
         ],
       },
       {
         traceId: cartTraceId,
         spanId: "1c".repeat(8),
         parentSpanId: "1b".repeat(8),
-        name: "SELECT carts",
+        name: "valkey-cart:6379",
         kind: SPAN_KIND.client,
         start: at(20),
         end: at(80),
-        attributes: { "db.system": "postgresql" },
+        attributes: { "db.system": "redis" },
       },
     ],
   },
@@ -96,13 +110,17 @@ const otlpTraces = tracesRequest(
       {
         traceId: checkoutTraceId,
         spanId: "2a".repeat(8),
-        name: "POST /checkout",
+        name: PLACE_ORDER,
         kind: SPAN_KIND.server,
         start: at(1000),
         end: at(1450),
-        status: { code: STATUS_CODE.error, message: "card declined" },
+        status: { code: STATUS_CODE.error, message: CHARGE_FAILED },
         links: [
-          { traceId: cartTraceId, spanId: "1a".repeat(8), attributes: { "link.reason": "cart" } },
+          {
+            traceId: cartTraceId,
+            spanId: "1a".repeat(8),
+            attributes: { "demo.cart.items.count": 4 },
+          },
         ],
       },
     ],
@@ -118,31 +136,31 @@ const otlpTraces = tracesRequest(
         kind: SPAN_KIND.client,
         start: at(1100),
         end: at(1400),
-        status: { code: STATUS_CODE.error, message: "insufficient funds" },
+        status: { code: STATUS_CODE.error, message: CHARGE_DECLINED },
       },
     ],
   },
   {
-    service: "worker",
+    service: "accounting",
     spans: [
       {
         traceId: rootlessTraceId,
         spanId: "4b".repeat(8),
         parentSpanId: "4a".repeat(8),
-        name: "process order",
+        name: "order-consumed",
         start: at(3000),
         end: at(3100),
       },
     ],
   },
   {
-    service: "email",
+    service: "fraud-detection",
     spans: [
       {
         traceId: checkoutTraceId,
         spanId: "2c".repeat(8),
         parentSpanId: missingParentId,
-        name: "send receipt",
+        name: "orders process",
         kind: SPAN_KIND.consumer,
         start: at(1460),
         end: at(1500),
@@ -243,9 +261,9 @@ test("searches trace names, services, and IDs", async () => {
 
   app.mockInput.pressKey("/");
   await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
-  await app.mockInput.typeText(healthTraceId.slice(0, 8));
+  await app.mockInput.typeText(statusTraceId.slice(0, 8));
   frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
-  expect(traceRows(frame)).toEqual([HEALTH_ROW]);
+  expect(traceRows(frame)).toEqual([STATUS_ROW]);
 });
 
 test("matches search text literally", async () => {
@@ -284,14 +302,14 @@ test("sorts by span count, error count, duration, and time", async () => {
     expect(textLines(frame)).toContain(header);
   }
 
-  await nextSort("Time Service Name ▼ Spans Errors Duration", [CHECKOUT_ROW, CART_ROW, HEALTH_ROW]);
-  await nextSort("Time Service Name Spans ▼ Errors Duration", [CHECKOUT_ROW, HEALTH_ROW, CART_ROW]);
-  await nextSort("Time Service Name Spans Errors ▼ Duration", [CHECKOUT_ROW, CART_ROW, HEALTH_ROW]);
+  await nextSort("Time Service Name ▼ Spans Errors Duration", [CHECKOUT_ROW, CART_ROW, STATUS_ROW]);
+  await nextSort("Time Service Name Spans ▼ Errors Duration", [CHECKOUT_ROW, STATUS_ROW, CART_ROW]);
+  await nextSort("Time Service Name Spans Errors ▼ Duration", [CHECKOUT_ROW, CART_ROW, STATUS_ROW]);
   await nextSort("Time ▼ Service Name Spans Errors Duration", NEWEST_FIRST);
 
   app.mockInput.pressKey("o", { shift: true });
   const frame = await app.waitForFrame((frame) =>
-    Bun.deepEquals(traceRows(frame), [CART_ROW, CHECKOUT_ROW, HEALTH_ROW]),
+    Bun.deepEquals(traceRows(frame), [CART_ROW, CHECKOUT_ROW, STATUS_ROW]),
   );
   expect(textLines(frame)).toContain("Time ▲ Service Name Spans Errors Duration");
 });
@@ -299,23 +317,23 @@ test("sorts by span count, error count, duration, and time", async () => {
 test("jumps to the next trace with errors in either direction", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
-  await app.waitForSelection(HEALTH_ROW);
+  await app.waitForSelection(STATUS_ROW);
 
   app.mockInput.pressKey("e");
-  expect(await app.waitForSelection("POST /checkout")).toBe(CHECKOUT_ROW);
+  expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
 
   app.mockInput.pressKey("HOME");
-  await app.waitForSelection(HEALTH_ROW);
+  await app.waitForSelection(STATUS_ROW);
   app.mockInput.pressKey("e", { shift: true });
-  expect(await app.waitForSelection("POST /checkout")).toBe(CHECKOUT_ROW);
+  expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
 });
 
 const LIVE_TIME_MS = 50_000;
 
-const TIMELINE_CART_ROW = "12:00:00.000 ● frontend GET /cart 1 120.0ms";
-const TIMELINE_CHECKOUT_ROW = "12:00:20.000 ● checkout POST /checkout 1 1 500.0ms";
-const TIMELINE_HEALTH_ROW = "12:00:40.000 ● frontend GET /health 1 1.0ms";
-const TIMELINE_OLD_ROW = "11:20:00.000 ● frontend GET /old 1 10.0ms";
+const TIMELINE_CART_ROW = "12:00:00.000 ● frontend GET /api/cart 1 120.0ms";
+const TIMELINE_CHECKOUT_ROW = `12:00:20.000 ● checkout ${PLACE_ORDER} 1 1 500.0ms`;
+const TIMELINE_STATUS_ROW = "12:00:40.000 ● image-provider GET /status 1 1.0ms";
+const TIMELINE_OLD_ROW = "11:20:00.000 ● frontend GET /product/[productId] 1 10.0ms";
 
 const bar = "█".repeat(COLUMN_WIDTH);
 const MINUTE_TICKS = "11:52 11:53 11:54 11:55 11:56 11:57 11:58 11:59 12:00";
@@ -327,14 +345,19 @@ const timelineTraces = tracesRequest(
       {
         traceId: "6".repeat(32),
         spanId: "6a".repeat(8),
-        name: "GET /cart",
+        name: "GET /api/cart",
         start: at(0),
         end: at(120),
       },
+    ],
+  },
+  {
+    service: "image-provider",
+    spans: [
       {
         traceId: "8".repeat(32),
         spanId: "8a".repeat(8),
-        name: "GET /health",
+        name: "GET /status",
         start: at(40_000),
         end: at(40_001),
       },
@@ -346,7 +369,7 @@ const timelineTraces = tracesRequest(
       {
         traceId: "7".repeat(32),
         spanId: "7a".repeat(8),
-        name: "POST /checkout",
+        name: PLACE_ORDER,
         start: at(20_000),
         end: at(20_500),
         status: { code: STATUS_CODE.error },
@@ -361,7 +384,7 @@ const oldTrace = tracesRequest({
     {
       traceId: "9".repeat(32),
       spanId: "9a".repeat(8),
-      name: "GET /old",
+      name: "GET /product/[productId]",
       start: at(-40 * 60_000),
       end: at(-40 * 60_000 + 10),
     },
@@ -383,7 +406,7 @@ async function renderHistogram(
     await receiver.sendHttp("/v1/traces", oldTrace);
   }
   const app = await renderApp(receiver, size);
-  await app.waitForFrame((frame) => frame.includes(TIMELINE_HEALTH_ROW.slice(0, 12)));
+  await app.waitForFrame((frame) => frame.includes(TIMELINE_STATUS_ROW.slice(0, 12)));
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));
   return app;
@@ -459,7 +482,7 @@ test("moves the marker over the timeline, latest bucket first", async () => {
   await using app = await renderHistogram(receiver);
 
   app.mockInput.pressArrow("right");
-  await showsOnly(app, TIMELINE_HEALTH_ROW, "12:00:40–12:00:50");
+  await showsOnly(app, TIMELINE_STATUS_ROW, "12:00:40–12:00:50");
 
   app.mockInput.pressArrow("left");
   await showsOnly(app, TIMELINE_CHECKOUT_ROW, "12:00:20–12:00:30");
@@ -479,7 +502,7 @@ test("scrolls the timeline to keep the marker in view", async () => {
   expect(axisLine(frame)).toBe(MINUTE_TICKS);
 
   for (const [arrow, row, range] of [
-    ["right", TIMELINE_HEALTH_ROW, "12:00:40–12:00:50"],
+    ["right", TIMELINE_STATUS_ROW, "12:00:40–12:00:50"],
     ["left", TIMELINE_CHECKOUT_ROW, "12:00:20–12:00:30"],
     ["left", TIMELINE_CART_ROW, "12:00:00–12:00:10"],
     ["left", TIMELINE_OLD_ROW, "11:20:00–11:20:10"],
@@ -556,14 +579,14 @@ test("opens a trace as a span waterfall", async () => {
   const frame = await app.waitForFrame((frame) => spanRows(frame).length === 3);
 
   expect(textLines(frame).slice(1, 4)).toEqual([
-    `POST /checkout ${checkoutTraceId}`,
+    `${PLACE_ORDER} ${checkoutTraceId}`,
     "● checkout 12:00:01.000 3 spans 2 errors 500.0ms",
     "Service Name Duration 0 500.0ms",
   ]);
   expect(spanRows(frame).map((row) => collapseWhitespace(row))).toEqual([
-    "● checkout POST /checkout 450.0ms",
+    `● checkout ${PLACE_ORDER} 450.0ms`,
     "● payment charge 300.0ms",
-    "● email send receipt 40.0ms",
+    "● fraud-detection orders process 40.0ms",
   ]);
 });
 
@@ -572,23 +595,23 @@ test("indents each span under its parent", async () => {
   await using app = await openTrace(receiver, CART_ROW);
 
   const [root, child, grandchild] = spanRows(
-    await app.waitForFrame((frame) => frame.includes("SELECT carts")),
+    await app.waitForFrame((frame) => frame.includes("valkey-cart:6379")),
   );
-  const nameColumn = root?.indexOf("GET /cart") ?? -1;
+  const nameColumn = root?.indexOf("GET /api/cart") ?? -1;
 
-  expect(child?.indexOf("GetCart")).toBe(nameColumn + 2);
-  expect(grandchild?.indexOf("SELECT carts")).toBe(nameColumn + 4);
+  expect(child?.indexOf("POST /oteldemo")).toBe(nameColumn + 2);
+  expect(grandchild?.indexOf("valkey-cart:6379")).toBe(nameColumn + 4);
 });
 
 test("draws each span's bar inside its parent's bar", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  await app.waitForFrame((frame) => frame.includes("SELECT carts"));
+  await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
 
   const frame = app.captureSpans();
-  const root = barExtent(frame, "GET /cart", serviceColor("frontend"));
-  const child = barExtent(frame, "GetCart", serviceColor("cart"));
-  const grandchild = barExtent(frame, "SELECT carts", serviceColor("cart"));
+  const root = barExtent(frame, "GET /api/cart", serviceColor("frontend"));
+  const child = barExtent(frame, "POST /oteldemo", serviceColor("cart"));
+  const grandchild = barExtent(frame, "valkey-cart:6379", serviceColor("cart"));
 
   expect(root.start).toBeLessThan(child.start);
   expect(child.start).toBeLessThan(grandchild.start);
@@ -603,15 +626,15 @@ test("shows the selected span's attributes, resource, and scope", async () => {
   const frame = await app.waitForFrame((frame) => frame.includes("Scope"));
 
   expect(panelLines(frame)).toEqual([
-    `GET /cart ${"1a".repeat(8)}`,
+    `GET /api/cart ${"1a".repeat(8)}`,
     "● frontend server 12:00:00.000 +0µs 120.0ms",
     "Attributes",
-    "http.route /cart",
+    "http.route /api/cart",
     "Resource",
-    "host.name web-1",
+    "host.name colima",
     "service.name frontend",
     "Scope",
-    "shop 1.0.0",
+    "next.js 0.0.1",
   ]);
 });
 
@@ -621,16 +644,16 @@ test("shows the selected span's events with their offsets", async () => {
   await app.waitForFrame((frame) => frame.includes("Scope"));
 
   app.mockInput.pressArrow("down");
-  const frame = await app.waitForFrame((frame) => frame.includes("cache miss"));
+  const frame = await app.waitForFrame((frame) => frame.includes("feature_flag.evaluation"));
 
   expect(panelLines(frame)).toEqual([
-    `GetCart ${"1b".repeat(8)}`,
+    `${GET_CART} ${"1b".repeat(8)}`,
     "● cart server 12:00:00.010 +10.0ms 80.0ms",
     "Events",
-    "-2.0ms request queued",
-    "+5.0ms cache miss",
-    "cache.key cart:42",
-    "cart loaded",
+    "-2.0ms Enqueued",
+    "+5.0ms feature_flag.evaluation",
+    "feature_flag.key cartFailure",
+    "Fetch cart",
     "Resource",
     "service.name cart",
   ]);
@@ -643,12 +666,12 @@ test("shows a span's links and status message", async () => {
   const frame = await app.waitForFrame((frame) => frame.includes("Links"));
 
   expect(panelLines(frame)).toEqual([
-    `POST /checkout ${"2a".repeat(8)}`,
+    `${PLACE_ORDER} ${"2a".repeat(8)}`,
     "● checkout server 12:00:01.000 +0µs 450.0ms",
-    "card declined",
+    CHARGE_FAILED,
     "Links",
     `${cartTraceId} ${"1a".repeat(8)}`,
-    "link.reason cart",
+    "demo.cart.items.count 4",
     "Resource",
     "service.name checkout",
   ]);
@@ -657,36 +680,36 @@ test("shows a span's links and status message", async () => {
 test("points out a span whose parent never arrived", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
-  await app.waitForFrame((frame) => frame.includes("card declined"));
+  await app.waitForFrame((frame) => panelLines(frame).includes(CHARGE_FAILED));
 
   app.mockInput.pressKey("END");
   const frame = await app.waitForFrame((frame) => frame.includes("not received"));
 
   expect(textLines(frame)).toContain(
-    `● email consumer 12:00:01.460 +460.0ms 40.0ms parent ${missingParentId} not received`,
+    `● fraud-detection consumer 12:00:01.460 +460.0ms 40.0ms parent ${missingParentId} not received`,
   );
 });
 
 test("opens a trace whose spans have no kind", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await openTrace(receiver, HEALTH_ROW);
+  await using app = await openTrace(receiver, STATUS_ROW);
 
   const frame = await app.waitForFrame((frame) => frame.includes("unspecified"));
 
-  expect(textLines(frame)).toContain("● frontend unspecified 12:00:02.000 +0µs 1.0ms");
+  expect(textLines(frame)).toContain("● image-provider unspecified 12:00:02.000 +0µs 1.0ms");
 });
 
 test("jumps between spans with errors", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
-  await app.waitForFrame((frame) => frame.includes("card declined"));
+  await app.waitForFrame((frame) => panelLines(frame).includes(CHARGE_FAILED));
 
   app.mockInput.pressKey("e");
-  await app.waitForFrame((frame) => frame.includes("insufficient funds"));
+  await app.waitForFrame((frame) => panelLines(frame).includes(CHARGE_DECLINED));
   app.mockInput.pressKey("e");
-  await app.waitForFrame((frame) => frame.includes("card declined"));
+  await app.waitForFrame((frame) => panelLines(frame).includes(CHARGE_FAILED));
   app.mockInput.pressKey("e", { shift: true });
-  await app.waitForFrame((frame) => frame.includes("insufficient funds"));
+  await app.waitForFrame((frame) => panelLines(frame).includes(CHARGE_DECLINED));
 
   expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
 });
@@ -698,7 +721,7 @@ test("goes back to the list with the opened trace still selected", async () => {
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => traceRows(frame).length === 3);
 
-  expect(await app.waitForSelection("POST /checkout")).toBe(CHECKOUT_ROW);
+  expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
 });
 
 test("opens the logs of the open trace in the logs view", async () => {
@@ -712,11 +735,15 @@ test("opens the logs of the open trace in the logs view", async () => {
           {
             time: at(1100),
             severityNumber: SEVERITY_NUMBER.info,
-            body: "order placed",
+            body: "[PlaceOrder]",
             traceId: checkoutTraceId,
             spanId: "2a".repeat(8),
           },
-          { time: at(1900), severityNumber: SEVERITY_NUMBER.info, body: "cache warmed" },
+          {
+            time: at(1900),
+            severityNumber: SEVERITY_NUMBER.info,
+            body: 'starting to listen on tcp: "[::]:5050"',
+          },
         ],
       },
       {
@@ -725,7 +752,7 @@ test("opens the logs of the open trace in the logs view", async () => {
           {
             time: at(1200),
             severityNumber: SEVERITY_NUMBER.error,
-            body: "charge failed",
+            body: "Credit card info is invalid.",
             traceId: checkoutTraceId,
             spanId: "2b".repeat(8),
           },
@@ -737,10 +764,10 @@ test("opens the logs of the open trace in the logs view", async () => {
 
   app.mockInput.pressKey("l");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("order placed"));
+  const frame = await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
   expect(textLines(frame)[1]).toBe("trace 22222222 2 of 3 logs");
-  expect(frame).toContain("charge failed");
-  expect(frame).not.toContain("cache warmed");
+  expect(frame).toContain("Credit card info is invalid.");
+  expect(frame).not.toContain("starting to listen on tcp");
 });
 
 test("goes back from the trace's logs to the trace, then to the list", async () => {
@@ -749,23 +776,23 @@ test("goes back from the trace's logs to the trace, then to the list", async () 
     "/v1/logs",
     logsRequest({
       service: "checkout",
-      logs: [{ time: at(1100), body: "order placed", traceId: checkoutTraceId }],
+      logs: [{ time: at(1100), body: "[PlaceOrder]", traceId: checkoutTraceId }],
     }),
   );
   await using app = await openTrace(receiver, CHECKOUT_ROW);
   app.mockInput.pressKey("l");
-  let frame = await app.waitForFrame((frame) => frame.includes("order placed"));
+  let frame = await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
   expect(textLines(frame).at(-1)).toContain("escape back");
 
   app.mockInput.pressEscape();
   frame = await app.waitForFrame((frame) =>
-    textLines(frame).includes(`POST /checkout ${checkoutTraceId}`),
+    textLines(frame).includes(`${PLACE_ORDER} ${checkoutTraceId}`),
   );
-  expect(frame).not.toContain("order placed");
+  expect(frame).not.toContain("[PlaceOrder]");
 
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => traceRows(frame).length === 3);
-  expect(await app.waitForSelection("POST /checkout")).toBe(CHECKOUT_ROW);
+  expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
 });
 
 test("keeps the search and sort when switching tabs", async () => {
@@ -796,17 +823,17 @@ test("keeps the search and sort when switching tabs", async () => {
 test("scrolls the span panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   const attributes = Object.fromEntries(
-    Array.from({ length: 30 }, (_, index) => [`attribute.${index + 1}`, "value"]),
+    Array.from({ length: 30 }, (_, index) => [`demo.product.id.${index + 1}`, "0PUK6V6EV0"]),
   );
   await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
-      service: "checkout",
+      service: "frontend",
       spans: [
         {
           traceId: cartTraceId,
           spanId: "1a".repeat(8),
-          name: "GET /cart",
+          name: "GET /api/cart",
           start: at(0),
           end: at(10),
           attributes,
@@ -819,13 +846,13 @@ test("scrolls the span panel down and back up", async () => {
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => panelLines(frame).includes("attribute.1 value"));
+  await app.waitForFrame((frame) => panelLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 
   app.mockInput.pressKey("d", { ctrl: true });
-  await app.waitForFrame((frame) => !panelLines(frame).includes("attribute.1 value"));
+  await app.waitForFrame((frame) => !panelLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 
   app.mockInput.pressKey("u", { ctrl: true });
-  await app.waitForFrame((frame) => panelLines(frame).includes("attribute.1 value"));
+  await app.waitForFrame((frame) => panelLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 });
 
 test("shows an error when traces cannot be loaded", async () => {
@@ -841,7 +868,7 @@ test("shows an error when traces cannot be loaded", async () => {
 test("says when an open trace is no longer available", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  await app.waitForFrame((frame) => frame.includes("SELECT carts"));
+  await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
 
   const connection = await receiver.connect();
   await connection.run("DELETE FROM otlp_traces WHERE trace_id = $traceId", {

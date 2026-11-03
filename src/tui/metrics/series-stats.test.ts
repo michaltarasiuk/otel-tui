@@ -14,14 +14,19 @@ const seriesIdentity = {
   last_time: new Date(0),
 };
 
-function metric(type: MetricType, unit: string, temporality: number | null = 2): Metric {
+function metric(
+  type: MetricType,
+  name: string,
+  unit: string,
+  temporality: number | null = 2,
+): Metric {
   return {
     metric_id: "1",
     type,
     temporality,
-    name: "metric",
+    name,
     unit,
-    service_name: "checkout",
+    service_name: "cart",
     description: "",
     last_time: 0,
     series_count: 1,
@@ -47,7 +52,7 @@ describe("seriesStats", () => {
       stats: { value: 1536, min: 512, max: 2048, latest_points: [] },
     });
 
-    expect(seriesStats(metric("gauge", "By", null), series)).toEqual({
+    expect(seriesStats(metric("gauge", "v8js.memory.heap.used", "By", null), series)).toEqual({
       last: "1.5 KiB",
       min: "512 B",
       max: "2.0 KiB",
@@ -60,7 +65,9 @@ describe("seriesStats", () => {
       stats: { value: 150, min: 100, max: 150, latest_points: [point(20, 150), point(10, 100)] },
     });
 
-    expect(seriesStats(metric("counter", "{request}"), series)).toEqual({
+    expect(
+      seriesStats(metric("counter", "feature_flag.evaluation_requests_total", "{request}"), series),
+    ).toEqual({
       rate: "5/s",
       total: "150",
     });
@@ -72,7 +79,12 @@ describe("seriesStats", () => {
       stats: { value: 70, min: 30, max: 70, latest_points: [point(20, 40, 10), point(10, 30)] },
     });
 
-    expect(seriesStats(metric("counter", "{request}", 1), series)).toEqual({
+    expect(
+      seriesStats(
+        metric("counter", "feature_flag.evaluation_requests_total", "{request}", 1),
+        series,
+      ),
+    ).toEqual({
       rate: "4/s",
       total: "70",
     });
@@ -84,7 +96,9 @@ describe("seriesStats", () => {
       stats: { value: 100, min: 100, max: 100, latest_points: [point(10, 100)] },
     });
 
-    expect(seriesStats(metric("counter", "{request}"), series)).toMatchObject({ rate: "" });
+    expect(
+      seriesStats(metric("counter", "feature_flag.evaluation_requests_total", "{request}"), series),
+    ).toMatchObject({ rate: "" });
   });
 
   test("shows a histogram's count, percentiles, and max", () => {
@@ -100,7 +114,7 @@ describe("seriesStats", () => {
       },
     });
 
-    expect(seriesStats(metric("histogram", "ms"), series)).toEqual({
+    expect(seriesStats(metric("histogram", "traces.span.metrics.duration", "ms"), series)).toEqual({
       count: "10",
       p50: "27.5ms",
       p95: "72.5ms",
@@ -115,7 +129,7 @@ describe("seriesStats", () => {
       stats: { count: 5, sum: null, min: null, max: null, bounds: [], bucket_counts: [5] },
     });
 
-    expect(seriesStats(metric("histogram", "ms"), series)).toEqual({
+    expect(seriesStats(metric("histogram", "traces.span.metrics.duration", "ms"), series)).toEqual({
       count: "5",
       p50: "",
       p95: "",

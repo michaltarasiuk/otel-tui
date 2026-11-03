@@ -28,41 +28,47 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   await receiver.sendHttp(
     "/v1/traces",
     tracesRequest({
-      service: "checkout",
+      service: "frontend",
       spans: [
-        { traceId: "1".repeat(32), spanId: "1".repeat(16), name: "GET /cart", start: time, end },
+        {
+          traceId: "1".repeat(32),
+          spanId: "1".repeat(16),
+          name: "GET /api/cart",
+          start: time,
+          end,
+        },
       ],
     }),
   );
   await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
-      service: "checkout",
-      logs: [{ time, body: "cart loaded" }],
+      service: "cart",
+      logs: [{ time, body: "GetCartAsync called with userId={userId}" }],
     }),
   );
   await receiver.sendHttp(
     "/v1/metrics",
     metricsRequest({
-      service: "checkout",
+      service: "frontend",
       metrics: [
         {
-          name: "queue.depth",
+          name: "v8js.memory.heap.used",
           gauge: [{ time, value: 4 }],
         },
         {
-          name: "orders",
+          name: "nodejs.eventloop.time",
           sum: [{ start: time, time, value: 1 }],
           monotonic: true,
           temporality: TEMPORALITY.cumulative,
         },
         {
-          name: "latency",
+          name: "http.server.request.duration",
           histogram: [{ start: time, time, count: 1, bounds: [10], counts: [1, 0] }],
           temporality: TEMPORALITY.cumulative,
         },
         {
-          name: "size",
+          name: "v8js.gc.duration",
           exponentialHistogram: [
             { start: time, time, count: 1, scale: 0, positive: { offset: 0, counts: [1] } },
           ],
@@ -148,8 +154,8 @@ test("drops logs by their observed time when they carry no time", async () => {
     logsRequest({
       service: "shipping",
       logs: [
-        { observedTime: new Date(Date.now() - 2 * RETENTION_MS), body: "quote requested" },
-        { observedTime: new Date(), body: "order shipped" },
+        { observedTime: new Date(Date.now() - 2 * RETENTION_MS), body: "Requesting quote" },
+        { observedTime: new Date(), body: "Sending Quote" },
       ],
     }),
   );

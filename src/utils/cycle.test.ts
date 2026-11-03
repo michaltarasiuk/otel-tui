@@ -2,16 +2,16 @@ import { expect, test } from "bun:test";
 
 import { cycle } from "./cycle.ts";
 
-const SIZES = ["small", "medium", "large"] as const;
+const VIEWS = ["traces", "metrics", "logs"] as const;
 
 test("steps to the next or previous item", () => {
-  expect(cycle(SIZES, "medium", 1)).toBe("large");
-  expect(cycle(SIZES, "medium", -1)).toBe("small");
+  expect(cycle(VIEWS, "metrics", 1)).toBe("logs");
+  expect(cycle(VIEWS, "metrics", -1)).toBe("traces");
 });
 
 test("wraps around both ends", () => {
-  expect(cycle(SIZES, "large", 1)).toBe("small");
-  expect(cycle(SIZES, "small", -1)).toBe("large");
+  expect(cycle(VIEWS, "logs", 1)).toBe("traces");
+  expect(cycle(VIEWS, "traces", -1)).toBe("logs");
 });
 
 test("treats undefined as an item", () => {

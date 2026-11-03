@@ -8,8 +8,10 @@ import { panelLines, textLines } from "../../testing/render.tsx";
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
 const checkoutTraceId = "2".repeat(32);
-const orderSpanId = "2a".repeat(8);
+const placeOrderSpanId = "2a".repeat(8);
 const chargeSpanId = "2b".repeat(8);
+
+const PLACE_ORDER = "oteldemo.CheckoutService/PlaceOrder";
 
 function at(ms: number) {
   return new Date(baseTime + ms);
@@ -18,16 +20,16 @@ function at(ms: number) {
 const otlpLogs = logsRequest(
   {
     service: "checkout",
-    attributes: { "host.name": "web-1" },
-    scope: { name: "shop", version: "1.0.0" },
+    attributes: { "host.name": "colima" },
+    scope: { name: "checkout" },
     logs: [
       {
         time: at(0),
         severityNumber: SEVERITY_NUMBER.info,
-        body: "order placed",
+        body: "[PlaceOrder]",
         traceId: checkoutTraceId,
-        spanId: orderSpanId,
-        attributes: { "order.id": "42" },
+        spanId: placeOrderSpanId,
+        attributes: { user_currency: "USD" },
       },
     ],
   },
@@ -37,16 +39,16 @@ const otlpLogs = logsRequest(
       {
         time: at(1000),
         severityNumber: SEVERITY_NUMBER.warn,
-        severityText: "warning",
-        body: "retrying charge",
+        severityText: "warn",
+        body: "Payment request failed. Invalid token.",
         traceId: checkoutTraceId,
         spanId: chargeSpanId,
-        attributes: { attempt: 2 },
+        attributes: { "demo.user_context.loyalty_level": "gold" },
       },
       {
         time: at(2000),
         severityNumber: SEVERITY_NUMBER.error,
-        body: "charge failed",
+        body: "Credit card info is invalid.",
         traceId: checkoutTraceId,
         spanId: chargeSpanId,
       },
@@ -58,20 +60,36 @@ const otlpLogs = logsRequest(
       {
         time: at(3000),
         severityNumber: SEVERITY_NUMBER.debug,
-        body: '{"path":"/cart","status":200}',
+        body: '{"url.path":"/api/cart","http.response.status_code":200}',
       },
-      {
-        time: at(5000),
-        severityNumber: SEVERITY_NUMBER.info,
-        eventName: "user.login",
-        body: "signed in\n  via sso",
-      },
-      { observedTime: at(6000), severityText: "notice", body: "cache warmed" },
     ],
   },
   {
-    service: "worker",
-    logs: [{ time: at(4000), severityNumber: SEVERITY_NUMBER.fatal, body: "out of memory" }],
+    service: "cart",
+    logs: [
+      {
+        time: at(5000),
+        severityNumber: SEVERITY_NUMBER.info,
+        eventName: "cart.get",
+        body: "GetCartAsync called\n  with userId={userId}",
+      },
+    ],
+  },
+  {
+    service: "product-catalog",
+    logs: [
+      { observedTime: at(6000), severityText: "notice", body: "Database connection established" },
+    ],
+  },
+  {
+    service: "ad",
+    logs: [
+      {
+        time: at(4000),
+        severityNumber: SEVERITY_NUMBER.fatal,
+        body: "java.lang.OutOfMemoryError: Java heap space",
+      },
+    ],
   },
 );
 
@@ -81,8 +99,8 @@ const checkoutTrace = tracesRequest(
     spans: [
       {
         traceId: checkoutTraceId,
-        spanId: orderSpanId,
-        name: "POST /checkout",
+        spanId: placeOrderSpanId,
+        name: PLACE_ORDER,
         start: at(0),
         end: at(2500),
       },
@@ -94,7 +112,7 @@ const checkoutTrace = tracesRequest(
       {
         traceId: checkoutTraceId,
         spanId: chargeSpanId,
-        parentSpanId: orderSpanId,
+        parentSpanId: placeOrderSpanId,
         name: "charge",
         start: at(500),
         end: at(2000),
@@ -103,14 +121,23 @@ const checkoutTrace = tracesRequest(
   },
 );
 
-const NOTICE_ROW = "12:00:06.000 notice ● frontend cache warmed";
-const LOGIN_ROW = "12:00:05.000 INFO ● frontend user.login signed in via sso";
-const FATAL_ROW = "12:00:04.000 FATAL ● worker out of memory";
-const JSON_ROW = '12:00:03.000 DEBUG ● frontend {"path":"/cart","status":200}';
-const ERROR_ROW = "12:00:02.000 ERROR ● payment charge failed";
-const WARN_ROW = "12:00:01.000 WARN ● payment retrying charge";
-const ORDER_ROW = "12:00:00.000 INFO ● checkout order placed";
-const NEWEST_FIRST = [NOTICE_ROW, LOGIN_ROW, FATAL_ROW, JSON_ROW, ERROR_ROW, WARN_ROW, ORDER_ROW];
+const NOTICE_ROW = "12:00:06.000 notice ● product-catalog Database connection established";
+const CART_EVENT_ROW = "12:00:05.000 INFO ● cart cart.get GetCartAsync called with userId={userId}";
+const FATAL_ROW = "12:00:04.000 FATAL ● ad java.lang.OutOfMemoryError: Java heap space";
+const JSON_ROW =
+  '12:00:03.000 DEBUG ● frontend {"url.path":"/api/cart","http.response.status_code":200}';
+const ERROR_ROW = "12:00:02.000 ERROR ● payment Credit card info is invalid.";
+const WARN_ROW = "12:00:01.000 WARN ● payment Payment request failed. Invalid token.";
+const ORDER_ROW = "12:00:00.000 INFO ● checkout [PlaceOrder]";
+const NEWEST_FIRST = [
+  NOTICE_ROW,
+  CART_EVENT_ROW,
+  FATAL_ROW,
+  JSON_ROW,
+  ERROR_ROW,
+  WARN_ROW,
+  ORDER_ROW,
+];
 
 const LOG_COUNT = / logs? *$/m;
 
@@ -161,19 +188,19 @@ test("shows the selected log's body, attributes, resource, and scope", async () 
   await using app = await renderLogList(receiver);
 
   app.mockInput.pressKey("END");
-  const frame = await app.waitForFrame((frame) => panelLines(frame).includes("shop 1.0.0"));
+  const frame = await app.waitForFrame((frame) => panelLines(frame).includes("user_currency USD"));
 
   expect(panelLines(frame)).toEqual([
-    `INFO ● checkout 12:00:00.000 ${checkoutTraceId} ${orderSpanId}`,
+    `INFO ● checkout 12:00:00.000 ${checkoutTraceId} ${placeOrderSpanId}`,
     "Body",
-    "order placed",
+    "[PlaceOrder]",
     "Attributes",
-    "order.id 42",
+    "user_currency USD",
     "Resource",
-    "host.name web-1",
+    "host.name colima",
     "service.name checkout",
     "Scope",
-    "shop 1.0.0",
+    "checkout",
   ]);
 });
 
@@ -185,14 +212,16 @@ test("pretty-prints a JSON body", async () => {
     app.mockInput.pressArrow("down");
     await app.waitForSelection(row);
   }
-  const frame = await app.waitForFrame((frame) => frame.includes('"status": 200'));
+  const frame = await app.waitForFrame((frame) =>
+    frame.includes('"http.response.status_code": 200'),
+  );
 
   expect(panelLines(frame)).toEqual([
     "DEBUG ● frontend 12:00:03.000",
     "Body",
     "{",
-    '"path": "/cart",',
-    '"status": 200',
+    '"url.path": "/api/cart",',
+    '"http.response.status_code": 200',
     "}",
     "Resource",
     "service.name frontend",
@@ -210,9 +239,21 @@ test("raises and lowers the minimum severity", async () => {
   }
 
   await pressSeverityKey(false, "≥ DEBUG", NEWEST_FIRST.slice(1));
-  await pressSeverityKey(false, "≥ INFO", [LOGIN_ROW, FATAL_ROW, ERROR_ROW, WARN_ROW, ORDER_ROW]);
+  await pressSeverityKey(false, "≥ INFO", [
+    CART_EVENT_ROW,
+    FATAL_ROW,
+    ERROR_ROW,
+    WARN_ROW,
+    ORDER_ROW,
+  ]);
   await pressSeverityKey(false, "≥ WARN", [FATAL_ROW, ERROR_ROW, WARN_ROW]);
-  await pressSeverityKey(true, "≥ INFO", [LOGIN_ROW, FATAL_ROW, ERROR_ROW, WARN_ROW, ORDER_ROW]);
+  await pressSeverityKey(true, "≥ INFO", [
+    CART_EVENT_ROW,
+    FATAL_ROW,
+    ERROR_ROW,
+    WARN_ROW,
+    ORDER_ROW,
+  ]);
 });
 
 test("wraps the severity filter around to show every log again", async () => {
@@ -242,8 +283,8 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
     await app.waitForFrame((frame) => logRows(frame).length === 7);
   }
 
-  await search("memory", [FATAL_ROW]);
-  await search("order.id", [ORDER_ROW]);
+  await search("OutOfMemoryError", [FATAL_ROW]);
+  await search("user_currency", [ORDER_ROW]);
   await search("payment", [ERROR_ROW, WARN_ROW]);
   await search(checkoutTraceId.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
 });
@@ -254,15 +295,15 @@ test("keeps an applied search while browsing", async () => {
 
   app.mockInput.pressKey("/");
   await app.waitForFrame((frame) => frame.includes("body, attributes, service or trace ID"));
-  await app.mockInput.typeText("charge");
+  await app.mockInput.typeText("payment");
   await app.waitForFrame((frame) => logRows(frame).length === 2);
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => frame.includes("/ search"));
 
   app.mockInput.pressArrow("down");
 
-  expect(await app.waitForSelection("retrying charge")).toBe(WARN_ROW);
-  await app.waitForFrame((frame) => textLines(frame)[1] === "/charge 2 of 7 logs");
+  expect(await app.waitForSelection("Payment request failed")).toBe(WARN_ROW);
+  await app.waitForFrame((frame) => textLines(frame)[1] === "/payment 2 of 7 logs");
 });
 
 test("jumps between errors in both directions", async () => {
@@ -271,13 +312,13 @@ test("jumps between errors in both directions", async () => {
   await app.waitForSelection(NOTICE_ROW);
 
   app.mockInput.pressKey("e");
-  expect(await app.waitForSelection("out of memory")).toBe(FATAL_ROW);
+  expect(await app.waitForSelection("OutOfMemoryError")).toBe(FATAL_ROW);
   app.mockInput.pressKey("e");
-  expect(await app.waitForSelection("charge failed")).toBe(ERROR_ROW);
+  expect(await app.waitForSelection("Credit card info is invalid.")).toBe(ERROR_ROW);
   app.mockInput.pressKey("e");
-  expect(await app.waitForSelection("out of memory")).toBe(FATAL_ROW);
+  expect(await app.waitForSelection("OutOfMemoryError")).toBe(FATAL_ROW);
   app.mockInput.pressKey("e", { shift: true });
-  expect(await app.waitForSelection("charge failed")).toBe(ERROR_ROW);
+  expect(await app.waitForSelection("Credit card info is invalid.")).toBe(ERROR_ROW);
 });
 
 test("narrows the list to the selected log's trace and back", async () => {
@@ -327,8 +368,8 @@ test("opens the selected log's trace in the traces view and goes back to the log
       spans: [
         {
           traceId: checkoutTraceId,
-          spanId: orderSpanId,
-          name: "POST /checkout",
+          spanId: placeOrderSpanId,
+          name: PLACE_ORDER,
           start: at(0),
           end: at(2500),
         },
@@ -342,14 +383,14 @@ test("opens the selected log's trace in the traces view and goes back to the log
   app.mockInput.pressEnter();
   let frame = await app.waitForFrame((frame) => frame.includes("1 span"));
   expect(textLines(frame).slice(1, 3)).toEqual([
-    `POST /checkout ${checkoutTraceId}`,
+    `${PLACE_ORDER} ${checkoutTraceId}`,
     "● checkout 12:00:00.000 1 span 2.50s",
   ]);
 
   app.mockInput.pressEscape();
   frame = await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
   expect(textLines(frame)[1]).toBe("7 logs");
-  expect(await app.waitForSelection("order placed")).toBe(ORDER_ROW);
+  expect(await app.waitForSelection("[PlaceOrder]")).toBe(ORDER_ROW);
 });
 
 test("selects the log's span in the trace it opens", async () => {
@@ -372,12 +413,12 @@ test("selects the log's span in a trace that is already open", async () => {
   await receiver.sendHttp("/v1/traces", checkoutTrace);
   await receiver.sendHttp("/v1/logs", otlpLogs);
   await using app = await renderApp(receiver);
-  await app.waitForFrame((frame) => frame.includes("POST /checkout"));
+  await app.waitForFrame((frame) => frame.includes(PLACE_ORDER));
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => frame.includes("2 spans"));
-  expect(await app.waitForSelection("POST /checkout")).toBe("● checkout POST /checkout 2.50s");
+  expect(await app.waitForSelection(PLACE_ORDER)).toBe(`● checkout ${PLACE_ORDER} 2.50s`);
 
   app.mockInput.pressTab({ shift: true });
   await app.waitForFrame((frame) => !frame.includes("escape back"));
@@ -400,44 +441,64 @@ test("selects the log's span in a trace that is already open", async () => {
 
 test("lists identical logs separately and selects each in turn", async () => {
   await using receiver = await startTestReceiver();
-  const repeated = { time: at(1000), severityNumber: SEVERITY_NUMBER.info, body: "heartbeat" };
-  const earlier = { time: at(0), severityNumber: SEVERITY_NUMBER.info, body: "started" };
+  const repeated = {
+    time: at(1000),
+    severityNumber: SEVERITY_NUMBER.info,
+    body: "get_product_list: cache hit",
+  };
+  const earlier = {
+    time: at(0),
+    severityNumber: SEVERITY_NUMBER.info,
+    body: "get_product_list: cache miss",
+  };
   await receiver.sendHttp(
     "/v1/logs",
-    logsRequest({ service: "worker", logs: [repeated, repeated, earlier] }),
+    logsRequest({ service: "recommendation", logs: [repeated, repeated, earlier] }),
   );
   await using app = await renderLogs(receiver);
 
   const frame = await app.waitForFrame((frame) => logRows(frame).length === 3);
   expect(logRows(frame)).toEqual([
-    "12:00:01.000 INFO ● worker heartbeat",
-    "12:00:01.000 INFO ● worker heartbeat",
-    "12:00:00.000 INFO ● worker started",
+    "12:00:01.000 INFO ● recommendation get_product_list: cache hit",
+    "12:00:01.000 INFO ● recommendation get_product_list: cache hit",
+    "12:00:00.000 INFO ● recommendation get_product_list: cache miss",
   ]);
 
-  const firstRowLine = frame.split("\n").findIndex((line) => line.includes("heartbeat"));
-  await app.waitForSelection("heartbeat", { line: firstRowLine });
+  const firstRowLine = frame.split("\n").findIndex((line) => line.includes("cache hit"));
+  await app.waitForSelection("cache hit", { line: firstRowLine });
   app.mockInput.pressArrow("down");
-  await app.waitForSelection("heartbeat", { line: firstRowLine + 1 });
+  await app.waitForSelection("cache hit", { line: firstRowLine + 1 });
   app.mockInput.pressArrow("down");
-  await app.waitForSelection("started");
+  await app.waitForSelection("cache miss");
 });
 
 test("scrolls the log panel down and back up", async () => {
   await using receiver = await startTestReceiver();
-  const body = Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join("\n");
+  const body = [
+    "java.lang.OutOfMemoryError: Java heap space",
+    ...Array.from(
+      { length: 40 },
+      (_, index) => `at oteldemo.AdService$AdServiceImpl.getAds(AdService.java:${index + 200})`,
+    ),
+  ].join("\n");
   await receiver.sendHttp(
     "/v1/logs",
-    logsRequest({ service: "worker", logs: [{ time: at(0), body }] }),
+    logsRequest({ service: "ad", logs: [{ time: at(0), body }] }),
   );
   await using app = await renderLogs(receiver);
-  await app.waitForFrame((frame) => panelLines(frame).includes("line 1"));
+  await app.waitForFrame((frame) =>
+    panelLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+  );
 
   app.mockInput.pressKey("d", { ctrl: true });
-  await app.waitForFrame((frame) => !panelLines(frame).includes("line 1"));
+  await app.waitForFrame(
+    (frame) => !panelLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+  );
 
   app.mockInput.pressKey("u", { ctrl: true });
-  await app.waitForFrame((frame) => panelLines(frame).includes("line 1"));
+  await app.waitForFrame((frame) =>
+    panelLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+  );
 });
 
 test("shows an error when logs cannot be loaded", async () => {

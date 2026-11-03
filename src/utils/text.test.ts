@@ -30,35 +30,41 @@ describe("formatShownCount", () => {
 
 describe("collapseWhitespace", () => {
   test("collapses runs of whitespace into one space", () => {
-    expect(collapseWhitespace("GET    /cart")).toBe("GET /cart");
+    expect(collapseWhitespace("GET    /api/cart")).toBe("GET /api/cart");
   });
 
   test("joins lines and tabs into a single line", () => {
-    expect(collapseWhitespace("first\n\tsecond\r\nthird")).toBe("first second third");
+    expect(
+      collapseWhitespace(
+        '<_InactiveRpcError of RPC that terminated with:\n\tstatus = StatusCode.INTERNAL\r\n\tdetails = "Product Catalog Fail Feature Flag Enabled">',
+      ),
+    ).toBe(
+      '<_InactiveRpcError of RPC that terminated with: status = StatusCode.INTERNAL details = "Product Catalog Fail Feature Flag Enabled">',
+    );
   });
 
   test("trims leading and trailing whitespace", () => {
-    expect(collapseWhitespace("  padded \n")).toBe("padded");
+    expect(collapseWhitespace("  GET /api/cart \n")).toBe("GET /api/cart");
     expect(collapseWhitespace(" \n ")).toBe("");
   });
 });
 
 describe("prettyPrintJson", () => {
   test("indents a JSON object or array", () => {
-    expect(prettyPrintJson('{"path":"/cart","status":200}')).toBe(
-      '{\n  "path": "/cart",\n  "status": 200\n}',
+    expect(prettyPrintJson('{"url.path":"/api/cart","http.response.status_code":200}')).toBe(
+      '{\n  "url.path": "/api/cart",\n  "http.response.status_code": 200\n}',
     );
-    expect(prettyPrintJson("[1,2]")).toBe("[\n  1,\n  2\n]");
+    expect(prettyPrintJson("[200,503]")).toBe("[\n  200,\n  503\n]");
   });
 
   test("keeps a JSON scalar as written", () => {
     expect(prettyPrintJson("42")).toBe("42");
-    expect(prettyPrintJson('"done"')).toBe('"done"');
+    expect(prettyPrintJson('"OK"')).toBe('"OK"');
     expect(prettyPrintJson("null")).toBe("null");
   });
 
   test("keeps text that isn't JSON", () => {
-    expect(prettyPrintJson("order placed")).toBe("order placed");
-    expect(prettyPrintJson('{"path":')).toBe('{"path":');
+    expect(prettyPrintJson("API request completed")).toBe("API request completed");
+    expect(prettyPrintJson('{"url.path":')).toBe('{"url.path":');
   });
 });
