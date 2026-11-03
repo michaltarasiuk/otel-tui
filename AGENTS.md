@@ -11,26 +11,9 @@
 - Prefer a name that carries the reason over a comment: a named constant for a value, a named function for a step.
 - Don't document default values or behavior that the signature and code already show.
 
-## Constants
-
-- Group module-level constants by purpose, with a blank line between groups. Constants share a group only when they describe the same thing, and a constant with no partner stands alone.
-- Keep a constant derived from others in the group it is built from.
-- Define each constant once. When another file needs it, export it from one module instead of copying it, and when the copy came with copied code, extract that code so the constant moves with it.
-- Keep a test's fixture values, such as its base time, in the test file, because the output it expects depends on them.
-
 ## Callbacks
 
 - Don't pass a function as a callback unless it was designed for it; wrap it in an arrow that forwards only the arguments you mean (`items.map((item) => format(item))`, not `items.map(format)`). If either side later gains a parameter, the extra arguments flow in silently and change behavior. See https://jakearchibald.com/2021/function-callback-risks/.
-
-## Components
-
-- Keep a component's props type private to its file; don't export it.
-- When another module needs a component's props, derive them with `React.ComponentProps<typeof Component>`.
-- Don't add `useMemo`, `useCallback`, or `memo` unless a measured problem calls for it.
-
-## Queries
-
-- Parse timestamps into epoch milliseconds with the shared `Timestamp` schema, not `Date`. TanStack Query keeps an unchanged result identical between polls only when it holds plain data, so a `Date` makes every poll look like new data and re-renders the view.
 
 ## Commits
 
