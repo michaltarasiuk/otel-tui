@@ -67,7 +67,7 @@ export function TraceTable({ traces, sort }: TraceTableProps) {
   return (
     <box flexGrow={1}>
       <TraceHeaderRow sort={sort} />
-      <WindowedRows state={list}>
+      <WindowedRows list={list}>
         {(trace, selected) => <TraceRow trace={trace} selected={selected} />}
       </WindowedRows>
     </box>

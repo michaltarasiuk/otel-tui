@@ -26,7 +26,7 @@ export function SeriesTable({ metric, series }: SeriesTableProps) {
   return (
     <box flexGrow={1}>
       <SeriesHeaderRow metric={metric} columns={columns} />
-      <WindowedRows state={list}>
+      <WindowedRows list={list}>
         {(row, selected) => (
           <SeriesRow metric={metric} columns={columns} series={row} selected={selected} />
         )}

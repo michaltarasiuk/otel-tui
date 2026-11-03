@@ -47,7 +47,7 @@ export function MetricTable({ metrics, sort, onOpen }: MetricTableProps) {
   return (
     <box flexGrow={1}>
       <MetricHeaderRow sort={sort} />
-      <WindowedRows state={list}>
+      <WindowedRows list={list}>
         {(metric, selected) => <MetricRow metric={metric} selected={selected} />}
       </WindowedRows>
       {selectedMetric !== undefined && <MetricPanel metric={selectedMetric} />}

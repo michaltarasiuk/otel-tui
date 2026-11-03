@@ -91,7 +91,7 @@ export function LogTable({ logs }: LogTableProps) {
   return (
     <box flexGrow={1}>
       <LogHeaderRow />
-      <WindowedRows state={list}>
+      <WindowedRows list={list}>
         {(log, selected) => <LogRow log={log} selected={selected} />}
       </WindowedRows>
       {selectedLog !== undefined && <LogPanel log={selectedLog} />}

@@ -6,11 +6,11 @@ import { wrapIndex } from "../utils/wrap-index.ts";
 interface ListStateOptions<T> {
   items: T[];
   getKey: (item: T) => string;
-  initialKey?: string | undefined;
+  initialSelectedKey?: string | undefined;
 }
 
-export function useListState<T>({ items, getKey, initialKey }: ListStateOptions<T>) {
-  const [selectedKey, setSelectedKey] = useState(initialKey);
+export function useListState<T>({ items, getKey, initialSelectedKey }: ListStateOptions<T>) {
+  const [selectedKey, setSelectedKey] = useState(initialSelectedKey);
 
   function indexOf(key: string | undefined) {
     return Math.max(

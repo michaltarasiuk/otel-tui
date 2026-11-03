@@ -20,7 +20,7 @@ export function SpanTable({ traceId, initialSpanId, spans, traceDurationMs }: Sp
   const list = useListState({
     items: spans,
     getKey: (span) => span.span_id,
-    initialKey: initialSpanId,
+    initialSelectedKey: initialSpanId,
   });
 
   const selectedSpan = list.selectedItem;
@@ -55,7 +55,7 @@ export function SpanTable({ traceId, initialSpanId, spans, traceDurationMs }: Sp
   return (
     <box flexGrow={1}>
       <SpanHeaderRow traceDurationMs={traceDurationMs} />
-      <WindowedRows state={list}>
+      <WindowedRows list={list}>
         {(span, selected) => (
           <SpanRow span={span} traceDurationMs={traceDurationMs} selected={selected} />
         )}

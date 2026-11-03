@@ -21,7 +21,7 @@ function NumberedRows({ count }: NumberedRowsProps) {
   const list = useListState({ items: rows, getKey: (row) => row });
 
   return (
-    <WindowedRows state={list}>
+    <WindowedRows list={list}>
       {(row, selected) => <text>{`${selected ? ">" : " "} ${row}`}</text>}
     </WindowedRows>
   );

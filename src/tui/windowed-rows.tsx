@@ -9,12 +9,12 @@ import { THEME } from "./theme.ts";
 import type { useListState } from "./use-list-state.ts";
 
 interface WindowedRowsProps<T> {
-  state: ReturnType<typeof useListState<T>>;
+  list: ReturnType<typeof useListState<T>>;
   children: (item: T, selected: boolean) => React.ReactNode;
 }
 
-export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
-  const { items, getKey, selectedIndex } = state;
+export function WindowedRows<T>({ list, children }: WindowedRowsProps<T>) {
+  const { items, getKey, selectedIndex } = list;
 
   const focused = useFocused();
 
@@ -38,37 +38,37 @@ export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
         {
           name: "rows.next",
           run() {
-            state.moveBy(1);
+            list.moveBy(1);
           },
         },
         {
           name: "rows.previous",
           run() {
-            state.moveBy(-1);
+            list.moveBy(-1);
           },
         },
         {
           name: "rows.next-page",
           run() {
-            state.moveBy(visibleRowCount);
+            list.moveBy(visibleRowCount);
           },
         },
         {
           name: "rows.previous-page",
           run() {
-            state.moveBy(-visibleRowCount);
+            list.moveBy(-visibleRowCount);
           },
         },
         {
           name: "rows.first",
           run() {
-            state.selectIndex(0);
+            list.selectIndex(0);
           },
         },
         {
           name: "rows.last",
           run() {
-            state.selectIndex(items.length - 1);
+            list.selectIndex(items.length - 1);
           },
         },
       ],
@@ -83,7 +83,7 @@ export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
         { key: "end", cmd: "rows.last" },
       ],
     }),
-    [focused, state, visibleRowCount, items.length],
+    [focused, list, visibleRowCount, items.length],
   );
 
   return (
@@ -96,9 +96,9 @@ export function WindowedRows<T>({ state, children }: WindowedRowsProps<T>) {
       onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
       onMouseScroll={({ scroll }) => {
         if (scroll?.direction === "down") {
-          state.moveBy(scroll.delta);
+          list.moveBy(scroll.delta);
         } else if (scroll?.direction === "up") {
-          state.moveBy(-scroll.delta);
+          list.moveBy(-scroll.delta);
         }
       }}
     >
