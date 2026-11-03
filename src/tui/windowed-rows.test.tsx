@@ -130,6 +130,20 @@ test("places the scroll indicator by how far the list has scrolled", async () =>
   expect(indicatorLine(await screen.waitForFrame(selected(20)))).toBe(SIZE.height - 1);
 });
 
+test("draws the scroll indicator only beside rows", async () => {
+  await using screen = await render(<NumberedRows count={20} />, SIZE);
+  const framesWithoutRows: string[] = [];
+
+  await screen.waitForFrame((frame) => {
+    if (frame.includes(SCROLL_INDICATOR) && visibleRows(frame).length === 0) {
+      framesWithoutRows.push(frame);
+    }
+    return selected(1)(frame);
+  });
+
+  expect(framesWithoutRows).toEqual([]);
+});
+
 test("leaves out the scroll indicator when every row fits", async () => {
   await using screen = await render(<NumberedRows count={3} />, SIZE);
 

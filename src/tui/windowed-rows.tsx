@@ -107,7 +107,7 @@ export function WindowedRows<T>({ list, children }: WindowedRowsProps<T>) {
           {children(item, firstVisibleIndex + offset === selectedIndex)}
         </Fragment>
       ))}
-      {hiddenRowCount > 0 && (
+      {visibleRowCount > 0 && hiddenRowCount > 0 && (
         <text position="absolute" right={0} top={scrollThumbTop} fg={THEME.textMuted}>
           █
         </text>
