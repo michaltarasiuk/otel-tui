@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
+import { useSearch } from "../use-search.ts";
 import { type HistogramRange, stepSelection } from "./histogram.ts";
 import { TraceFilterBar } from "./trace-filter-bar.tsx";
 import { TRACE_HISTOGRAM_HEIGHT, TraceHistogram } from "./trace-histogram.tsx";
@@ -26,8 +27,7 @@ const NEWEST_FIRST: TraceSort = {
 export function TraceList() {
   const focused = useFocused();
 
-  const [search, setSearch] = useState("");
-  const [searching, setSearching] = useState(false);
+  const search = useSearch();
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [timeRange, setTimeRange] = useState<HistogramRange>();
   const [sort, setSort] = useState(NEWEST_FIRST);
@@ -35,8 +35,8 @@ export function TraceList() {
 
   const listRef = useRef<BoxRenderable>(null);
 
-  const traceList = useTraceList({ search, errorsOnly, timeRange, sort });
-  const traceTimeline = useTraceTimeline({ search, errorsOnly });
+  const traceList = useTraceList({ search: search.text, errorsOnly, timeRange, sort });
+  const traceTimeline = useTraceTimeline({ search: search.text, errorsOnly });
   const traceTotalCount = useTraceTotalCount();
 
   const { data: traces = [] } = traceList;
@@ -44,7 +44,7 @@ export function TraceList() {
   const { data: totalCount = 0 } = traceTotalCount;
 
   const occupied = timeline?.occupied ?? NO_BUCKETS;
-  const canMoveRange = !searching && occupied.length > 0;
+  const canMoveRange = !search.isEditing && occupied.length > 0;
 
   const isPending = traceList.isPending || traceTotalCount.isPending;
   const isError = traceList.isError || traceTotalCount.isError;
@@ -53,35 +53,11 @@ export function TraceList() {
     () => ({
       enabled: focused,
       commands: [
-        {
-          name: "traces.search",
-          desc: "search",
-          enabled: !searching,
-          run() {
-            setSearching(true);
-          },
-        },
-        {
-          name: "traces.apply-search",
-          desc: "apply",
-          enabled: searching,
-          run() {
-            setSearching(false);
-          },
-        },
-        {
-          name: "traces.clear-search",
-          desc: "clear",
-          enabled: searching || search !== "",
-          run() {
-            setSearch("");
-            setSearching(false);
-          },
-        },
+        ...search.commands,
         {
           name: "traces.clear-range",
           desc: "any time",
-          enabled: !searching && search === "" && timeRange !== undefined,
+          enabled: !search.isEditing && search.text === "" && timeRange !== undefined,
           run() {
             setTimeRange(undefined);
           },
@@ -104,7 +80,7 @@ export function TraceList() {
         {
           name: "traces.toggle-errors-only",
           desc: "status",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setErrorsOnly((errorsOnly) => !errorsOnly);
           },
@@ -112,7 +88,7 @@ export function TraceList() {
         {
           name: "traces.next-sort",
           desc: "sort",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setSort((sort) => ({
               column: cycle(TRACE_SORT_COLUMNS, sort.column, 1),
@@ -123,16 +99,14 @@ export function TraceList() {
         {
           name: "traces.reverse-sort",
           desc: "reverse",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setSort((sort) => ({ ...sort, descending: !sort.descending }));
           },
         },
       ],
       bindings: [
-        { key: "/", cmd: "traces.search" },
-        { key: "return", cmd: "traces.apply-search" },
-        { key: "escape", cmd: "traces.clear-search" },
+        ...search.bindings,
         { key: "escape", cmd: "traces.clear-range" },
         { key: "right", cmd: "traces.later-range" },
         { key: "left", cmd: "traces.earlier-range" },
@@ -141,10 +115,10 @@ export function TraceList() {
         { key: "shift+o", cmd: "traces.reverse-sort" },
       ],
     }),
-    [focused, searching, search, timeRange, occupied, canMoveRange],
+    [focused, search, timeRange, occupied, canMoveRange],
   );
 
-  const filtered = search !== "" || errorsOnly || timeRange !== undefined;
+  const filtered = search.text !== "" || errorsOnly || timeRange !== undefined;
 
   function renderTraces() {
     if (isError) {
@@ -154,7 +128,7 @@ export function TraceList() {
       return <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />;
     }
     return (
-      <FocusScope focused={!searching}>
+      <FocusScope focused={!search.isEditing}>
         <TraceTable traces={traces} sort={sort} />
       </FocusScope>
     );
@@ -164,12 +138,10 @@ export function TraceList() {
     <box ref={listRef} flexGrow={1} onSizeChange={() => setHeight(listRef.current?.height ?? 0)}>
       <TraceFilterBar
         search={search}
-        searching={searching}
         errorsOnly={errorsOnly}
         timeRange={timeRange}
         shownCount={traces.length}
         totalCount={totalCount}
-        onSearchInput={(search) => setSearch(search)}
       />
       {timeline !== undefined && height >= MIN_HEIGHT_FOR_HISTOGRAM && (
         <TraceHistogram

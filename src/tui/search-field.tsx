@@ -1,36 +1,35 @@
 import { useFocused } from "./focus.tsx";
 import { THEME } from "./theme.ts";
+import type { useSearch } from "./use-search.ts";
 
 interface SearchFieldProps {
-  search: string;
-  searching: boolean;
+  search: ReturnType<typeof useSearch>;
   placeholder: string;
-  onInput: (search: string) => void;
 }
 
-export function SearchField({ search, searching, placeholder, onInput }: SearchFieldProps) {
+export function SearchField({ search, placeholder }: SearchFieldProps) {
   const focused = useFocused();
 
   return (
     <box flexGrow={1} flexDirection="row">
-      {(searching || search !== "") && (
+      {(search.isEditing || search.text !== "") && (
         <text fg={THEME.textMuted} flexShrink={0}>
           /
         </text>
       )}
-      {searching ? (
+      {search.isEditing ? (
         <input
           flexGrow={1}
           focused={focused}
-          value={search}
+          value={search.text}
           placeholder={placeholder}
           textColor={THEME.text}
           placeholderColor={THEME.textMuted}
-          onInput={(search) => onInput(search)}
+          onInput={(text) => search.setText(text)}
         />
       ) : (
         <text fg={THEME.text} wrapMode="none" truncate>
-          {search}
+          {search.text}
         </text>
       )}
     </box>

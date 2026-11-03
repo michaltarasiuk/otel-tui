@@ -2,30 +2,18 @@ import { formatShownCount } from "../../utils/format-shown-count.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { SearchField } from "../search-field.tsx";
 import { THEME } from "../theme.ts";
+import type { useSearch } from "../use-search.ts";
 
 interface MetricFilterBarProps {
-  search: string;
-  searching: boolean;
+  search: ReturnType<typeof useSearch>;
   shownCount: number;
   totalCount: number;
-  onSearchInput: (search: string) => void;
 }
 
-export function MetricFilterBar({
-  search,
-  searching,
-  shownCount,
-  totalCount,
-  onSearchInput,
-}: MetricFilterBarProps) {
+export function MetricFilterBar({ search, shownCount, totalCount }: MetricFilterBarProps) {
   return (
     <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
-      <SearchField
-        search={search}
-        searching={searching}
-        placeholder="name, description, service or attributes"
-        onInput={(search) => onSearchInput(search)}
-      />
+      <SearchField search={search} placeholder="name, description, service or attributes" />
       <text fg={THEME.textMuted} flexShrink={0}>
         {formatShownCount(shownCount, totalCount, "metric")}
       </text>

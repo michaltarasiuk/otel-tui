@@ -5,6 +5,7 @@ import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { useNavigation } from "../navigation.tsx";
 import { Placeholder } from "../placeholder.tsx";
+import { useSearch } from "../use-search.ts";
 import { LogFilterBar } from "./log-filter-bar.tsx";
 import { useLogList, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
@@ -17,11 +18,10 @@ export function LogsView() {
   const focused = useFocused();
   const { logsTraceId: traceId, canGoBack, setLogsTraceId, goBack } = useNavigation();
 
-  const [search, setSearch] = useState("");
-  const [searching, setSearching] = useState(false);
+  const search = useSearch();
   const [minSeverity, setMinSeverity] = useState<MinSeverity>();
 
-  const logList = useLogList({ search, minSeverity, traceId });
+  const logList = useLogList({ search: search.text, minSeverity, traceId });
   const logTotalCount = useLogTotalCount();
 
   const { data: logs = [] } = logList;
@@ -34,35 +34,11 @@ export function LogsView() {
     () => ({
       enabled: focused,
       commands: [
-        {
-          name: "logs.search",
-          desc: "search",
-          enabled: !searching,
-          run() {
-            setSearching(true);
-          },
-        },
-        {
-          name: "logs.apply-search",
-          desc: "apply",
-          enabled: searching,
-          run() {
-            setSearching(false);
-          },
-        },
-        {
-          name: "logs.clear-search",
-          desc: "clear",
-          enabled: searching || search !== "",
-          run() {
-            setSearch("");
-            setSearching(false);
-          },
-        },
+        ...search.commands,
         {
           name: "logs.back",
           desc: "back",
-          enabled: !searching && search === "" && canGoBack,
+          enabled: !search.isEditing && search.text === "" && canGoBack,
           run() {
             goBack();
           },
@@ -70,7 +46,7 @@ export function LogsView() {
         {
           name: "logs.clear-trace",
           desc: "all logs",
-          enabled: !searching && search === "" && !canGoBack && traceId !== undefined,
+          enabled: !search.isEditing && search.text === "" && !canGoBack && traceId !== undefined,
           run() {
             setLogsTraceId(undefined);
           },
@@ -78,33 +54,31 @@ export function LogsView() {
         {
           name: "logs.next-severity",
           desc: "severity",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setMinSeverity((minSeverity) => cycle(MIN_SEVERITIES, minSeverity, 1));
           },
         },
         {
           name: "logs.previous-severity",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setMinSeverity((minSeverity) => cycle(MIN_SEVERITIES, minSeverity, -1));
           },
         },
       ],
       bindings: [
-        { key: "/", cmd: "logs.search" },
-        { key: "return", cmd: "logs.apply-search" },
-        { key: "escape", cmd: "logs.clear-search" },
+        ...search.bindings,
         { key: "escape", cmd: "logs.back" },
         { key: "escape", cmd: "logs.clear-trace" },
         { key: "s", cmd: "logs.next-severity" },
         { key: "shift+s", cmd: "logs.previous-severity" },
       ],
     }),
-    [focused, searching, search, traceId, canGoBack, setLogsTraceId, goBack],
+    [focused, search, traceId, canGoBack, setLogsTraceId, goBack],
   );
 
-  const filtered = search !== "" || minSeverity !== undefined || traceId !== undefined;
+  const filtered = search.text !== "" || minSeverity !== undefined || traceId !== undefined;
 
   function renderLogs() {
     if (isError) {
@@ -114,7 +88,7 @@ export function LogsView() {
       return <Placeholder text={filtered ? "No logs match" : "Waiting for logs..."} />;
     }
     return (
-      <FocusScope focused={!searching}>
+      <FocusScope focused={!search.isEditing}>
         <LogTable logs={logs} />
       </FocusScope>
     );
@@ -124,12 +98,10 @@ export function LogsView() {
     <box flexGrow={1}>
       <LogFilterBar
         search={search}
-        searching={searching}
         minSeverity={minSeverity}
         traceId={traceId}
         shownCount={logs.length}
         totalCount={totalCount}
-        onSearchInput={(search) => setSearch(search)}
       />
       {renderLogs()}
     </box>

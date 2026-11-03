@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cycle } from "../../utils/cycle.ts";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
+import { useSearch } from "../use-search.ts";
 import { MetricFilterBar } from "./metric-filter-bar.tsx";
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
@@ -37,11 +38,10 @@ interface MetricListProps {
 export function MetricList({ onOpen }: MetricListProps) {
   const focused = useFocused();
 
-  const [search, setSearch] = useState("");
-  const [searching, setSearching] = useState(false);
+  const search = useSearch();
   const [sort, setSort] = useState(BY_NAME);
 
-  const metricList = useMetricList({ search, sort });
+  const metricList = useMetricList({ search: search.text, sort });
   const metricTotalCount = useMetricTotalCount();
 
   const { data: metrics = [] } = metricList;
@@ -54,35 +54,11 @@ export function MetricList({ onOpen }: MetricListProps) {
     () => ({
       enabled: focused,
       commands: [
-        {
-          name: "metrics.search",
-          desc: "search",
-          enabled: !searching,
-          run() {
-            setSearching(true);
-          },
-        },
-        {
-          name: "metrics.apply-search",
-          desc: "apply",
-          enabled: searching,
-          run() {
-            setSearching(false);
-          },
-        },
-        {
-          name: "metrics.clear-search",
-          desc: "clear",
-          enabled: searching || search !== "",
-          run() {
-            setSearch("");
-            setSearching(false);
-          },
-        },
+        ...search.commands,
         {
           name: "metrics.next-sort",
           desc: "sort",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setSort((sort) => nextSort(sort.column));
           },
@@ -90,21 +66,19 @@ export function MetricList({ onOpen }: MetricListProps) {
         {
           name: "metrics.reverse-sort",
           desc: "reverse",
-          enabled: !searching,
+          enabled: !search.isEditing,
           run() {
             setSort((sort) => ({ ...sort, descending: !sort.descending }));
           },
         },
       ],
       bindings: [
-        { key: "/", cmd: "metrics.search" },
-        { key: "return", cmd: "metrics.apply-search" },
-        { key: "escape", cmd: "metrics.clear-search" },
+        ...search.bindings,
         { key: "o", cmd: "metrics.next-sort" },
         { key: "shift+o", cmd: "metrics.reverse-sort" },
       ],
     }),
-    [focused, searching, search],
+    [focused, search],
   );
 
   function renderMetrics() {
@@ -112,10 +86,12 @@ export function MetricList({ onOpen }: MetricListProps) {
       return <Placeholder text="Failed to load metrics" variant="error" />;
     }
     if (isPending || metrics.length === 0) {
-      return <Placeholder text={search !== "" ? "No metrics match" : "Waiting for metrics..."} />;
+      return (
+        <Placeholder text={search.text !== "" ? "No metrics match" : "Waiting for metrics..."} />
+      );
     }
     return (
-      <FocusScope focused={!searching}>
+      <FocusScope focused={!search.isEditing}>
         <MetricTable metrics={metrics} sort={sort} onOpen={(metric) => onOpen(metric)} />
       </FocusScope>
     );
@@ -123,13 +99,7 @@ export function MetricList({ onOpen }: MetricListProps) {
 
   return (
     <box flexGrow={1}>
-      <MetricFilterBar
-        search={search}
-        searching={searching}
-        shownCount={metrics.length}
-        totalCount={totalCount}
-        onSearchInput={(search) => setSearch(search)}
-      />
+      <MetricFilterBar search={search} shownCount={metrics.length} totalCount={totalCount} />
       {renderMetrics()}
     </box>
   );
