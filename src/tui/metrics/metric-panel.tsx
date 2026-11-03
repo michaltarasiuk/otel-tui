@@ -1,11 +1,7 @@
-import type { ScrollBoxRenderable } from "@opentui/core";
-import { useBindings } from "@opentui/keymap/react";
-import { useRef } from "react";
-
 import type { Attributes } from "../attributes.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { useFocused } from "../focus.tsx";
+import { PanelBody } from "../panel-body.tsx";
 import { Section } from "../section.tsx";
 import { THEME } from "../theme.ts";
 import { MetricHeader } from "./metric-header.tsx";
@@ -13,9 +9,6 @@ import { useMetricSeries } from "./metric-queries.ts";
 import type { Metric } from "./metric.ts";
 import { attributeValues } from "./series-attributes.ts";
 import type { Series } from "./series.ts";
-
-const HALF_VIEWPORT = 0.5;
-const SCROLLBAR_WIDTH = 1;
 
 const LISTED_VALUE_COUNT = 3;
 
@@ -82,37 +75,7 @@ interface MetricPanelProps {
 }
 
 export function MetricPanel({ metric }: MetricPanelProps) {
-  const focused = useFocused();
-
   const metricSeries = useMetricSeries(metric);
-
-  const bodyRef = useRef<ScrollBoxRenderable>(null);
-
-  useBindings(
-    () => ({
-      enabled: focused,
-      commands: [
-        {
-          name: "metric.scroll-down",
-          desc: "scroll",
-          run() {
-            bodyRef.current?.scrollBy(HALF_VIEWPORT, "viewport");
-          },
-        },
-        {
-          name: "metric.scroll-up",
-          run() {
-            bodyRef.current?.scrollBy(-HALF_VIEWPORT, "viewport");
-          },
-        },
-      ],
-      bindings: [
-        { key: "ctrl+d", cmd: "metric.scroll-down" },
-        { key: "ctrl+u", cmd: "metric.scroll-up" },
-      ],
-    }),
-    [focused],
-  );
 
   return (
     <box
@@ -123,17 +86,10 @@ export function MetricPanel({ metric }: MetricPanelProps) {
       paddingX={1}
     >
       <MetricHeader metric={metric} seriesCount={metric.series_count} />
-      <scrollbox
-        key={metric.metric_id}
-        ref={bodyRef}
-        flexGrow={1}
-        flexBasis={IGNORE_CONTENT_SIZE}
-        scrollbarOptions={{ showArrows: false }}
-        contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
-      >
+      <PanelBody contentKey={metric.metric_id}>
         {metricSeries.isError && <text fg={THEME.textError}>Failed to load series</text>}
         {metricSeries.data !== undefined && <SeriesSummary series={metricSeries.data} />}
-      </scrollbox>
+      </PanelBody>
     </box>
   );
 }

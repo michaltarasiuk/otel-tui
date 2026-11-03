@@ -1,12 +1,10 @@
-import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
-import { useBindings } from "@opentui/keymap/react";
-import { useRef } from "react";
+import { TextAttributes } from "@opentui/core";
 
 import { formatTime } from "../../utils/format-time.ts";
 import { COLUMN_GAP, TIME_WIDTH } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { useFocused } from "../focus.tsx";
+import { PanelBody } from "../panel-body.tsx";
 import { ScopeSection, Section } from "../section.tsx";
 import { serviceColor, THEME } from "../theme.ts";
 import { BucketBars } from "./bucket-bars.tsx";
@@ -16,9 +14,6 @@ import type { Metric } from "./metric.ts";
 import { SeriesChart } from "./series-chart.tsx";
 import { seriesStats, statKeys } from "./series-stats.ts";
 import type { Exemplar, Series } from "./series.ts";
-
-const HALF_VIEWPORT = 0.5;
-const SCROLLBAR_WIDTH = 1;
 
 const EXEMPLAR_VALUE_WIDTH = 10;
 
@@ -51,39 +46,9 @@ interface SeriesPanelProps {
 }
 
 export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelProps) {
-  const focused = useFocused();
-
   const seriesExemplars = useSeriesExemplars(metric, series.series_id);
 
   const { data: exemplars = [] } = seriesExemplars;
-
-  const bodyRef = useRef<ScrollBoxRenderable>(null);
-
-  useBindings(
-    () => ({
-      enabled: focused,
-      commands: [
-        {
-          name: "series.scroll-down",
-          desc: "scroll",
-          run() {
-            bodyRef.current?.scrollBy(HALF_VIEWPORT, "viewport");
-          },
-        },
-        {
-          name: "series.scroll-up",
-          run() {
-            bodyRef.current?.scrollBy(-HALF_VIEWPORT, "viewport");
-          },
-        },
-      ],
-      bindings: [
-        { key: "ctrl+d", cmd: "series.scroll-down" },
-        { key: "ctrl+u", cmd: "series.scroll-up" },
-      ],
-    }),
-    [focused],
-  );
 
   const stats = seriesStats(metric, series);
   const color = metric.service_name === null ? THEME.text : serviceColor(metric.service_name);
@@ -118,14 +83,7 @@ export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelP
           </text>
         ))}
       </box>
-      <scrollbox
-        key={series.series_id}
-        ref={bodyRef}
-        flexGrow={1}
-        flexBasis={IGNORE_CONTENT_SIZE}
-        scrollbarOptions={{ showArrows: false }}
-        contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
-      >
+      <PanelBody contentKey={series.series_id}>
         <SeriesChart metric={metric} series={series} color={color} windowStart={windowStart} />
         {series.stats.kind === "distribution" && series.stats.distribution.count > 0 && (
           <Section title="Buckets">
@@ -151,7 +109,7 @@ export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelP
         {series.scope_name !== null && (
           <ScopeSection name={series.scope_name} version={series.scope_version} />
         )}
-      </scrollbox>
+      </PanelBody>
     </box>
   );
 }

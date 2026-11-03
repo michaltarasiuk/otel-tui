@@ -1,13 +1,11 @@
-import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
-import { useBindings } from "@opentui/keymap/react";
-import { useRef } from "react";
+import { TextAttributes } from "@opentui/core";
 
 import { formatDuration } from "../../utils/format-duration.ts";
 import { formatTime } from "../../utils/format-time.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { useFocused } from "../focus.tsx";
+import { PanelBody } from "../panel-body.tsx";
 import { ScopeSection, Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
@@ -15,9 +13,6 @@ import type { Span, SpanDetails } from "./span.ts";
 import { useSpanDetails } from "./trace-queries.ts";
 
 const NESTED_INDENT = 2;
-
-const HALF_VIEWPORT = 0.5;
-const SCROLLBAR_WIDTH = 1;
 
 function formatOffset(ms: number) {
   return ms < 0 ? `-${formatDuration(-ms)}` : `+${formatDuration(ms)}`;
@@ -88,37 +83,7 @@ interface SpanPanelProps {
 }
 
 export function SpanPanel({ traceId, span }: SpanPanelProps) {
-  const focused = useFocused();
-
   const spanDetails = useSpanDetails(traceId, span.span_id);
-
-  const bodyRef = useRef<ScrollBoxRenderable>(null);
-
-  useBindings(
-    () => ({
-      enabled: focused,
-      commands: [
-        {
-          name: "span.scroll-down",
-          desc: "scroll",
-          run() {
-            bodyRef.current?.scrollBy(HALF_VIEWPORT, "viewport");
-          },
-        },
-        {
-          name: "span.scroll-up",
-          run() {
-            bodyRef.current?.scrollBy(-HALF_VIEWPORT, "viewport");
-          },
-        },
-      ],
-      bindings: [
-        { key: "ctrl+d", cmd: "span.scroll-down" },
-        { key: "ctrl+u", cmd: "span.scroll-up" },
-      ],
-    }),
-    [focused],
-  );
 
   const detached = span.depth === 0 && span.parent_span_id !== null;
 
@@ -167,20 +132,13 @@ export function SpanPanel({ traceId, span }: SpanPanelProps) {
       {span.status_message !== null && (
         <text fg={span.is_error ? THEME.textError : THEME.textMuted}>{span.status_message}</text>
       )}
-      <scrollbox
-        key={span.span_id}
-        ref={bodyRef}
-        flexGrow={1}
-        flexBasis={IGNORE_CONTENT_SIZE}
-        scrollbarOptions={{ showArrows: false }}
-        contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
-      >
+      <PanelBody contentKey={span.span_id}>
         {spanDetails.isError && <text fg={THEME.textError}>Failed to load span details</text>}
         {spanDetails.data === null && <text fg={THEME.textMuted}>Span is no longer stored</text>}
         {spanDetails.data !== undefined && spanDetails.data !== null && (
           <SpanBody details={spanDetails.data} />
         )}
-      </scrollbox>
+      </PanelBody>
     </box>
   );
 }

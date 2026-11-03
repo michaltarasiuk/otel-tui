@@ -1,57 +1,22 @@
-import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
-import { useBindings } from "@opentui/keymap/react";
-import { useRef } from "react";
+import { TextAttributes } from "@opentui/core";
 
 import { formatTime } from "../../utils/format-time.ts";
 import { prettyPrintJson } from "../../utils/pretty-print-json.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { EntryList } from "../entry-list.tsx";
 import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { useFocused } from "../focus.tsx";
+import { PanelBody } from "../panel-body.tsx";
 import { ScopeSection, Section } from "../section.tsx";
 import { ServiceName } from "../service-name.tsx";
 import { THEME } from "../theme.ts";
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
 
-const HALF_VIEWPORT = 0.5;
-const SCROLLBAR_WIDTH = 1;
-
 interface LogPanelProps {
   log: Log;
 }
 
 export function LogPanel({ log }: LogPanelProps) {
-  const focused = useFocused();
-
-  const bodyRef = useRef<ScrollBoxRenderable>(null);
-
-  useBindings(
-    () => ({
-      enabled: focused,
-      commands: [
-        {
-          name: "log.scroll-down",
-          desc: "scroll",
-          run() {
-            bodyRef.current?.scrollBy(HALF_VIEWPORT, "viewport");
-          },
-        },
-        {
-          name: "log.scroll-up",
-          run() {
-            bodyRef.current?.scrollBy(-HALF_VIEWPORT, "viewport");
-          },
-        },
-      ],
-      bindings: [
-        { key: "ctrl+d", cmd: "log.scroll-down" },
-        { key: "ctrl+u", cmd: "log.scroll-up" },
-      ],
-    }),
-    [focused],
-  );
-
   const severityLabel = log.severity ?? log.severity_text;
 
   return (
@@ -97,14 +62,7 @@ export function LogPanel({ log }: LogPanelProps) {
           </text>
         )}
       </box>
-      <scrollbox
-        key={log.log_id}
-        ref={bodyRef}
-        flexGrow={1}
-        flexBasis={IGNORE_CONTENT_SIZE}
-        scrollbarOptions={{ showArrows: false }}
-        contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
-      >
+      <PanelBody contentKey={log.log_id}>
         {log.body !== null && (
           <Section title="Body">
             <text fg={THEME.text}>{prettyPrintJson(log.body)}</text>
@@ -123,7 +81,7 @@ export function LogPanel({ log }: LogPanelProps) {
         {log.scope_name !== null && (
           <ScopeSection name={log.scope_name} version={log.scope_version} />
         )}
-      </scrollbox>
+      </PanelBody>
     </box>
   );
 }
