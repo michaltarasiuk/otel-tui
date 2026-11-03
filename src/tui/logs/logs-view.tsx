@@ -2,17 +2,22 @@ import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
+import { formatShownCount } from "../../utils/format-shown-count.ts";
+import { FilterBar } from "../filter-bar.tsx";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { useNavigation } from "../navigation.tsx";
 import { Placeholder } from "../placeholder.tsx";
+import { THEME } from "../theme.ts";
 import { useSearch } from "../use-search.ts";
-import { LogFilterBar } from "./log-filter-bar.tsx";
 import { useLogList, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
+import { severityColor } from "./severity.ts";
 
 type MinSeverity = (typeof MIN_SEVERITIES)[number];
 
 const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
+
+const SHORT_TRACE_ID_LENGTH = 8;
 
 export function LogsView() {
   const focused = useFocused();
@@ -96,13 +101,22 @@ export function LogsView() {
 
   return (
     <box flexGrow={1}>
-      <LogFilterBar
+      <FilterBar
         search={search}
-        minSeverity={minSeverity}
-        traceId={traceId}
-        shownCount={logs.length}
-        totalCount={totalCount}
-      />
+        placeholder="body, attributes, service or trace ID"
+        count={formatShownCount(logs.length, totalCount, "log")}
+      >
+        {traceId !== undefined && (
+          <text fg={THEME.text} flexShrink={0}>
+            trace {traceId.slice(0, SHORT_TRACE_ID_LENGTH)}
+          </text>
+        )}
+        {minSeverity !== undefined && (
+          <text fg={severityColor(minSeverity)} flexShrink={0}>
+            ≥ {minSeverity}
+          </text>
+        )}
+      </FilterBar>
       {renderLogs()}
     </box>
   );

@@ -2,10 +2,11 @@ import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
+import { formatShownCount } from "../../utils/format-shown-count.ts";
+import { FilterBar } from "../filter-bar.tsx";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
 import { useSearch } from "../use-search.ts";
-import { MetricFilterBar } from "./metric-filter-bar.tsx";
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
 import {
@@ -99,7 +100,11 @@ export function MetricList({ onOpen }: MetricListProps) {
 
   return (
     <box flexGrow={1}>
-      <MetricFilterBar search={search} shownCount={metrics.length} totalCount={totalCount} />
+      <FilterBar
+        search={search}
+        placeholder="name, description, service or attributes"
+        count={formatShownCount(metrics.length, totalCount, "metric")}
+      />
       {renderMetrics()}
     </box>
   );

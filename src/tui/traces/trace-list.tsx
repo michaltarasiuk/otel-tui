@@ -3,11 +3,14 @@ import { useBindings } from "@opentui/keymap/react";
 import { useRef, useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
+import { formatShownCount } from "../../utils/format-shown-count.ts";
+import { FilterBar } from "../filter-bar.tsx";
 import { FocusScope, useFocused } from "../focus.tsx";
 import { Placeholder } from "../placeholder.tsx";
+import { THEME } from "../theme.ts";
 import { useSearch } from "../use-search.ts";
 import { type HistogramRange, stepSelection } from "./histogram.ts";
-import { TraceFilterBar } from "./trace-filter-bar.tsx";
+import { timeRangeLabel } from "./time-histogram.ts";
 import { TRACE_HISTOGRAM_HEIGHT, TraceHistogram } from "./trace-histogram.tsx";
 import { useTraceList, useTraceTimeline, useTraceTotalCount } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
@@ -136,13 +139,22 @@ export function TraceList() {
 
   return (
     <box ref={listRef} flexGrow={1} onSizeChange={() => setHeight(listRef.current?.height ?? 0)}>
-      <TraceFilterBar
+      <FilterBar
         search={search}
-        errorsOnly={errorsOnly}
-        timeRange={timeRange}
-        shownCount={traces.length}
-        totalCount={totalCount}
-      />
+        placeholder="trace name, service or ID"
+        count={formatShownCount(traces.length, totalCount, "trace")}
+      >
+        {errorsOnly && (
+          <text fg={THEME.textError} flexShrink={0}>
+            errors only
+          </text>
+        )}
+        {timeRange !== undefined && (
+          <text fg={THEME.text} flexShrink={0}>
+            {timeRangeLabel(timeRange)}
+          </text>
+        )}
+      </FilterBar>
       {timeline !== undefined && height >= MIN_HEIGHT_FOR_HISTOGRAM && (
         <TraceHistogram
           occupied={timeline.occupied}
