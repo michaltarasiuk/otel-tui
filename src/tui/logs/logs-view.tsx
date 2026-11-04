@@ -13,9 +13,8 @@ import { useLogList, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
 import { severityColor } from "./severity.ts";
 
-type MinSeverity = (typeof MIN_SEVERITIES)[number];
-
 const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
+type MinSeverity = (typeof MIN_SEVERITIES)[number];
 
 const SHORT_TRACE_ID_LENGTH = 8;
 

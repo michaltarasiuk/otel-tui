@@ -7,11 +7,10 @@ import { serviceColor, THEME } from "../theme.ts";
 import type { Span } from "./span.ts";
 
 const DURATION_WIDTH = 8;
-const NAME_GROW = 2;
-const TIMELINE_GROW = 3;
-
 const INDENT_WIDTH = 2;
 
+const NAME_GROW = 2;
+const TIMELINE_GROW = 3;
 const TIMELINE_GROW_TOTAL = 1000;
 
 function barColor(span: Span) {

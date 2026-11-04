@@ -20,7 +20,6 @@ const MIN_WINDOW_MS = MILLISECONDS_PER_MINUTE;
 
 const black = RGBA.fromHex("#000000");
 const white = RGBA.fromHex("#FFFFFF");
-
 const PERCENTILE_SHADES = {
   p50: { toward: black, amount: 0.4 },
   p95: { toward: black, amount: 0 },

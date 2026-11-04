@@ -2,8 +2,6 @@ import { z } from "zod";
 
 import { Timestamp } from "../timestamp.ts";
 
-export type MetricType = (typeof METRIC_TYPES)[number];
-
 const METRIC_TYPES = [
   "gauge",
   "counter",
@@ -11,6 +9,7 @@ const METRIC_TYPES = [
   "histogram",
   "exponential_histogram",
 ] as const;
+export type MetricType = (typeof METRIC_TYPES)[number];
 
 const TYPE_LABELS = {
   gauge: "gauge",

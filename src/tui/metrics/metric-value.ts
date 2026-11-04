@@ -28,11 +28,11 @@ const BYTES_PER_UNIT: Record<string, number> = {
   TiBy: 1024 ** 4,
 };
 
-const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"] as const;
-const BYTES_PER_STEP = 1024;
-
 const dimensionlessUnits = new Set(["", "1"]);
 const ANNOTATION_UNIT = /^\{[^}]*\}$/;
+
+const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"] as const;
+const BYTES_PER_STEP = 1024;
 
 const COMPACT_THRESHOLD = 1e6;
 const GROUPING_THRESHOLD = 1000;

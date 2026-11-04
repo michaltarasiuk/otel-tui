@@ -17,11 +17,11 @@ const FRAME_POLL_INTERVAL_MS = 10;
 const BINDINGS_REGISTERED_AFTER_COMMIT_MS = 10;
 
 const SCROLLBAR_CHARACTERS = /[\u2580-\u259F]/g;
+export const BRAILLE_DOTS = /[\u2801-\u28FF]/;
+
 const FOOTER_LINES = 1;
 
 export const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
-
-export const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 
 interface RenderOptions {
   width: number;
