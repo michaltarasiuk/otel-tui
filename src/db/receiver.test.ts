@@ -17,10 +17,9 @@ const TABLES = [
 ];
 
 const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
+const EXPIRED_LOG_COUNT = 10_000;
 
 const RETENTION_MS = 60 * 1000;
-
-const EXPIRED_LOG_COUNT = 10_000;
 
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
