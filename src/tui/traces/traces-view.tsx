@@ -12,11 +12,7 @@ export function TracesView() {
         <TraceList />
       </Pane>
       {openTraceId !== undefined && (
-        <TraceDetails
-          key={[openTraceId, openSpanId].join(" ")}
-          traceId={openTraceId}
-          initialSpanId={openSpanId}
-        />
+        <TraceDetails key={openTraceId} traceId={openTraceId} initialSpanId={openSpanId} />
       )}
     </>
   );

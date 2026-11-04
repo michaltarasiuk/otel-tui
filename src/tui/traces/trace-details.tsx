@@ -75,6 +75,7 @@ export function TraceDetails({ traceId, initialSpanId }: TraceDetailsProps) {
       <>
         <TraceHeader traceId={traceId} root={root} spans={spans} durationMs={durationMs} />
         <SpanTable
+          key={initialSpanId}
           traceId={traceId}
           initialSpanId={initialSpanId}
           spans={spans}
