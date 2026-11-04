@@ -1,5 +1,9 @@
 import { type CapturedFrame, RGBA } from "@opentui/core";
 import { createTestRenderer } from "@opentui/core/testing";
+import {
+  registerDeadBindingWarnings,
+  registerUnresolvedCommandWarnings,
+} from "@opentui/keymap/addons";
 import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
 import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot, flushSync } from "@opentui/react";
@@ -36,6 +40,11 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     kittyKeyboard: true,
   });
   const keymap = createDefaultOpenTuiKeymap(setup.renderer);
+  registerUnresolvedCommandWarnings(keymap);
+  registerDeadBindingWarnings(keymap);
+  const keymapDiagnostics: string[] = [];
+  keymap.on("warning", ({ message }) => keymapDiagnostics.push(message));
+  keymap.on("error", ({ message }) => keymapDiagnostics.push(message));
   const root = createRoot(setup.renderer);
   root.render(<KeymapProvider keymap={keymap}>{node}</KeymapProvider>);
 
@@ -81,6 +90,9 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     async [Symbol.asyncDispose]() {
       flushSync(() => root.unmount());
       await setup.dispose();
+      if (keymapDiagnostics.length > 0) {
+        throw new Error(`Keymap reported:\n${keymapDiagnostics.join("\n")}`);
+      }
     },
   };
 }
