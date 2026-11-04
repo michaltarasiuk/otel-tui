@@ -152,7 +152,9 @@ export async function startReceiver({
   async function close() {
     clearInterval(pruneInterval);
     await pruning;
+
     await connection.run("SELECT * FROM otlp_stop()");
+
     for (const connection of connections) {
       connection.closeSync();
     }

@@ -67,6 +67,7 @@ export function timeColumns(
   const end = Math.min(newestBucketMs, centered);
   const start = end - (columnCount - 1) * TIME_BUCKET_MS;
   const occupiedByStart = new Map(occupied.map((column) => [column.from, column]));
+
   return Array.from({ length: columnCount }, (_, offset) => {
     const from = start + offset * TIME_BUCKET_MS;
     return (
@@ -82,6 +83,7 @@ export function hiddenTraces(occupied: HistogramColumn[], columns: HistogramColu
   if (first === undefined || last === undefined) {
     return { earlier: false, later: false };
   }
+
   return {
     earlier: occupied.some((column) => column.to <= first.from),
     later: occupied.some((column) => column.from >= last.to),
@@ -108,6 +110,7 @@ export function timeAxis(columns: HistogramColumn[], columnWidth: number) {
   const precision = clockPrecision(interval);
   const axisWidth = columns.length * columnWidth;
   let axis = "";
+
   for (const [position, { from }] of columns.entries()) {
     const localFrom = from - new Date(from).getTimezoneOffset() * 60 * 1000;
     const untilTick = (interval - (localFrom % interval)) % interval;
@@ -120,5 +123,6 @@ export function timeAxis(columns: HistogramColumn[], columnWidth: number) {
       axis = axis.padEnd(labelStart) + label;
     }
   }
+
   return axis;
 }

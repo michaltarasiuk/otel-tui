@@ -57,6 +57,7 @@ export function sortByColumns(series: Series[], columns: AttributeColumn[]) {
         return order;
       }
     }
+
     return a.series_id.localeCompare(b.series_id);
   });
 }

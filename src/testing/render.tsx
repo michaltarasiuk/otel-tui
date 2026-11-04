@@ -52,6 +52,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
 
   async function waitUntil<T>(capture: () => T, matches: (captured: T) => boolean) {
     const deadline = performance.now() + FRAME_TIMEOUT_MS;
+
     while (performance.now() < deadline) {
       await setup.renderOnce();
       const captured = capture();

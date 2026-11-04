@@ -25,11 +25,13 @@ function summarize(attributeSets: Attributes[]) {
 
 function distinctScopes(series: Series[]) {
   const scopes = new Map<string, { name: string; version: string | null }>();
+
   for (const { scope_name, scope_version } of series) {
     if (scope_name !== null) {
       scopes.set(`${scope_name} ${scope_version}`, { name: scope_name, version: scope_version });
     }
   }
+
   return [...scopes.values()];
 }
 

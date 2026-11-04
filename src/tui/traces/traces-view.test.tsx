@@ -498,6 +498,7 @@ test("moves the marker over the timeline, latest bucket first", async () => {
 test("scrolls the timeline to keep the marker in view", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver, { withOldTrace: true });
+
   let frame = await app.waitForFrame((frame) => frame.includes("◀ earlier"));
   expect(frame).not.toContain("later ▶");
   expect(axisLine(frame)).toBe(MINUTE_TICKS);
@@ -781,6 +782,7 @@ test("goes back from the trace's logs to the trace, then to the list", async () 
     }),
   );
   await using app = await openTrace(receiver, CHECKOUT_ROW);
+
   app.mockInput.pressKey("l");
   let frame = await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
   expect(textLines(frame).at(-1)).toContain("escape back");

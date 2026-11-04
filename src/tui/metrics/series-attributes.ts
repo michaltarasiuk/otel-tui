@@ -8,6 +8,7 @@ export function compareValues(a: string, b: string) {
 
 export function attributeValues(attributeSets: Attributes[]) {
   const byKey = new Map<string, { values: Set<string>; setCount: number }>();
+
   for (const attributes of attributeSets) {
     for (const { key, value } of attributes) {
       const entry = byKey.get(key) ?? { values: new Set<string>(), setCount: 0 };
@@ -16,6 +17,7 @@ export function attributeValues(attributeSets: Attributes[]) {
       byKey.set(key, entry);
     }
   }
+
   return [...byKey].map(([key, { values, setCount }]) => ({
     key,
     values: [...values].sort((a, b) => compareValues(a, b)),

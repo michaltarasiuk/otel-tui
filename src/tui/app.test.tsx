@@ -82,6 +82,7 @@ test("switches tabs with the arrow keys while the tab bar is focused", async () 
 test("moves focus between the tab bar and the view with tab and shift+tab", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
+
   await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
   expect(footer(await app.waitForFrame((frame) => frame.includes("tab next region")))).toBe(
     "tab next region",

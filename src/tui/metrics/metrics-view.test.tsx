@@ -359,6 +359,7 @@ test("opens a counter's series with their rates and totals", async () => {
     "cartFailure 10/s 250",
     "failedReadinessProbe 2/s 50",
   ]);
+
   const panel = panelLines(frame);
   expect(panel.slice(0, 3)).toEqual(["cartFailure 12:00:30.000", "rate 10/s total 250", "Rate"]);
   expect(panel[3]).toStartWith("10/s ");
@@ -399,6 +400,7 @@ test("adds up a delta counter's points", async () => {
 test("shows the last, lowest, and highest value of gauges and updowncounters", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openMetric(receiver, HEAP_ROW);
+
   let frame = await app.waitForFrame((frame) =>
     textLines(frame).includes("none 1.5 MiB 1.0 MiB 2.0 MiB"),
   );
@@ -431,6 +433,7 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
     "Attributes Count p50 p95 p99 Max",
     "none 10 42.0ms 125.0ms 145.0ms 150.0ms",
   ]);
+
   const panel = panelLines(frame);
   expect(panel.slice(0, 4)).toEqual([
     "no attributes 12:00:20.000",
@@ -441,6 +444,7 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
   expect(panel.filter((line) => line.includes("■")).map((line) => line.replace(/ ■+/, ""))).toEqual(
     ["≤ 10.0ms 1", "≤ 50.0ms 5", "≤ 100.0ms 3", "> 100.0ms 1"],
   );
+
   const exemplarsIndex = panel.indexOf("Exemplars");
   expect(panel.slice(exemplarsIndex, exemplarsIndex + 3)).toEqual([
     "Exemplars",

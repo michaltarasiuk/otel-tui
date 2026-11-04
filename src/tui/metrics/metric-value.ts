@@ -55,6 +55,7 @@ function roundToTenths(value: number) {
 
 function formatBytes(bytes: number) {
   let exponent = 0;
+
   while (
     exponent < BYTE_UNITS.length - 1 &&
     roundToTenths(bytes / BYTES_PER_STEP ** exponent) >= BYTES_PER_STEP

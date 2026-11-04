@@ -31,11 +31,13 @@ function valueRange(lines: ChartLine[], includeZero: boolean) {
   if (values.length === 0) {
     return null;
   }
+
   const low = includeZero ? Math.min(0, ...values) : Math.min(...values);
   const high = includeZero ? Math.max(0, ...values) : Math.max(...values);
   if (low !== high) {
     return { low, high };
   }
+
   const padding = Math.abs(high) / 2 || 1;
   return includeZero && low === 0
     ? { low, high: padding }
@@ -90,11 +92,13 @@ function plotCells(
       previous = { x, y };
     }
   }
+
   return cells;
 }
 
 function toRuns(row: Cell[]) {
   const runs: { color: ColorInput | null; text: string }[] = [];
+
   for (const { bits, color } of row) {
     const char = bits === 0 ? " " : String.fromCharCode(BRAILLE_BLANK + bits);
     const last = runs.at(-1);
@@ -104,6 +108,7 @@ function toRuns(row: Cell[]) {
       runs.push({ color, text: char });
     }
   }
+
   return runs;
 }
 

@@ -58,18 +58,22 @@ function downscale(counts: Map<number, number>, by: number) {
     return counts;
   }
   const downscaled = new Map<number, number>();
+
   for (const [index, count] of counts) {
     const target = index >> by;
     downscaled.set(target, (downscaled.get(target) ?? 0) + count);
   }
+
   return downscaled;
 }
 
 function combineCounts(a: Map<number, number>, b: Map<number, number>, sign: 1 | -1) {
   const combined = new Map(a);
+
   for (const [index, count] of b) {
     combined.set(index, (combined.get(index) ?? 0) + sign * count);
   }
+
   return combined;
 }
 
@@ -173,6 +177,7 @@ function indexRange(counts: Map<number, number>) {
 
 export function limitBuckets(distribution: Distribution, maxBuckets: number) {
   let { buckets } = distribution;
+
   while (
     buckets.kind === "exponential" &&
     indexRange(buckets.positive).length + indexRange(buckets.negative).length > maxBuckets
@@ -219,10 +224,12 @@ export function quantile(distribution: Distribution, q: number) {
   if (total <= 0) {
     return null;
   }
+
   const min = distribution.min ?? -Infinity;
   const max = distribution.max ?? Infinity;
   const rank = q * total;
   let below = 0;
+
   for (const bucket of buckets) {
     if (bucket.count > 0 && below + bucket.count >= rank) {
       const lower = Math.max(bucket.lower, min);
@@ -237,5 +244,6 @@ export function quantile(distribution: Distribution, q: number) {
     }
     below += bucket.count;
   }
+
   return distribution.max;
 }

@@ -23,6 +23,7 @@ function emptySlots<T>({ slotCount }: ChartWindow, value: T) {
 export function meanLine(samples: { time: number; value: number }[], window: ChartWindow) {
   const sums = emptySlots(window, 0);
   const counts = emptySlots(window, 0);
+
   for (const { time, value } of samples) {
     const slot = slotOf(time, window);
     if (slot !== null) {
@@ -30,12 +31,14 @@ export function meanLine(samples: { time: number; value: number }[], window: Cha
       counts[slot]!++;
     }
   }
+
   return sums.map((sum, slot) => (counts[slot]! > 0 ? sum / counts[slot]! : null));
 }
 
 export function rateLine(intervals: Interval<number>[], window: ChartWindow) {
   const increases = emptySlots(window, 0);
   const seconds = emptySlots(window, 0);
+
   for (const { start, end, value } of intervals) {
     const slot = slotOf(end, window);
     if (slot !== null) {
@@ -43,6 +46,7 @@ export function rateLine(intervals: Interval<number>[], window: ChartWindow) {
       seconds[slot]! += (end - start) / 1000;
     }
   }
+
   return increases.map((increase, slot) => (seconds[slot]! > 0 ? increase / seconds[slot]! : null));
 }
 
@@ -52,6 +56,7 @@ export function quantileLines(
   window: ChartWindow,
 ) {
   const merged = emptySlots<Distribution | null>(window, null);
+
   for (const { end, value } of intervals) {
     const slot = slotOf(end, window);
     if (slot !== null) {
@@ -59,6 +64,7 @@ export function quantileLines(
       merged[slot] = current === null ? value : (addDistributions(current, value) ?? current);
     }
   }
+
   return quantiles.map((q) =>
     merged.map((distribution) => (distribution === null ? null : quantile(distribution, q))),
   );

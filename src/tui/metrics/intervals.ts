@@ -23,6 +23,7 @@ function intervalsOf<P extends TimedPoint, T>(
   increaseSince: (point: P, previous: P) => T | null,
 ) {
   const intervals: Interval<T>[] = [];
+
   for (const [index, point] of points.entries()) {
     const previous = points[index - 1];
     const end = point.time;
@@ -41,6 +42,7 @@ function intervalsOf<P extends TimedPoint, T>(
       intervals.push({ start, end, value: ownValue(point) });
     }
   }
+
   return intervals;
 }
 

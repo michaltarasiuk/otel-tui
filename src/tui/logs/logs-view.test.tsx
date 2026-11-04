@@ -314,10 +314,13 @@ test("jumps between errors in both directions", async () => {
 
   app.mockInput.pressKey("e");
   expect(await app.waitForSelection("OutOfMemoryError")).toBe(FATAL_ROW);
+
   app.mockInput.pressKey("e");
   expect(await app.waitForSelection("Credit card info is invalid.")).toBe(ERROR_ROW);
+
   app.mockInput.pressKey("e");
   expect(await app.waitForSelection("OutOfMemoryError")).toBe(FATAL_ROW);
+
   app.mockInput.pressKey("e", { shift: true });
   expect(await app.waitForSelection("Credit card info is invalid.")).toBe(ERROR_ROW);
 });
@@ -414,6 +417,7 @@ test("selects the log's span in a trace that is already open", async () => {
   await receiver.sendHttp("/v1/traces", checkoutTrace);
   await receiver.sendHttp("/v1/logs", otlpLogs);
   await using app = await renderApp(receiver);
+
   await app.waitForFrame((frame) => frame.includes(PLACE_ORDER));
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));

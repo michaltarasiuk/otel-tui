@@ -51,8 +51,10 @@ function barCell(row: number, totalEighths: number, errorEighths: number): BarCe
   if (filled <= 0) {
     return { glyph: " ", foreground: undefined, background: undefined };
   }
+
   const errorFilled = clamp(errorEighths - floor, 0, EIGHTHS_PER_CELL);
   const glyph = LOWER_BLOCKS[filled - 1] ?? " ";
+
   if (filled < EIGHTHS_PER_CELL) {
     return { glyph, foreground: errorFilled > 0 ? "error" : "ok", background: undefined };
   }
@@ -73,6 +75,7 @@ export function barRows(columns: HistogramColumn[], height: number) {
     const errorEighths = Math.min(totalEighths, eighthsOf(column.errorCount, maxCount, capacity));
     return { column, totalEighths, errorEighths };
   });
+
   return Array.from({ length: height }, (_, fromTop) =>
     bars.map(({ column, totalEighths, errorEighths }) => ({
       column,

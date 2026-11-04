@@ -31,6 +31,7 @@ export function useListState<T>({ items, getKey, initialSelectedKey }: ListState
           return item;
         }
       }
+
       return undefined;
     });
   }

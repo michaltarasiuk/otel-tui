@@ -19,9 +19,9 @@ const TABLES = [
 ];
 
 const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
-const EXPIRED_LOG_COUNT = 10_000;
 
 const RETENTION_MS = 60 * 1000;
+const EXPIRED_LOG_COUNT = 10_000;
 
 const SMALL_MEMORY_LIMIT_BYTES = 8 * 1024 * 1024;
 const LOG_BATCH_COUNT = 20;
@@ -200,8 +200,10 @@ test("drops telemetry older than the retention period", async () => {
   jest.useFakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
+
   await sendOneOfEach(receiver, new Date(Date.now() - 2 * RETENTION_MS));
   await sendOneOfEach(receiver, new Date());
+
   expect(await rowCounts(connection)).toEqual(eachTableWith(2));
 
   expect(await pruneAndWaitFor(connection, eachTableWith(1))).toEqual(eachTableWith(1));
@@ -211,6 +213,7 @@ test("drops logs by their observed time when they carry no time", async () => {
   jest.useFakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
+
   await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
@@ -221,8 +224,8 @@ test("drops logs by their observed time when they carry no time", async () => {
       ],
     }),
   );
-  const expected = { ...eachTableWith(0), otlp_logs: 1 };
 
+  const expected = { ...eachTableWith(0), otlp_logs: 1 };
   expect(await pruneAndWaitFor(connection, expected)).toEqual(expected);
 });
 
@@ -244,6 +247,7 @@ test("releases the memory of pruned telemetry", async () => {
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
   const expired = new Date(Date.now() - 2 * RETENTION_MS);
+
   await receiver.sendHttp(
     "/v1/logs",
     logsRequest({
@@ -254,6 +258,7 @@ test("releases the memory of pruned telemetry", async () => {
       })),
     }),
   );
+
   expect(await tableMemoryBytes(connection)).toBeGreaterThan(0);
 
   triggerPrune();
@@ -321,6 +326,7 @@ test("reports a failed prune and keeps running", async () => {
   const consoleError = spyOn(console, "error").mockImplementation(() => {});
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
+
   await connection.run("DROP TABLE otlp_traces");
 
   triggerPrune();
