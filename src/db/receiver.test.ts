@@ -92,17 +92,27 @@ function eachTableWith(rows: number) {
   return Object.fromEntries(TABLES.map((table) => [table, rows]));
 }
 
-async function pruneAndWaitFor(connection: DuckDBConnection, expected: Record<string, number>) {
+function triggerPrune() {
   jest.advanceTimersByTime(PRUNE_INTERVAL_MS);
   jest.useRealTimers();
+}
 
+async function pollUntil<T>(read: () => T | Promise<T>, isDone: (value: T) => boolean) {
   const deadline = performance.now() + PRUNE_TIMEOUT_MS;
-  let counts = await rowCounts(connection);
-  while (!Bun.deepEquals(counts, expected) && performance.now() < deadline) {
+  let value = await read();
+  while (!isDone(value) && performance.now() < deadline) {
     await Bun.sleep(PRUNE_POLL_INTERVAL_MS);
-    counts = await rowCounts(connection);
+    value = await read();
   }
-  return counts;
+  return value;
+}
+
+function pruneAndWaitFor(connection: DuckDBConnection, expected: Record<string, number>) {
+  triggerPrune();
+  return pollUntil(
+    () => rowCounts(connection),
+    (counts) => Bun.deepEquals(counts, expected),
+  );
 }
 
 afterEach(() => {
@@ -171,13 +181,12 @@ test("reports a failed prune and keeps running", async () => {
   const connection = await receiver.connect();
   await connection.run("DROP TABLE otlp_traces");
 
-  jest.advanceTimersByTime(PRUNE_INTERVAL_MS);
-  jest.useRealTimers();
+  triggerPrune();
 
-  const deadline = performance.now() + PRUNE_TIMEOUT_MS;
-  while (consoleError.mock.calls.length === 0 && performance.now() < deadline) {
-    await Bun.sleep(PRUNE_POLL_INTERVAL_MS);
-  }
+  await pollUntil(
+    () => consoleError.mock.calls.length,
+    (calls) => calls > 0,
+  );
   expect(consoleError).toHaveBeenCalledWith("Failed to prune expired telemetry", expect.any(Error));
 });
 
