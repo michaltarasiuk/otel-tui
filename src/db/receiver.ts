@@ -66,6 +66,10 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     return connection;
   }
 
+  async function releaseDeletedRows() {
+    await connection.run("CHECKPOINT");
+  }
+
   async function pruneExpiredTelemetry() {
     try {
       for (const [table, time] of Object.entries(RETENTION_TIMES)) {
@@ -74,6 +78,7 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
           { retentionMs },
         );
       }
+      await releaseDeletedRows();
     } catch (error) {
       console.error("Failed to prune expired telemetry", error);
     }

@@ -1,6 +1,7 @@
 import { afterEach, expect, jest, mock, spyOn, test } from "bun:test";
 
 import type { DuckDBConnection } from "@duckdb/node-api";
+import { z } from "zod";
 
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../testing/receiver.ts";
@@ -19,6 +20,8 @@ const TABLES = [
 const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
 
 const RETENTION_MS = MILLISECONDS_PER_MINUTE;
+
+const EXPIRED_LOG_COUNT = 10_000;
 
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
@@ -86,6 +89,13 @@ async function rowCounts(connection: DuckDBConnection) {
     ).join(" UNION ALL "),
   );
   return Object.fromEntries(reader.getRowObjectsJS().map(({ name, rows }) => [name, rows]));
+}
+
+async function tableMemoryBytes(connection: DuckDBConnection) {
+  const reader = await connection.runAndReadAll(
+    "SELECT memory_usage_bytes::INTEGER FROM duckdb_memory() WHERE tag = 'IN_MEMORY_TABLE'",
+  );
+  return z.number().parse(reader.value(0, 0));
 }
 
 function eachTableWith(rows: number) {
@@ -172,6 +182,33 @@ test("drops logs by their observed time when they carry no time", async () => {
   const expected = { ...eachTableWith(0), otlp_logs: 1 };
 
   expect(await pruneAndWaitFor(connection, expected)).toEqual(expected);
+});
+
+test("releases the memory of pruned telemetry", async () => {
+  jest.useFakeTimers();
+  await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
+  const connection = await receiver.connect();
+  const expired = new Date(Date.now() - 2 * RETENTION_MS);
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest({
+      service: "cart",
+      logs: Array.from({ length: EXPIRED_LOG_COUNT }, (_, index) => ({
+        time: expired,
+        body: `GetCartAsync called with userId=${index}`,
+      })),
+    }),
+  );
+  expect(await tableMemoryBytes(connection)).toBeGreaterThan(0);
+
+  triggerPrune();
+
+  expect(
+    await pollUntil(
+      () => tableMemoryBytes(connection),
+      (bytes) => bytes === 0,
+    ),
+  ).toBe(0);
 });
 
 test("reports a failed prune and keeps running", async () => {
