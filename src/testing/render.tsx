@@ -39,12 +39,14 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     height,
     kittyKeyboard: true,
   });
+
   const keymap = createDefaultOpenTuiKeymap(setup.renderer);
   registerUnresolvedCommandWarnings(keymap);
   registerDeadBindingWarnings(keymap);
   const keymapDiagnostics: string[] = [];
   keymap.on("warning", ({ message }) => keymapDiagnostics.push(message));
   keymap.on("error", ({ message }) => keymapDiagnostics.push(message));
+
   const root = createRoot(setup.renderer);
   root.render(<KeymapProvider keymap={keymap}>{node}</KeymapProvider>);
 
