@@ -1,4 +1,3 @@
-import { MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import { type Distribution, hasNegativeCounts, subtractDistributions } from "./distribution.ts";
 import type { DistributionPoint, NumberPoint } from "./series.ts";
 
@@ -67,5 +66,5 @@ export function distributionIntervals(points: DistributionPoint[], delta: boolea
 }
 
 export function perSecond(interval: Interval<number>) {
-  return (interval.value * MILLISECONDS_PER_SECOND) / (interval.end - interval.start);
+  return (interval.value * 1000) / (interval.end - interval.start);
 }

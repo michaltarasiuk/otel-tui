@@ -1,7 +1,6 @@
 import { connect, type IncomingHttpHeaders } from "node:http2";
 
 import { startReceiver } from "../db/receiver.ts";
-import { MILLISECONDS_PER_HOUR } from "../utils/time.ts";
 
 const GRPC_UNCOMPRESSED_FLAG = 0;
 const GRPC_ZERO_MESSAGE_LENGTH = [0, 0, 0, 0];
@@ -21,7 +20,7 @@ interface TestReceiverOptions {
 }
 
 export async function startTestReceiver({
-  retentionMs = MILLISECONDS_PER_HOUR,
+  retentionMs = 60 * 60 * 1000,
 }: TestReceiverOptions = {}) {
   const receiver = await startReceiver({
     httpPort: freePort(),

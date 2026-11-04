@@ -1,9 +1,3 @@
-export const MICROSECONDS_PER_MILLISECOND = 1000;
-export const MILLISECONDS_PER_SECOND = 1000;
-export const MILLISECONDS_PER_MINUTE = 60 * MILLISECONDS_PER_SECOND;
-export const MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
-export const MILLISECONDS_PER_DAY = 24 * MILLISECONDS_PER_HOUR;
-
 function timeOfDayFormat(options: Intl.DateTimeFormatOptions = {}) {
   return new Intl.DateTimeFormat(undefined, {
     hour: "2-digit",
@@ -27,29 +21,29 @@ export function formatTime(
 }
 
 export function formatTimeAgo(ageMs: number) {
-  if (ageMs < MILLISECONDS_PER_SECOND) {
+  if (ageMs < 1000) {
     return "just now";
   }
-  if (ageMs < MILLISECONDS_PER_MINUTE) {
-    return `${Math.floor(ageMs / MILLISECONDS_PER_SECOND)}s ago`;
+  if (ageMs < 60 * 1000) {
+    return `${Math.floor(ageMs / 1000)}s ago`;
   }
-  if (ageMs < MILLISECONDS_PER_HOUR) {
-    return `${Math.floor(ageMs / MILLISECONDS_PER_MINUTE)}m ago`;
+  if (ageMs < 60 * 60 * 1000) {
+    return `${Math.floor(ageMs / (60 * 1000))}m ago`;
   }
-  return `${Math.floor(ageMs / MILLISECONDS_PER_HOUR)}h ago`;
+  return `${Math.floor(ageMs / (60 * 60 * 1000))}h ago`;
 }
 
 export function formatDuration(ms: number) {
   if (ms < 0) {
     throw new Error(`Duration must not be negative: ${ms}ms`);
   }
-  const microseconds = Math.round(ms * MICROSECONDS_PER_MILLISECOND);
-  if (microseconds < MICROSECONDS_PER_MILLISECOND) {
+  const microseconds = Math.round(ms * 1000);
+  if (microseconds < 1000) {
     return `${microseconds}µs`;
   }
   const milliseconds = Math.round(ms * 10) / 10;
-  if (milliseconds < MILLISECONDS_PER_SECOND) {
+  if (milliseconds < 1000) {
     return `${milliseconds.toFixed(1)}ms`;
   }
-  return `${(ms / MILLISECONDS_PER_SECOND).toFixed(2)}s`;
+  return `${(ms / 1000).toFixed(2)}s`;
 }

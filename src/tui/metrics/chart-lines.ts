@@ -1,4 +1,3 @@
-import { MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import { addDistributions, type Distribution, quantile } from "./distribution.ts";
 import type { Interval } from "./intervals.ts";
 
@@ -41,7 +40,7 @@ export function rateLine(intervals: Interval<number>[], window: ChartWindow) {
     const slot = slotOf(end, window);
     if (slot !== null) {
       increases[slot]! += value;
-      seconds[slot]! += (end - start) / MILLISECONDS_PER_SECOND;
+      seconds[slot]! += (end - start) / 1000;
     }
   }
   return increases.map((increase, slot) => (seconds[slot]! > 0 ? increase / seconds[slot]! : null));

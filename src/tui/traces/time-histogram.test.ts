@@ -1,6 +1,5 @@
 import { expect, test } from "bun:test";
 
-import { MILLISECONDS_PER_MINUTE, MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import type { HistogramColumn } from "./histogram.ts";
 import {
   bucketStart,
@@ -13,7 +12,7 @@ import {
   timeRangeLabel,
 } from "./time-histogram.ts";
 
-const SECOND = MILLISECONDS_PER_SECOND;
+const SECOND = 1000;
 
 const noon = Date.parse("2026-10-28T12:00:00.000Z");
 
@@ -112,9 +111,7 @@ test("reports traces before and after the columns", () => {
 
 test("labels a range with the times it starts and ends, to the second under a minute", () => {
   expect(timeRangeLabel({ from: noon, to: noon + 10_000 })).toBe("12:00:00–12:00:10");
-  expect(timeRangeLabel({ from: noon, to: noon + 5 * MILLISECONDS_PER_MINUTE })).toBe(
-    "12:00–12:05",
-  );
+  expect(timeRangeLabel({ from: noon, to: noon + 5 * 60 * 1000 })).toBe("12:00–12:05");
 });
 
 test("labels the axis to the minute at round times, far enough apart to read", () => {

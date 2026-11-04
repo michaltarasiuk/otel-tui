@@ -5,7 +5,6 @@ import { z } from "zod";
 
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../testing/receiver.ts";
-import { MILLISECONDS_PER_MINUTE } from "../utils/time.ts";
 import { PRUNE_INTERVAL_MS } from "./receiver.ts";
 
 const TABLES = [
@@ -19,7 +18,7 @@ const TABLES = [
 
 const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
 
-const RETENTION_MS = MILLISECONDS_PER_MINUTE;
+const RETENTION_MS = 60 * 1000;
 
 const EXPIRED_LOG_COUNT = 10_000;
 

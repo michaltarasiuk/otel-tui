@@ -1,6 +1,6 @@
 import { RGBA } from "@opentui/core";
 
-import { MILLISECONDS_PER_MINUTE, formatTime } from "../../utils/time.ts";
+import { formatTime } from "../../utils/time.ts";
 import { COLUMN_GAP } from "../columns.ts";
 import { Section } from "../section.tsx";
 import { THEME } from "../theme.ts";
@@ -16,7 +16,7 @@ import type { NumberPoint, Series, SeriesPoints } from "./series.ts";
 const CHART_HEIGHT = 8;
 const TIME_AXIS_HEIGHT = 1;
 
-const MIN_WINDOW_MS = MILLISECONDS_PER_MINUTE;
+const MIN_WINDOW_MS = 60 * 1000;
 
 const black = RGBA.fromHex("#000000");
 const white = RGBA.fromHex("#FFFFFF");

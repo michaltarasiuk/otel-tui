@@ -2,7 +2,6 @@ import { expect, test } from "bun:test";
 
 import { tracesRequest } from "../../testing/otlp.ts";
 import { startTestReceiver } from "../../testing/receiver.ts";
-import { MILLISECONDS_PER_HOUR, MILLISECONDS_PER_SECOND } from "../../utils/time.ts";
 import type { HistogramColumn } from "./histogram.ts";
 import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
 import traceTimeline from "./trace-timeline.sql" with { type: "text" };
@@ -45,7 +44,7 @@ function traceCount(columns: HistogramColumn[]) {
 }
 
 test("keeps every trace, however far back it goes", async () => {
-  const ages = Array.from({ length: 300 }, (_, index) => index * 60 * MILLISECONDS_PER_SECOND);
+  const ages = Array.from({ length: 300 }, (_, index) => index * 60 * 1000);
 
   const columns = await loadTimeline(ages);
 
@@ -65,7 +64,7 @@ test("groups traces into buckets of a fixed width, oldest first", async () => {
 });
 
 test("leaves out traces dated after now", async () => {
-  const ages = [300_000, 200_000, 100_000, 10_000, -25_000, -MILLISECONDS_PER_HOUR];
+  const ages = [300_000, 200_000, 100_000, 10_000, -25_000, -60 * 60 * 1000];
 
   const columns = await loadTimeline(ages);
 

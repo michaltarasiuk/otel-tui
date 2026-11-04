@@ -1,7 +1,6 @@
 import { DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 import { z } from "zod";
 
-import { MILLISECONDS_PER_SECOND } from "../utils/time.ts";
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([
@@ -21,7 +20,7 @@ const RETENTION_TIMES = {
 const HOST = "127.0.0.1";
 const SEAL_MAX_AGE_MS = 500;
 
-export const PRUNE_INTERVAL_MS = 30 * MILLISECONDS_PER_SECOND;
+export const PRUNE_INTERVAL_MS = 30 * 1000;
 
 export interface ReceiverUrls {
   http: string;
