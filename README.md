@@ -48,14 +48,18 @@ bun run start
 ```
 
 Point your OTLP exporter at `http://localhost:4318` for OTLP/HTTP or
-`http://localhost:4317` for OTLP/gRPC. Data lives in memory and auth is off, so
-it only suits local use.
+`http://localhost:4317` for OTLP/gRPC. Auth is off, so it only suits local use.
 
-| Variable                     | Default | Meaning                    |
-| ---------------------------- | ------- | -------------------------- |
-| `OTEL_TUI_HTTP_PORT`         | `4318`  | Port for OTLP/HTTP         |
-| `OTEL_TUI_GRPC_PORT`         | `4317`  | Port for OTLP/gRPC         |
-| `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept |
+Telemetry is kept in memory for the retention period. When it nears the memory
+limit, the oldest telemetry is dropped first. A burst that outpaces this spills
+to a temporary directory for a few seconds, which is removed on exit.
+
+| Variable                     | Default | Meaning                      |
+| ---------------------------- | ------- | ---------------------------- |
+| `OTEL_TUI_HTTP_PORT`         | `4318`  | Port for OTLP/HTTP           |
+| `OTEL_TUI_GRPC_PORT`         | `4317`  | Port for OTLP/gRPC           |
+| `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept   |
+| `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`  | Memory for telemetry, in MiB |
 
 ## Development
 

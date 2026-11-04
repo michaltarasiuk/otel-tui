@@ -17,15 +17,18 @@ function freePort() {
 
 interface TestReceiverOptions {
   retentionMs?: number;
+  memoryLimitBytes?: number;
 }
 
 export async function startTestReceiver({
   retentionMs = 60 * 60 * 1000,
+  memoryLimitBytes = 1024 * 1024 * 1024,
 }: TestReceiverOptions = {}) {
   const receiver = await startReceiver({
     httpPort: freePort(),
     grpcPort: freePort(),
     retentionMs,
+    memoryLimitBytes,
   });
   const connection = await receiver.connect();
   const uri = `otlp:${new URL(receiver.urls.http).host}`;

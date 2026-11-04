@@ -1,3 +1,6 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api";
 import { z } from "zod";
 
@@ -19,7 +22,10 @@ const TELEMETRY_TIMES = {
 
 const HOST = "127.0.0.1";
 
-export const PRUNE_INTERVAL_MS = 30 * 1000;
+export const PRUNE_INTERVAL_MS = 5 * 1000;
+
+const TRIM_START_SHARE = 0.8;
+const TRIM_TARGET_SHARE = 0.6;
 
 export interface ReceiverUrls {
   http: string;
@@ -30,10 +36,19 @@ interface ReceiverOptions {
   httpPort: number;
   grpcPort: number;
   retentionMs: number;
+  memoryLimitBytes: number;
 }
 
-export async function startReceiver({ httpPort, grpcPort, retentionMs }: ReceiverOptions) {
-  const instance = await DuckDBInstance.create(":memory:");
+export async function startReceiver({
+  httpPort,
+  grpcPort,
+  retentionMs,
+  memoryLimitBytes,
+}: ReceiverOptions) {
+  const instance = await DuckDBInstance.create(":memory:", {
+    memory_limit: `${memoryLimitBytes}B`,
+    temp_directory: join(tmpdir(), `otel-tui-${crypto.randomUUID()}`),
+  });
   const connection = await instance.connect();
 
   await connection.run("INSTALL otlp FROM community");
@@ -45,12 +60,14 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
       [$httpUri, $grpcUri],
       transport := ['http', 'grpc'],
       disable_auth := true,
-      seal_max_age_ms := $sealMaxAgeMs
+      seal_max_age_ms := $sealMaxAgeMs,
+      max_buffered_bytes := $maxBufferedBytes
     )`,
     {
       httpUri: `otlp:${HOST}:${httpPort}`,
       grpcUri: `otlp:${HOST}:${grpcPort}`,
       sealMaxAgeMs: 500,
+      maxBufferedBytes: 32 * 1024 * 1024,
     },
   );
   const [http, grpc] = OtlpServeRows.parse(reader.getRowObjectsJS());
@@ -68,9 +85,9 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     await connection.run("CHECKPOINT");
   }
 
-  async function deleteTelemetryBefore(cutoff: DuckDBValue) {
+  async function deleteTelemetryUpTo(cutoff: DuckDBValue) {
     for (const [table, time] of Object.entries(TELEMETRY_TIMES)) {
-      await connection.run(`DELETE FROM ${table} WHERE ${time} < $cutoff`, { cutoff });
+      await connection.run(`DELETE FROM ${table} WHERE ${time} <= $cutoff`, { cutoff });
     }
   }
 
@@ -82,12 +99,42 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     return reader.value(0, 0);
   }
 
-  async function pruneExpiredTelemetry() {
+  async function storedBytes() {
+    const reader = await connection.runAndReadAll(
+      "SELECT sum(memory_usage_bytes + temporary_storage_bytes)::FLOAT FROM duckdb_memory()",
+    );
+    return z.number().parse(reader.value(0, 0));
+  }
+
+  async function oldestTelemetryCutoff(share: number) {
+    const times = Object.entries(TELEMETRY_TIMES)
+      .map(([table, time]) => `SELECT ${time} AS time FROM ${table}`)
+      .join(" UNION ALL ");
+    const reader = await connection.runAndReadAll(
+      `SELECT approx_quantile(time, $share::FLOAT) FROM (${times})`,
+      { share },
+    );
+    return reader.value(0, 0);
+  }
+
+  async function trimOldestTelemetry() {
+    const bytes = await storedBytes();
+    if (bytes <= TRIM_START_SHARE * memoryLimitBytes) {
+      return;
+    }
+
+    const targetBytes = TRIM_TARGET_SHARE * memoryLimitBytes;
+    await deleteTelemetryUpTo(await oldestTelemetryCutoff(1 - targetBytes / bytes));
+    await releaseDeletedRows();
+  }
+
+  async function pruneTelemetry() {
     try {
-      await deleteTelemetryBefore(await retentionCutoff());
+      await deleteTelemetryUpTo(await retentionCutoff());
       await releaseDeletedRows();
+      await trimOldestTelemetry();
     } catch (error) {
-      console.error("Failed to prune expired telemetry", error);
+      console.error("Failed to prune telemetry", error);
     }
   }
 
@@ -96,7 +143,7 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     if (pruning !== undefined) {
       return;
     }
-    pruning = pruneExpiredTelemetry().finally(() => {
+    pruning = pruneTelemetry().finally(() => {
       pruning = undefined;
     });
   }, PRUNE_INTERVAL_MS);

@@ -1,4 +1,6 @@
 import { afterEach, expect, jest, mock, spyOn, test } from "bun:test";
+import { existsSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { z } from "zod";
@@ -20,6 +22,10 @@ const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
 const EXPIRED_LOG_COUNT = 10_000;
 
 const RETENTION_MS = 60 * 1000;
+
+const SMALL_MEMORY_LIMIT_BYTES = 8 * 1024 * 1024;
+const LOG_BATCH_COUNT = 20;
+const LOG_BATCH_SIZE = 5000;
 
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
@@ -80,6 +86,39 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
   );
 }
 
+function uncompressibleCartLog() {
+  return `GetCartAsync called with userId=${crypto.randomUUID()} cartId=${crypto.randomUUID()} sessionId=${crypto.randomUUID()}`;
+}
+
+async function sendLogBatches(receiver: TestReceiver) {
+  const start = Date.now() - LOG_BATCH_COUNT * 1000;
+  const times = Array.from(
+    { length: LOG_BATCH_COUNT },
+    (_, batch) => new Date(start + batch * 1000),
+  );
+  for (const time of times) {
+    await receiver.sendHttp(
+      "/v1/logs",
+      logsRequest({
+        service: "cart",
+        logs: Array.from({ length: LOG_BATCH_SIZE }, () => ({
+          time,
+          body: uncompressibleCartLog(),
+        })),
+      }),
+    );
+  }
+  return times;
+}
+
+async function logCountAt(connection: DuckDBConnection, time: Date) {
+  const reader = await connection.runAndReadAll(
+    "SELECT count(*)::INTEGER FROM otlp_logs WHERE epoch_ms(time_unix_nano) = $timeMs",
+    { timeMs: time.getTime() },
+  );
+  return z.number().parse(reader.value(0, 0));
+}
+
 async function rowCounts(connection: DuckDBConnection) {
   const reader = await connection.runAndReadAll(
     TABLES.map(
@@ -94,6 +133,11 @@ async function tableMemoryBytes(connection: DuckDBConnection) {
     "SELECT memory_usage_bytes::INTEGER FROM duckdb_memory() WHERE tag = 'IN_MEMORY_TABLE'",
   );
   return z.number().parse(reader.value(0, 0));
+}
+
+async function spillDirectory(connection: DuckDBConnection) {
+  const reader = await connection.runAndReadAll("SELECT current_setting('temp_directory')");
+  return z.string().parse(reader.value(0, 0));
 }
 
 function eachTableWith(rows: number) {
@@ -209,6 +253,56 @@ test("releases the memory of pruned telemetry", async () => {
   ).toBe(0);
 });
 
+test("accepts telemetry beyond its memory limit", async () => {
+  jest.useFakeTimers();
+  await using receiver = await startTestReceiver({ memoryLimitBytes: SMALL_MEMORY_LIMIT_BYTES });
+  const connection = await receiver.connect();
+
+  await sendLogBatches(receiver);
+
+  expect(await rowCounts(connection)).toEqual({
+    ...eachTableWith(0),
+    otlp_logs: LOG_BATCH_COUNT * LOG_BATCH_SIZE,
+  });
+});
+
+test("drops the oldest telemetry when it nears the memory limit", async () => {
+  jest.useFakeTimers();
+  await using receiver = await startTestReceiver({ memoryLimitBytes: SMALL_MEMORY_LIMIT_BYTES });
+  const connection = await receiver.connect();
+
+  const times = await sendLogBatches(receiver);
+  const oldest = times.at(0)!;
+  const newest = times.at(-1)!;
+
+  triggerPrune();
+
+  expect(
+    await pollUntil(
+      () => logCountAt(connection, oldest),
+      (count) => count === 0,
+    ),
+  ).toBe(0);
+  expect(await logCountAt(connection, newest)).toBe(LOG_BATCH_SIZE);
+});
+
+test("spills to a temporary directory only while it needs one", async () => {
+  jest.useFakeTimers();
+  const receiver = await startTestReceiver({ memoryLimitBytes: SMALL_MEMORY_LIMIT_BYTES });
+  const directory = await spillDirectory(await receiver.connect());
+
+  expect(directory).toStartWith(tmpdir());
+  expect(existsSync(directory)).toBe(false);
+
+  await sendLogBatches(receiver);
+
+  expect(existsSync(directory)).toBe(true);
+
+  await receiver[Symbol.asyncDispose]();
+
+  expect(existsSync(directory)).toBe(false);
+});
+
 test("reports a failed prune and keeps running", async () => {
   jest.useFakeTimers();
   const consoleError = spyOn(console, "error").mockImplementation(() => {});
@@ -222,7 +316,7 @@ test("reports a failed prune and keeps running", async () => {
     () => consoleError.mock.calls.length,
     (calls) => calls > 0,
   );
-  expect(consoleError).toHaveBeenCalledWith("Failed to prune expired telemetry", expect.any(Error));
+  expect(consoleError).toHaveBeenCalledWith("Failed to prune telemetry", expect.any(Error));
 });
 
 test("closes its connections and stops listening when disposed", async () => {
