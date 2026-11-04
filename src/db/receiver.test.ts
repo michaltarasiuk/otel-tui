@@ -226,6 +226,19 @@ test("drops logs by their observed time when they carry no time", async () => {
   expect(await pruneAndWaitFor(connection, expected)).toEqual(expected);
 });
 
+test("drops logs that carry neither a time nor an observed time", async () => {
+  jest.useFakeTimers();
+  await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
+  const connection = await receiver.connect();
+
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest({ service: "shipping", logs: [{ body: "Requesting quote" }] }),
+  );
+
+  expect(await pruneAndWaitFor(connection, eachTableWith(0))).toEqual(eachTableWith(0));
+});
+
 test("releases the memory of pruned telemetry", async () => {
   jest.useFakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });

@@ -13,7 +13,7 @@ const OtlpServeRows = z.tuple([
 
 const TELEMETRY_TIMES = {
   otlp_traces: "start_time_unix_nano",
-  otlp_logs: "coalesce(time_unix_nano, observed_time_unix_nano)",
+  otlp_logs: "coalesce(time_unix_nano, observed_time_unix_nano, 'epoch'::TIMESTAMP)",
   otlp_metrics_gauge: "time_unix_nano",
   otlp_metrics_sum: "time_unix_nano",
   otlp_metrics_histogram: "time_unix_nano",
