@@ -6,8 +6,6 @@ import { THEME } from "../theme.ts";
 import { type Bucket, bucketsOf, limitBuckets, type Distribution } from "./distribution.ts";
 import { formatMetricValue } from "./metric-value.ts";
 
-const MAX_BUCKETS = 16;
-
 const LABEL_WIDTH = 11;
 const COUNT_WIDTH = 9;
 
@@ -36,7 +34,7 @@ export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
 
   const barsRef = useRef<BoxRenderable>(null);
 
-  const buckets = nonEmptyRange(bucketsOf(limitBuckets(distribution, MAX_BUCKETS)));
+  const buckets = nonEmptyRange(bucketsOf(limitBuckets(distribution, 16)));
   const maxCount = Math.max(...buckets.map((bucket) => bucket.count));
   const barColumns = Math.max(0, width - LABEL_WIDTH - COUNT_WIDTH - 2 * COLUMN_GAP);
 

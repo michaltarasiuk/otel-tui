@@ -10,8 +10,6 @@ import logList from "./log-list.sql" with { type: "text" };
 import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
 
-const MAX_LOGS = 500;
-
 const ANY_SEVERITY_NUMBER = 0;
 
 interface LogQuery {
@@ -28,7 +26,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
     queryKey: ["logs", { search, minSeverity, traceId }],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(logList, {
-        limit: MAX_LOGS,
+        limit: 500,
         pattern: substringPattern(search),
         minSeverityNumber:
           minSeverity === undefined ? ANY_SEVERITY_NUMBER : lowestSeverityNumber(minSeverity),

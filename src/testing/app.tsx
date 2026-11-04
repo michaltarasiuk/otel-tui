@@ -4,9 +4,7 @@ import { QUERY_CLIENT_CONFIG, TuiRoot, waitForInFlightQueries } from "../tui/tui
 import type { TestReceiver } from "./receiver.ts";
 import { render } from "./render.tsx";
 
-const APP_SIZE = { width: 120, height: 30 };
-
-export async function renderApp(receiver: TestReceiver, size = APP_SIZE) {
+export async function renderApp(receiver: TestReceiver, size = { width: 120, height: 30 }) {
   const queryClient = new QueryClient(QUERY_CLIENT_CONFIG);
   const connection = await receiver.connect();
 

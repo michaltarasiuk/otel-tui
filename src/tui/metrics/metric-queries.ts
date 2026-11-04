@@ -25,9 +25,6 @@ import {
   NumberSeries,
 } from "./series.ts";
 
-const MAX_METRICS = 500;
-const MAX_EXEMPLARS = 10;
-
 function metricIdentity(metric: Metric) {
   return {
     name: metric.name,
@@ -50,7 +47,7 @@ export function useMetricList({ search, sort }: MetricQuery) {
     queryKey: ["metrics", { search, sort }],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(metricList, {
-        limit: MAX_METRICS,
+        limit: 500,
         pattern: substringPattern(search),
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
@@ -171,7 +168,7 @@ export function useSeriesExemplars(metric: Metric, seriesId: string) {
         ...metricIdentity(metric),
         type: metric.type,
         seriesId,
-        limit: MAX_EXEMPLARS,
+        limit: 10,
       });
       return Exemplar.array().parse(reader.getRowObjectsJS());
     },

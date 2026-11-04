@@ -13,8 +13,6 @@ import { SeriesChart } from "./series-chart.tsx";
 import { seriesStats, statKeys } from "./series-stats.ts";
 import type { Exemplar, Series } from "./series.ts";
 
-const EXEMPLAR_VALUE_WIDTH = 10;
-
 interface ExemplarListProps {
   exemplars: Exemplar[];
   unit: string;
@@ -26,7 +24,7 @@ function ExemplarList({ exemplars, unit }: ExemplarListProps) {
       <text width={TIME_WIDTH} flexShrink={0} fg={THEME.textMuted}>
         {formatTime(exemplar.time)}
       </text>
-      <text width={EXEMPLAR_VALUE_WIDTH} flexShrink={0} textAlign="right" fg={THEME.text}>
+      <text width={10} flexShrink={0} textAlign="right" fg={THEME.text}>
         {formatMetricValue(exemplar.value, unit)}
       </text>
       <text fg={THEME.textMuted} wrapMode="none" truncate>

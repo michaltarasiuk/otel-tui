@@ -15,8 +15,6 @@ import traceSpans from "./trace-spans.sql" with { type: "text" };
 import traceTimeline from "./trace-timeline.sql" with { type: "text" };
 import { Trace, type TraceSort } from "./trace.ts";
 
-const MAX_TRACES = 500;
-
 interface TraceFilter {
   search: string;
   errorsOnly: boolean;
@@ -35,7 +33,7 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
     queryKey: ["traces", { search, errorsOnly, timeRange, sort }],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(traceList, {
-        limit: MAX_TRACES,
+        limit: 500,
         pattern: substringPattern(search),
         errorsOnly,
         minTimeMs: timeRange?.from ?? null,

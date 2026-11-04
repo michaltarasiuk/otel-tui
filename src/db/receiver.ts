@@ -18,7 +18,6 @@ const RETENTION_TIMES = {
 };
 
 const HOST = "127.0.0.1";
-const SEAL_MAX_AGE_MS = 500;
 
 export const PRUNE_INTERVAL_MS = 30 * 1000;
 
@@ -51,7 +50,7 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     {
       httpUri: `otlp:${HOST}:${httpPort}`,
       grpcUri: `otlp:${HOST}:${grpcPort}`,
-      sealMaxAgeMs: SEAL_MAX_AGE_MS,
+      sealMaxAgeMs: 500,
     },
   );
   const [http, grpc] = OtlpServeRows.parse(reader.getRowObjectsJS());

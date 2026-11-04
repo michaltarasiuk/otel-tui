@@ -5,9 +5,6 @@ import { RGBA } from "@opentui/core";
 import { BRAILLE_DOTS, render, textLines } from "../../testing/render.tsx";
 import { LineChart } from "./line-chart.tsx";
 
-const SIZE = { width: 20, height: 4 };
-const CHART_ROWS = 2;
-
 interface ChartLine {
   color: string;
   values: (number | null)[];
@@ -16,7 +13,7 @@ interface ChartLine {
 async function renderChart(lines: ChartLine[], { gapSlots = 1, includeZero = false } = {}) {
   const screen = await render(
     <LineChart
-      height={CHART_ROWS}
+      height={2}
       includeZero={includeZero}
       startLabel="start"
       endLabel="end"
@@ -26,7 +23,7 @@ async function renderChart(lines: ChartLine[], { gapSlots = 1, includeZero = fal
         gapSlots,
       })}
     />,
-    SIZE,
+    { width: 20, height: 4 },
   );
   const frame = await screen.waitForFrame(
     (frame) => BRAILLE_DOTS.test(frame) || frame.includes("Not enough data"),

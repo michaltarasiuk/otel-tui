@@ -1,5 +1,3 @@
-const JSON_INDENT = 2;
-
 export function formatCount(count: number, noun: string) {
   return `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
 }
@@ -16,9 +14,7 @@ export function collapseWhitespace(text: string) {
 export function prettyPrintJson(text: string) {
   try {
     const value: unknown = JSON.parse(text);
-    return typeof value === "object" && value !== null
-      ? JSON.stringify(value, null, JSON_INDENT)
-      : text;
+    return typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : text;
   } catch {
     return text;
   }

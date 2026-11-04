@@ -7,7 +7,6 @@ import { type Distribution, explicitBuckets, exponentialBuckets } from "./distri
 
 const BAR_COLUMNS = 20;
 const LABEL_AND_COUNT_COLUMNS = 24;
-const SIZE = { width: BAR_COLUMNS + LABEL_AND_COUNT_COLUMNS, height: 20 };
 
 function withBuckets(buckets: Distribution["buckets"]): Distribution {
   return { count: 0, sum: null, min: null, max: null, buckets };
@@ -16,7 +15,7 @@ function withBuckets(buckets: Distribution["buckets"]): Distribution {
 async function renderBars(distribution: Distribution, unit: string) {
   const screen = await render(
     <BucketBars distribution={distribution} unit={unit} color="#00FF00" />,
-    SIZE,
+    { width: BAR_COLUMNS + LABEL_AND_COUNT_COLUMNS, height: 20 },
   );
   const frame = await screen.waitForFrame((frame) => frame.includes("■".repeat(BAR_COLUMNS)));
   return {
