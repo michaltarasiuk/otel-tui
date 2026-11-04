@@ -1,4 +1,4 @@
-import { DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
+import { DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api";
 import { z } from "zod";
 
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
@@ -8,7 +8,7 @@ const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("grpc"), listen_url: z.url() }),
 ]);
 
-const RETENTION_TIMES = {
+const TELEMETRY_TIMES = {
   otlp_traces: "start_time_unix_nano",
   otlp_logs: "coalesce(time_unix_nano, observed_time_unix_nano)",
   otlp_metrics_gauge: "time_unix_nano",
@@ -68,14 +68,23 @@ export async function startReceiver({ httpPort, grpcPort, retentionMs }: Receive
     await connection.run("CHECKPOINT");
   }
 
+  async function deleteTelemetryBefore(cutoff: DuckDBValue) {
+    for (const [table, time] of Object.entries(TELEMETRY_TIMES)) {
+      await connection.run(`DELETE FROM ${table} WHERE ${time} < $cutoff`, { cutoff });
+    }
+  }
+
+  async function retentionCutoff() {
+    const reader = await connection.runAndReadAll(
+      "SELECT (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)",
+      { retentionMs },
+    );
+    return reader.value(0, 0);
+  }
+
   async function pruneExpiredTelemetry() {
     try {
-      for (const [table, time] of Object.entries(RETENTION_TIMES)) {
-        await connection.run(
-          `DELETE FROM ${table} WHERE ${time} < (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)`,
-          { retentionMs },
-        );
-      }
+      await deleteTelemetryBefore(await retentionCutoff());
       await releaseDeletedRows();
     } catch (error) {
       console.error("Failed to prune expired telemetry", error);
