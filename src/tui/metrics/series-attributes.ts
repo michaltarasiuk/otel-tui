@@ -11,10 +11,12 @@ export function attributeValues(attributeSets: Attributes[]) {
 
   for (const attributes of attributeSets) {
     for (const { key, value } of attributes) {
-      const entry = byKey.get(key) ?? { values: new Set<string>(), setCount: 0 };
+      const entry = byKey.getOrInsertComputed(key, () => ({
+        values: new Set<string>(),
+        setCount: 0,
+      }));
       entry.values.add(value ?? "null");
       entry.setCount++;
-      byKey.set(key, entry);
     }
   }
 
