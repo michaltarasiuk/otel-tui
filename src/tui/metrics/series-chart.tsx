@@ -14,7 +14,7 @@ import { PERCENTILES } from "./series-stats.ts";
 import type { NumberPoint, Series, SeriesPoints } from "./series.ts";
 
 const CHART_HEIGHT = 8;
-const TIME_AXIS_HEIGHT = 1;
+const CHART_TIME_AXIS_HEIGHT = 1;
 
 const MIN_WINDOW_MS = 60 * 1000;
 
@@ -120,7 +120,7 @@ export function SeriesChart({ metric, series, color, windowStart }: SeriesChartP
       return <text fg={THEME.textError}>Failed to load data points</text>;
     }
     if (data === undefined) {
-      return <box height={CHART_HEIGHT + TIME_AXIS_HEIGHT} />;
+      return <box height={CHART_HEIGHT + CHART_TIME_AXIS_HEIGHT} />;
     }
 
     const end = dataUpdatedAt;

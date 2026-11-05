@@ -1,16 +1,17 @@
 import { formatDuration } from "../../utils/time.ts";
 import { ServiceName } from "../components/service-name.tsx";
 import { TableRow } from "../components/table-row.tsx";
-import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH } from "../theme/columns.ts";
+import { HEADER_CELL_PROPS, secondaryCellColor, COLUMN_SERVICE_WIDTH } from "../theme/columns.ts";
 import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
 import { serviceColor, THEME } from "../theme/theme.ts";
 import type { Span } from "./span.ts";
 
-const DURATION_WIDTH = 8;
+const COLUMN_DURATION_WIDTH = 8;
+const COLUMN_NAME_GROW = 2;
+const COLUMN_TIMELINE_GROW = 3;
+
 const INDENT_WIDTH = 2;
 
-const NAME_GROW = 2;
-const TIMELINE_GROW = 3;
 const TIMELINE_GROW_TOTAL = 1000;
 
 function barColor(span: Span) {
@@ -27,19 +28,19 @@ interface SpanHeaderRowProps {
 export function SpanHeaderRow({ traceDurationMs }: SpanHeaderRowProps) {
   return (
     <TableRow>
-      <text {...HEADER_CELL_PROPS} width={SERVICE_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_SERVICE_WIDTH}>
         Service
       </text>
-      <text {...HEADER_CELL_PROPS} flexGrow={NAME_GROW} flexBasis={IGNORE_CONTENT_SIZE}>
+      <text {...HEADER_CELL_PROPS} flexGrow={COLUMN_NAME_GROW} flexBasis={IGNORE_CONTENT_SIZE}>
         Name
       </text>
-      <text {...HEADER_CELL_PROPS} width={DURATION_WIDTH} textAlign="right">
+      <text {...HEADER_CELL_PROPS} width={COLUMN_DURATION_WIDTH} textAlign="right">
         Duration
       </text>
       <box
         flexDirection="row"
         justifyContent="space-between"
-        flexGrow={TIMELINE_GROW}
+        flexGrow={COLUMN_TIMELINE_GROW}
         flexBasis={IGNORE_CONTENT_SIZE}
       >
         <text {...HEADER_CELL_PROPS}>0</text>
@@ -64,7 +65,7 @@ function SpanBar({ span, traceDurationMs }: SpanBarProps) {
   const after = Math.max(0, TIMELINE_GROW_TOTAL - before - during);
 
   return (
-    <box flexDirection="row" flexGrow={TIMELINE_GROW} flexBasis={IGNORE_CONTENT_SIZE}>
+    <box flexDirection="row" flexGrow={COLUMN_TIMELINE_GROW} flexBasis={IGNORE_CONTENT_SIZE}>
       <box flexGrow={before} flexBasis={IGNORE_CONTENT_SIZE} />
       <box
         flexGrow={during}
@@ -88,11 +89,11 @@ export function SpanRow({ span, traceDurationMs, selected }: SpanRowProps) {
 
   return (
     <TableRow selected={selected}>
-      <text width={SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
+      <text width={COLUMN_SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {span.service_name !== null && <ServiceName name={span.service_name} />}
       </text>
       <text
-        flexGrow={NAME_GROW}
+        flexGrow={COLUMN_NAME_GROW}
         flexBasis={IGNORE_CONTENT_SIZE}
         fg={span.is_error ? THEME.textError : THEME.text}
         wrapMode="none"
@@ -100,7 +101,7 @@ export function SpanRow({ span, traceDurationMs, selected }: SpanRowProps) {
       >
         {`${" ".repeat(span.depth * INDENT_WIDTH)}${span.name}`}
       </text>
-      <text width={DURATION_WIDTH} textAlign="right" fg={THEME.text}>
+      <text width={COLUMN_DURATION_WIDTH} textAlign="right" fg={THEME.text}>
         {formatDuration(span.duration_ms)}
       </text>
       <SpanBar span={span} traceDurationMs={traceDurationMs} />

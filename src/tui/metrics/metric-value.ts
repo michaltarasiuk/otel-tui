@@ -26,7 +26,7 @@ const dimensionlessUnits = new Set(["", "1"]);
 const ANNOTATION_UNIT = /^\{[^}]*\}$/;
 
 const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"] as const;
-const BYTES_PER_STEP = 1024;
+const BYTE_UNIT_BASE = 1024;
 
 const COMPACT_THRESHOLD = 1e6;
 const GROUPING_THRESHOLD = 1000;
@@ -58,14 +58,14 @@ function formatBytes(bytes: number) {
 
   while (
     exponent < BYTE_UNITS.length - 1 &&
-    roundToTenths(bytes / BYTES_PER_STEP ** exponent) >= BYTES_PER_STEP
+    roundToTenths(bytes / BYTE_UNIT_BASE ** exponent) >= BYTE_UNIT_BASE
   ) {
     exponent++;
   }
   if (exponent === 0) {
     return `${Math.round(bytes)} B`;
   }
-  return `${(bytes / BYTES_PER_STEP ** exponent).toFixed(1)} ${BYTE_UNITS[exponent]}`;
+  return `${(bytes / BYTE_UNIT_BASE ** exponent).toFixed(1)} ${BYTE_UNITS[exponent]}`;
 }
 
 export function formatMetricValue(value: number, unit: string): string {

@@ -4,17 +4,17 @@ import { TableRow } from "../components/table-row.tsx";
 import {
   HEADER_CELL_PROPS,
   secondaryCellColor,
-  SERVICE_WIDTH,
-  SORT_ARROW_WIDTH,
+  COLUMN_SERVICE_WIDTH,
+  COLUMN_SORT_ARROW_WIDTH,
   sortArrow,
-  TIME_WIDTH,
+  COLUMN_TIME_WIDTH,
 } from "../theme/columns.ts";
 import { THEME } from "../theme/theme.ts";
 import type { Trace, TraceSort } from "./trace.ts";
 
-const SPANS_WIDTH = 5 + SORT_ARROW_WIDTH;
-const ERRORS_WIDTH = 6 + SORT_ARROW_WIDTH;
-const DURATION_WIDTH = 8 + SORT_ARROW_WIDTH;
+const COLUMN_SPANS_WIDTH = 5 + COLUMN_SORT_ARROW_WIDTH;
+const COLUMN_ERRORS_WIDTH = 6 + COLUMN_SORT_ARROW_WIDTH;
+const COLUMN_DURATION_WIDTH = 8 + COLUMN_SORT_ARROW_WIDTH;
 
 interface TraceHeaderRowProps {
   sort: TraceSort;
@@ -23,22 +23,22 @@ interface TraceHeaderRowProps {
 export function TraceHeaderRow({ sort }: TraceHeaderRowProps) {
   return (
     <TableRow>
-      <text {...HEADER_CELL_PROPS} width={TIME_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_TIME_WIDTH}>
         Time {sortArrow(sort, "start_time")}
       </text>
-      <text {...HEADER_CELL_PROPS} width={SERVICE_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_SERVICE_WIDTH}>
         Service
       </text>
       <text {...HEADER_CELL_PROPS} flexGrow={1}>
         Name
       </text>
-      <text {...HEADER_CELL_PROPS} width={SPANS_WIDTH} textAlign="right">
+      <text {...HEADER_CELL_PROPS} width={COLUMN_SPANS_WIDTH} textAlign="right">
         {sortArrow(sort, "span_count")} Spans
       </text>
-      <text {...HEADER_CELL_PROPS} width={ERRORS_WIDTH} textAlign="right">
+      <text {...HEADER_CELL_PROPS} width={COLUMN_ERRORS_WIDTH} textAlign="right">
         {sortArrow(sort, "error_count")} Errors
       </text>
-      <text {...HEADER_CELL_PROPS} width={DURATION_WIDTH} textAlign="right">
+      <text {...HEADER_CELL_PROPS} width={COLUMN_DURATION_WIDTH} textAlign="right">
         {sortArrow(sort, "duration_ms")} Duration
       </text>
     </TableRow>
@@ -55,22 +55,22 @@ export function TraceRow({ trace, selected }: TraceRowProps) {
 
   return (
     <TableRow selected={selected}>
-      <text width={TIME_WIDTH} fg={secondaryColor}>
+      <text width={COLUMN_TIME_WIDTH} fg={secondaryColor}>
         {formatTime(trace.start_time)}
       </text>
-      <text width={SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
+      <text width={COLUMN_SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {trace.service_name !== null && <ServiceName name={trace.service_name} />}
       </text>
       <text flexGrow={1} fg={THEME.text} wrapMode="none" truncate>
         {trace.name}
       </text>
-      <text width={SPANS_WIDTH} textAlign="right" fg={secondaryColor}>
+      <text width={COLUMN_SPANS_WIDTH} textAlign="right" fg={secondaryColor}>
         {trace.span_count}
       </text>
-      <text width={ERRORS_WIDTH} textAlign="right" fg={THEME.textError}>
+      <text width={COLUMN_ERRORS_WIDTH} textAlign="right" fg={THEME.textError}>
         {trace.error_count > 0 ? trace.error_count : ""}
       </text>
-      <text width={DURATION_WIDTH} textAlign="right" fg={THEME.text}>
+      <text width={COLUMN_DURATION_WIDTH} textAlign="right" fg={THEME.text}>
         {formatDuration(trace.duration_ms)}
       </text>
     </TableRow>

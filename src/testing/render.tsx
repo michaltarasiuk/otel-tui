@@ -12,11 +12,12 @@ import { THEME } from "../tui/theme/theme.ts";
 import { RENDERER_CONFIG } from "../tui/tui.tsx";
 import { collapseWhitespace } from "../utils/text.ts";
 
-const FRAME_TIMEOUT_MS = 3000;
-const FRAME_POLL_INTERVAL_MS = 10;
-const BINDINGS_REGISTERED_AFTER_COMMIT_MS = 10;
+const WAIT_TIMEOUT_MS = 3000;
+const WAIT_POLL_INTERVAL_MS = 10;
+const WAIT_FOR_BINDINGS_MS = 10;
 
 const SCROLLBAR_CHARACTERS = /[\u2580-\u259F]/g;
+
 export const BRAILLE_DOTS = /[\u2801-\u28FF]/;
 
 const FOOTER_LINES = 1;
@@ -51,19 +52,19 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
   root.render(<KeymapProvider keymap={keymap}>{node}</KeymapProvider>);
 
   async function waitUntil<T>(capture: () => T, matches: (captured: T) => boolean) {
-    const deadline = performance.now() + FRAME_TIMEOUT_MS;
+    const deadline = performance.now() + WAIT_TIMEOUT_MS;
 
     while (performance.now() < deadline) {
       await setup.renderOnce();
       const captured = capture();
       if (matches(captured)) {
-        await Bun.sleep(BINDINGS_REGISTERED_AFTER_COMMIT_MS);
+        await Bun.sleep(WAIT_FOR_BINDINGS_MS);
         return captured;
       }
-      await Bun.sleep(FRAME_POLL_INTERVAL_MS);
+      await Bun.sleep(WAIT_POLL_INTERVAL_MS);
     }
     throw new Error(
-      `No frame matched within ${FRAME_TIMEOUT_MS}ms. ` +
+      `No frame matched within ${WAIT_TIMEOUT_MS}ms. ` +
         `The last frame was:\n${setup.captureCharFrame()}`,
     );
   }

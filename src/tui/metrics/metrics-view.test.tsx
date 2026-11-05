@@ -163,6 +163,7 @@ const BODY_SIZE_ROW = "12:00:20.000 ● shipping http.server.request.body.size e
 const DURATION_ROW = "12:00:20.000 ● cart http.server.request.duration histogram s 1";
 const THREADS_ROW = "12:00:30.000 ● cart process.thread.count updowncounter {thread} 1";
 const HEAP_ROW = "12:00:30.000 ● frontend v8js.memory.heap.used gauge By 1";
+
 const BY_NAME = [
   ITEMS_SHIPPED_ROW,
   FLAG_REQUESTS_ROW,

@@ -129,6 +129,7 @@ const JSON_ROW =
 const ERROR_ROW = "12:00:02.000 ERROR ● payment Credit card info is invalid.";
 const WARN_ROW = "12:00:01.000 WARN ● payment Payment request failed. Invalid token.";
 const ORDER_ROW = "12:00:00.000 INFO ● checkout [PlaceOrder]";
+
 const NEWEST_FIRST = [
   NOTICE_ROW,
   CART_EVENT_ROW,

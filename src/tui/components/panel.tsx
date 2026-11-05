@@ -7,6 +7,7 @@ import { THEME } from "../theme/theme.ts";
 import { useFocused } from "./focus.tsx";
 
 const HALF_VIEWPORT = 0.5;
+
 const SCROLLBAR_WIDTH = 1;
 
 interface PanelProps {

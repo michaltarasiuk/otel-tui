@@ -6,13 +6,14 @@ import { THEME } from "../theme/theme.ts";
 import { barRows, type HistogramColumn, type HistogramRange, overlaps } from "./histogram.ts";
 import { hiddenTraces, TIME_SCALE_LABEL, timeAxis, timeColumns } from "./time-histogram.ts";
 
-const PADDING_X = 1;
-export const COLUMN_WIDTH = 2;
+const HISTOGRAM_PADDING_X = 1;
+export const HISTOGRAM_COLUMN_WIDTH = 2;
 
-const BAR_HEIGHT = 4;
-const TITLE_HEIGHT = 1;
-const AXIS_HEIGHT = 1;
-export const TRACE_HISTOGRAM_HEIGHT = TITLE_HEIGHT + BAR_HEIGHT + AXIS_HEIGHT;
+const HISTOGRAM_BAR_HEIGHT = 4;
+const HISTOGRAM_TITLE_HEIGHT = 1;
+const HISTOGRAM_AXIS_HEIGHT = 1;
+export const HISTOGRAM_HEIGHT =
+  HISTOGRAM_TITLE_HEIGHT + HISTOGRAM_BAR_HEIGHT + HISTOGRAM_AXIS_HEIGHT;
 
 const SEGMENT_COLORS = {
   ok: THEME.bar,
@@ -36,7 +37,10 @@ export function TraceHistogram({ occupied, newestBucketMs, selected }: TraceHist
 
   const histogramRef = useRef<BoxRenderable>(null);
 
-  const columnCount = Math.max(0, Math.floor((width - 2 * PADDING_X) / COLUMN_WIDTH));
+  const columnCount = Math.max(
+    0,
+    Math.floor((width - 2 * HISTOGRAM_PADDING_X) / HISTOGRAM_COLUMN_WIDTH),
+  );
   const columns = timeColumns(occupied, newestBucketMs, columnCount, selected);
   const hidden = hiddenTraces(occupied, columns);
   const hasErrors = columns.some((column) => column.errorCount > 0);
@@ -70,7 +74,7 @@ export function TraceHistogram({ occupied, newestBucketMs, selected }: TraceHist
             </text>
           )}
         </box>
-        {barRows(columns, BAR_HEIGHT).map((row, rowIndex) => (
+        {barRows(columns, HISTOGRAM_BAR_HEIGHT).map((row, rowIndex) => (
           <text key={rowIndex} wrapMode="none">
             {row.map(({ column, cell }) => (
               <span
@@ -82,13 +86,13 @@ export function TraceHistogram({ occupied, newestBucketMs, selected }: TraceHist
                     : SEGMENT_COLORS[cell.background]
                 }
               >
-                {cell.glyph.repeat(COLUMN_WIDTH)}
+                {cell.glyph.repeat(HISTOGRAM_COLUMN_WIDTH)}
               </span>
             ))}
           </text>
         ))}
         <text fg={THEME.textMuted} wrapMode="none">
-          {timeAxis(columns, COLUMN_WIDTH)}
+          {timeAxis(columns, HISTOGRAM_COLUMN_WIDTH)}
         </text>
       </>
     );
@@ -97,7 +101,7 @@ export function TraceHistogram({ occupied, newestBucketMs, selected }: TraceHist
   return (
     <box
       ref={histogramRef}
-      paddingX={PADDING_X}
+      paddingX={HISTOGRAM_PADDING_X}
       onSizeChange={() => setWidth(histogramRef.current?.width ?? 0)}
     >
       {renderChart()}

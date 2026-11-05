@@ -3,10 +3,10 @@ import { useRef, useState } from "react";
 
 import { THEME } from "../theme/theme.ts";
 
-const DOT_COLUMNS = 2;
-const DOT_ROWS = 4;
+const BRAILLE_DOT_COLUMNS = 2;
+const BRAILLE_DOT_ROWS = 4;
 const BRAILLE_BLANK = 0x2800;
-const DOT_BITS = [
+const BRAILLE_DOT_BITS = [
   [0x01, 0x08],
   [0x02, 0x10],
   [0x04, 0x20],
@@ -54,16 +54,16 @@ function plotCells(
   const cells: Cell[][] = Array.from({ length: rows }, () =>
     Array.from({ length: columns }, () => ({ bits: 0, color: null })),
   );
-  const dotRowCount = rows * DOT_ROWS;
+  const dotRowCount = rows * BRAILLE_DOT_ROWS;
 
   function toDotRow(value: number) {
     return Math.round(((high - value) / (high - low)) * (dotRowCount - 1));
   }
 
   function setDot(x: number, y: number, color: ColorInput) {
-    const cell = cells[Math.floor(y / DOT_ROWS)]?.[Math.floor(x / DOT_COLUMNS)];
+    const cell = cells[Math.floor(y / BRAILLE_DOT_ROWS)]?.[Math.floor(x / BRAILLE_DOT_COLUMNS)];
     if (cell !== undefined) {
-      cell.bits |= DOT_BITS[y % DOT_ROWS]![x % DOT_COLUMNS]!;
+      cell.bits |= BRAILLE_DOT_BITS[y % BRAILLE_DOT_ROWS]![x % BRAILLE_DOT_COLUMNS]!;
       cell.color = color;
     }
   }
@@ -139,7 +139,7 @@ export function LineChart({
     if (columns === 0) {
       return null;
     }
-    const { lines, gapSlots } = getLines(columns * DOT_COLUMNS);
+    const { lines, gapSlots } = getLines(columns * BRAILLE_DOT_COLUMNS);
     const range = valueRange(lines, includeZero);
     if (range === null) {
       return (

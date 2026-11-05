@@ -19,8 +19,8 @@ const TYPE_LABELS = {
   exponential_histogram: "exp histogram",
 } satisfies Record<MetricType, string>;
 
-const DELTA_TEMPORALITY = 1;
-const CUMULATIVE_TEMPORALITY = 2;
+const TEMPORALITY_DELTA = 1;
+const TEMPORALITY_CUMULATIVE = 2;
 
 export const Metric = z.object({
   metric_id: z.string(),
@@ -48,14 +48,14 @@ export function typeLabel(type: MetricType) {
 }
 
 export function isDelta(metric: Metric) {
-  return metric.temporality === DELTA_TEMPORALITY;
+  return metric.temporality === TEMPORALITY_DELTA;
 }
 
 export function temporalityLabel(metric: Metric) {
   switch (metric.temporality) {
-    case DELTA_TEMPORALITY:
+    case TEMPORALITY_DELTA:
       return "delta";
-    case CUMULATIVE_TEMPORALITY:
+    case TEMPORALITY_CUMULATIVE:
       return "cumulative";
     default:
       return null;

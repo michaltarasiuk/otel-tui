@@ -21,11 +21,11 @@ const TABLES = [
 const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
 
 const RETENTION_MS = 60 * 1000;
-const EXPIRED_LOG_COUNT = 10_000;
+const RETENTION_EXPIRED_LOG_COUNT = 10_000;
 
-const SMALL_MEMORY_LIMIT_BYTES = 8 * 1024 * 1024;
-const LOG_BATCH_COUNT = 20;
-const LOG_BATCH_SIZE = 5000;
+const MEMORY_LIMIT_BYTES = 8 * 1024 * 1024;
+const MEMORY_BATCH_COUNT = 20;
+const MEMORY_BATCH_SIZE = 5000;
 
 const PRUNE_TIMEOUT_MS = 3000;
 const PRUNE_POLL_INTERVAL_MS = 10;
@@ -91,9 +91,9 @@ function uncompressibleCartLog() {
 }
 
 async function sendLogBatches(receiver: TestReceiver) {
-  const start = Date.now() - LOG_BATCH_COUNT * 1000;
+  const start = Date.now() - MEMORY_BATCH_COUNT * 1000;
   const times = Array.from(
-    { length: LOG_BATCH_COUNT },
+    { length: MEMORY_BATCH_COUNT },
     (_, batch) => new Date(start + batch * 1000),
   );
   for (const time of times) {
@@ -101,7 +101,7 @@ async function sendLogBatches(receiver: TestReceiver) {
       "/v1/logs",
       logsRequest({
         service: "cart",
-        logs: Array.from({ length: LOG_BATCH_SIZE }, () => ({
+        logs: Array.from({ length: MEMORY_BATCH_SIZE }, () => ({
           time,
           body: uncompressibleCartLog(),
         })),
@@ -252,7 +252,7 @@ test("releases the memory of pruned telemetry", async () => {
     "/v1/logs",
     logsRequest({
       service: "cart",
-      logs: Array.from({ length: EXPIRED_LOG_COUNT }, (_, index) => ({
+      logs: Array.from({ length: RETENTION_EXPIRED_LOG_COUNT }, (_, index) => ({
         time: expired,
         body: `GetCartAsync called with userId=${index}`,
       })),
@@ -273,20 +273,20 @@ test("releases the memory of pruned telemetry", async () => {
 
 test("accepts telemetry beyond its memory limit", async () => {
   jest.useFakeTimers();
-  await using receiver = await startTestReceiver({ memoryLimitBytes: SMALL_MEMORY_LIMIT_BYTES });
+  await using receiver = await startTestReceiver({ memoryLimitBytes: MEMORY_LIMIT_BYTES });
   const connection = await receiver.connect();
 
   await sendLogBatches(receiver);
 
   expect(await rowCounts(connection)).toEqual({
     ...eachTableWith(0),
-    otlp_logs: LOG_BATCH_COUNT * LOG_BATCH_SIZE,
+    otlp_logs: MEMORY_BATCH_COUNT * MEMORY_BATCH_SIZE,
   });
 });
 
 test("drops the oldest telemetry when it nears the memory limit", async () => {
   jest.useFakeTimers();
-  await using receiver = await startTestReceiver({ memoryLimitBytes: SMALL_MEMORY_LIMIT_BYTES });
+  await using receiver = await startTestReceiver({ memoryLimitBytes: MEMORY_LIMIT_BYTES });
   const connection = await receiver.connect();
 
   const times = await sendLogBatches(receiver);
@@ -301,12 +301,12 @@ test("drops the oldest telemetry when it nears the memory limit", async () => {
       (count) => count === 0,
     ),
   ).toBe(0);
-  expect(await logCountAt(connection, newest)).toBe(LOG_BATCH_SIZE);
+  expect(await logCountAt(connection, newest)).toBe(MEMORY_BATCH_SIZE);
 });
 
 test("spills to a temporary directory only while it needs one", async () => {
   jest.useFakeTimers();
-  const receiver = await startTestReceiver({ memoryLimitBytes: SMALL_MEMORY_LIMIT_BYTES });
+  const receiver = await startTestReceiver({ memoryLimitBytes: MEMORY_LIMIT_BYTES });
   const directory = await spillDirectory(await receiver.connect());
 
   expect(directory).toStartWith(tmpdir());

@@ -3,7 +3,7 @@ import { EntryList } from "../components/entry-list.tsx";
 import { Facts, Heading } from "../components/heading.tsx";
 import { Panel, PanelBody } from "../components/panel.tsx";
 import { ScopeSection, Section } from "../components/section.tsx";
-import { COLUMN_GAP, TIME_WIDTH } from "../theme/columns.ts";
+import { COLUMN_GAP, COLUMN_TIME_WIDTH } from "../theme/columns.ts";
 import { serviceColor, THEME } from "../theme/theme.ts";
 import { BucketBars } from "./bucket-bars.tsx";
 import { useSeriesExemplars } from "./metric-queries.ts";
@@ -21,7 +21,7 @@ interface ExemplarListProps {
 function ExemplarList({ exemplars, unit }: ExemplarListProps) {
   return exemplars.map((exemplar, index) => (
     <box key={index} flexDirection="row" gap={COLUMN_GAP}>
-      <text width={TIME_WIDTH} flexShrink={0} fg={THEME.textMuted}>
+      <text width={COLUMN_TIME_WIDTH} flexShrink={0} fg={THEME.textMuted}>
         {formatTime(exemplar.time)}
       </text>
       <text width={10} flexShrink={0} textAlign="right" fg={THEME.text}>

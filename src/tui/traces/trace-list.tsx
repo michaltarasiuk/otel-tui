@@ -11,14 +11,14 @@ import { useSearch } from "../components/use-search.ts";
 import { THEME } from "../theme/theme.ts";
 import { type HistogramRange, stepSelection } from "./histogram.ts";
 import { timeRangeLabel } from "./time-histogram.ts";
-import { TRACE_HISTOGRAM_HEIGHT, TraceHistogram } from "./trace-histogram.tsx";
+import { HISTOGRAM_HEIGHT, TraceHistogram } from "./trace-histogram.tsx";
 import { useTraceList, useTraceTimeline, useTraceTotalCount } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
 import { TRACE_SORT_COLUMNS, type TraceSort } from "./trace.ts";
 
 const FILTER_BAR_HEIGHT = 1;
 const MIN_TABLE_HEIGHT = 6;
-const MIN_HEIGHT_FOR_HISTOGRAM = FILTER_BAR_HEIGHT + TRACE_HISTOGRAM_HEIGHT + MIN_TABLE_HEIGHT;
+const MIN_HEIGHT_FOR_HISTOGRAM = FILTER_BAR_HEIGHT + HISTOGRAM_HEIGHT + MIN_TABLE_HEIGHT;
 
 const NO_BUCKETS: HistogramRange[] = [];
 

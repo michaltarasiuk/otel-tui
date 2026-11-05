@@ -4,17 +4,17 @@ import { TableRow } from "../components/table-row.tsx";
 import {
   HEADER_CELL_PROPS,
   secondaryCellColor,
-  SERVICE_WIDTH,
-  SORT_ARROW_WIDTH,
+  COLUMN_SERVICE_WIDTH,
+  COLUMN_SORT_ARROW_WIDTH,
   sortArrow,
-  TIME_WIDTH,
+  COLUMN_TIME_WIDTH,
 } from "../theme/columns.ts";
 import { THEME } from "../theme/theme.ts";
 import { type Metric, type MetricSort, typeLabel } from "./metric.ts";
 
-const TYPE_WIDTH = 13;
-const UNIT_WIDTH = 10;
-const SERIES_WIDTH = 6 + SORT_ARROW_WIDTH;
+const COLUMN_TYPE_WIDTH = 13;
+const COLUMN_UNIT_WIDTH = 10;
+const COLUMN_SERIES_WIDTH = 6 + COLUMN_SORT_ARROW_WIDTH;
 
 interface MetricHeaderRowProps {
   sort: MetricSort;
@@ -23,22 +23,22 @@ interface MetricHeaderRowProps {
 export function MetricHeaderRow({ sort }: MetricHeaderRowProps) {
   return (
     <TableRow>
-      <text {...HEADER_CELL_PROPS} width={TIME_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_TIME_WIDTH}>
         Time {sortArrow(sort, "last_time")}
       </text>
-      <text {...HEADER_CELL_PROPS} width={SERVICE_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_SERVICE_WIDTH}>
         Service
       </text>
       <text {...HEADER_CELL_PROPS} flexGrow={1}>
         Name {sortArrow(sort, "name")}
       </text>
-      <text {...HEADER_CELL_PROPS} width={TYPE_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_TYPE_WIDTH}>
         Type
       </text>
-      <text {...HEADER_CELL_PROPS} width={UNIT_WIDTH}>
+      <text {...HEADER_CELL_PROPS} width={COLUMN_UNIT_WIDTH}>
         Unit
       </text>
-      <text {...HEADER_CELL_PROPS} width={SERIES_WIDTH} textAlign="right">
+      <text {...HEADER_CELL_PROPS} width={COLUMN_SERIES_WIDTH} textAlign="right">
         {sortArrow(sort, "series_count")} Series
       </text>
     </TableRow>
@@ -55,22 +55,22 @@ export function MetricRow({ metric, selected }: MetricRowProps) {
 
   return (
     <TableRow selected={selected}>
-      <text width={TIME_WIDTH} fg={secondaryColor}>
+      <text width={COLUMN_TIME_WIDTH} fg={secondaryColor}>
         {formatTime(metric.last_time)}
       </text>
-      <text width={SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
+      <text width={COLUMN_SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {metric.service_name !== null && <ServiceName name={metric.service_name} />}
       </text>
       <text flexGrow={1} fg={THEME.text} wrapMode="none" truncate>
         {metric.name}
       </text>
-      <text width={TYPE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
+      <text width={COLUMN_TYPE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {typeLabel(metric.type)}
       </text>
-      <text width={UNIT_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
+      <text width={COLUMN_UNIT_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {metric.unit}
       </text>
-      <text width={SERIES_WIDTH} textAlign="right" fg={THEME.text}>
+      <text width={COLUMN_SERIES_WIDTH} textAlign="right" fg={THEME.text}>
         {metric.series_count.toLocaleString()}
       </text>
     </TableRow>

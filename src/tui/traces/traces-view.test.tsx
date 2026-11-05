@@ -14,7 +14,7 @@ import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts"
 import { panelLines, textLines } from "../../testing/render.tsx";
 import { collapseWhitespace } from "../../utils/text.ts";
 import { serviceColor, THEME } from "../theme/theme.ts";
-import { COLUMN_WIDTH } from "./trace-histogram.tsx";
+import { HISTOGRAM_COLUMN_WIDTH } from "./trace-histogram.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
@@ -26,12 +26,14 @@ const missingParentId = "5".repeat(16);
 
 const PLACE_ORDER = "oteldemo.CheckoutService/PlaceOrder";
 const GET_CART = "POST /oteldemo.CartService/GetCart";
+
 const CHARGE_DECLINED = "Credit card info is invalid.";
 const CHARGE_FAILED = `failed to charge card: could not charge the card: rpc error: code = Unknown desc = ${CHARGE_DECLINED}`;
 
 const CART_ROW = "12:00:00.000 ● frontend GET /api/cart 3 120.0ms";
 const CHECKOUT_ROW = `12:00:01.000 ● checkout ${PLACE_ORDER} 3 2 500.0ms`;
 const STATUS_ROW = "12:00:02.000 ● image-provider GET /status 1 1.0ms";
+
 const NEWEST_FIRST = [STATUS_ROW, CHECKOUT_ROW, CART_ROW];
 
 afterEach(() => {
@@ -336,7 +338,7 @@ const TIMELINE_CHECKOUT_ROW = `12:00:20.000 ● checkout ${PLACE_ORDER} 1 1 500.
 const TIMELINE_STATUS_ROW = "12:00:40.000 ● image-provider GET /status 1 1.0ms";
 const TIMELINE_OLD_ROW = "11:20:00.000 ● frontend GET /product/[productId] 1 10.0ms";
 
-const bar = "█".repeat(COLUMN_WIDTH);
+const bar = "█".repeat(HISTOGRAM_COLUMN_WIDTH);
 const MINUTE_TICKS = "11:52 11:53 11:54 11:55 11:56 11:57 11:58 11:59 12:00";
 
 const timelineTraces = tracesRequest(
