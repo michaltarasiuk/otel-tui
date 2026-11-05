@@ -9,10 +9,12 @@ const emptyGrpcMessageFrame = new Uint8Array([GRPC_UNCOMPRESSED_FLAG, ...GRPC_ZE
 const GRPC_STATUS_OK = "0";
 
 function freePort() {
-  const listener = Bun.listen({ hostname: "127.0.0.1", port: 0, socket: { data() {} } });
-  const { port } = listener;
-  listener.stop(true);
-  return port;
+  using listener = Bun.listen({
+    hostname: "127.0.0.1",
+    port: 0,
+    socket: { data() {} },
+  });
+  return listener.port;
 }
 
 interface TestReceiverOptions {
