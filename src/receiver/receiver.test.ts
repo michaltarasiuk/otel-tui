@@ -51,7 +51,12 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
     "/v1/logs",
     logsRequest({
       service: "cart",
-      logs: [{ time, body: "GetCartAsync called with userId={userId}" }],
+      logs: [
+        {
+          time,
+          body: "GetCartAsync called with userId={userId}",
+        },
+      ],
     }),
   );
   await receiver.sendHttp(
