@@ -1,10 +1,10 @@
 import { formatTime } from "../../utils/time.ts";
-import { COLUMN_GAP, TIME_WIDTH } from "../columns.ts";
-import { EntryList } from "../entry-list.tsx";
-import { Facts, Heading } from "../heading.tsx";
-import { Panel, PanelBody } from "../panel.tsx";
-import { ScopeSection, Section } from "../section.tsx";
-import { serviceColor, THEME } from "../theme.ts";
+import { EntryList } from "../components/entry-list.tsx";
+import { Facts, Heading } from "../components/heading.tsx";
+import { Panel, PanelBody } from "../components/panel.tsx";
+import { ScopeSection, Section } from "../components/section.tsx";
+import { COLUMN_GAP, TIME_WIDTH } from "../theme/columns.ts";
+import { serviceColor, THEME } from "../theme/theme.ts";
 import { BucketBars } from "./bucket-bars.tsx";
 import { useSeriesExemplars } from "./metric-queries.ts";
 import { formatMetricValue } from "./metric-value.ts";

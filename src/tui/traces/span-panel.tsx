@@ -1,10 +1,10 @@
 import { formatDuration, formatTime } from "../../utils/time.ts";
-import { EntryList } from "../entry-list.tsx";
-import { Facts, Heading } from "../heading.tsx";
-import { Panel, PanelBody } from "../panel.tsx";
-import { ScopeSection, Section } from "../section.tsx";
-import { ServiceName } from "../service-name.tsx";
-import { THEME } from "../theme.ts";
+import { EntryList } from "../components/entry-list.tsx";
+import { Facts, Heading } from "../components/heading.tsx";
+import { Panel, PanelBody } from "../components/panel.tsx";
+import { ScopeSection, Section } from "../components/section.tsx";
+import { ServiceName } from "../components/service-name.tsx";
+import { THEME } from "../theme/theme.ts";
 import type { Span, SpanDetails } from "./span.ts";
 import { useSpanDetails } from "./trace-queries.ts";
 

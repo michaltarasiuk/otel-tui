@@ -1,4 +1,4 @@
-import { serviceColor } from "./theme.ts";
+import { serviceColor } from "../theme/theme.ts";
 
 interface ServiceNameProps {
   name: string;

@@ -10,10 +10,10 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 
-import type { ReceiverUrls } from "../db/receiver.ts";
+import type { ReceiverUrls } from "../receiver/receiver.ts";
 import { App } from "./app.tsx";
-import { ConnectionContext } from "./connection.ts";
 import { NavigationProvider } from "./navigation.tsx";
+import { ConnectionContext } from "./query/connection.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
 

@@ -2,13 +2,13 @@ import { TextAttributes } from "@opentui/core";
 
 import { prettyPrintJson } from "../../utils/text.ts";
 import { formatTime } from "../../utils/time.ts";
-import { COLUMN_GAP } from "../columns.ts";
-import { EntryList } from "../entry-list.tsx";
-import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { Panel, PanelBody } from "../panel.tsx";
-import { ScopeSection, Section } from "../section.tsx";
-import { ServiceName } from "../service-name.tsx";
-import { THEME } from "../theme.ts";
+import { EntryList } from "../components/entry-list.tsx";
+import { Panel, PanelBody } from "../components/panel.tsx";
+import { ScopeSection, Section } from "../components/section.tsx";
+import { ServiceName } from "../components/service-name.tsx";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
+import { THEME } from "../theme/theme.ts";
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
 

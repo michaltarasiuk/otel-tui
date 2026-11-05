@@ -1,4 +1,4 @@
-import type { Attributes } from "../attributes.ts";
+import type { Attributes } from "../query/attributes.ts";
 
 const collator = new Intl.Collator(undefined, { numeric: true });
 

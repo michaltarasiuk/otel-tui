@@ -1,9 +1,9 @@
 import type { TabSelectOption, TabSelectRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
 
-import { useFocused } from "./focus.tsx";
+import { useFocused } from "./components/focus.tsx";
 import { useNavigation } from "./navigation.tsx";
-import { THEME } from "./theme.ts";
+import { THEME } from "./theme/theme.ts";
 
 export type Tab = (typeof TABS)[number]["value"];
 

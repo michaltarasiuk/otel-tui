@@ -1,7 +1,7 @@
 import type { BoxRenderable, ColorInput } from "@opentui/core";
 import { useRef, useState } from "react";
 
-import { THEME } from "../theme.ts";
+import { THEME } from "../theme/theme.ts";
 
 const DOT_COLUMNS = 2;
 const DOT_ROWS = 4;

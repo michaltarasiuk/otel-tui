@@ -1,20 +1,11 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { substringPattern } from "../../db/like-pattern.ts";
-import { useConnection } from "../connection.ts";
-import { useVisible } from "../pane.tsx";
-import { POLL_INTERVAL_MS } from "../polling.ts";
-import exponentialHistogramPoints from "./exponential-histogram-points.sql" with { type: "text" };
-import exponentialHistogramSeries from "./exponential-histogram-series.sql" with { type: "text" };
-import histogramPoints from "./histogram-points.sql" with { type: "text" };
-import histogramSeries from "./histogram-series.sql" with { type: "text" };
-import metricCount from "./metric-count.sql" with { type: "text" };
-import metricList from "./metric-list.sql" with { type: "text" };
+import { useVisible } from "../components/pane.tsx";
+import { useConnection } from "../query/connection.ts";
+import { substringPattern } from "../query/like-pattern.ts";
+import { POLL_INTERVAL_MS } from "../query/polling.ts";
 import { Metric, type MetricSort } from "./metric.ts";
-import numberPoints from "./number-points.sql" with { type: "text" };
-import numberSeries from "./number-series.sql" with { type: "text" };
-import seriesExemplars from "./series-exemplars.sql" with { type: "text" };
 import {
   Exemplar,
   ExponentialHistogramPoint,
@@ -24,6 +15,15 @@ import {
   NumberPoint,
   NumberSeries,
 } from "./series.ts";
+import exponentialHistogramPoints from "./sql/exponential-histogram-points.sql" with { type: "text" };
+import exponentialHistogramSeries from "./sql/exponential-histogram-series.sql" with { type: "text" };
+import histogramPoints from "./sql/histogram-points.sql" with { type: "text" };
+import histogramSeries from "./sql/histogram-series.sql" with { type: "text" };
+import metricCount from "./sql/metric-count.sql" with { type: "text" };
+import metricList from "./sql/metric-list.sql" with { type: "text" };
+import numberPoints from "./sql/number-points.sql" with { type: "text" };
+import numberSeries from "./sql/number-series.sql" with { type: "text" };
+import seriesExemplars from "./sql/series-exemplars.sql" with { type: "text" };
 
 function metricIdentity(metric: Metric) {
   return {

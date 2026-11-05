@@ -1,6 +1,6 @@
-import { COLUMN_GAP } from "./columns.ts";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 import { useFocused } from "./focus.tsx";
-import { THEME } from "./theme.ts";
 
 interface TableRowProps {
   selected?: boolean;

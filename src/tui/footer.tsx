@@ -1,4 +1,4 @@
-import { KeyHints } from "./key-hints.tsx";
+import { KeyHints } from "./components/key-hints.tsx";
 
 export function Footer() {
   return (

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { Timestamp } from "../timestamp.ts";
+import { Timestamp } from "../query/timestamp.ts";
 
 export const Trace = z.object({
   trace_id: z.string(),

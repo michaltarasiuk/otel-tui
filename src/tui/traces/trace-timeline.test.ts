@@ -3,8 +3,8 @@ import { expect, test } from "bun:test";
 import { tracesRequest } from "../../testing/otlp.ts";
 import { startTestReceiver } from "../../testing/receiver.ts";
 import type { HistogramColumn } from "./histogram.ts";
+import traceTimeline from "./sql/trace-timeline.sql" with { type: "text" };
 import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
-import traceTimeline from "./trace-timeline.sql" with { type: "text" };
 
 const MIDDLE_OF_BUCKET_MS = TIME_BUCKET_MS / 2;
 const newestBucketMs = bucketStart(Date.now());

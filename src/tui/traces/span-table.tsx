@@ -1,8 +1,8 @@
 import { useBindings } from "@opentui/keymap/react";
 
-import { useFocused } from "../focus.tsx";
-import { useListState } from "../use-list-state.ts";
-import { WindowedRows } from "../windowed-rows.tsx";
+import { useFocused } from "../components/focus.tsx";
+import { useListState } from "../components/use-list-state.ts";
+import { WindowedRows } from "../components/windowed-rows.tsx";
 import { SpanPanel } from "./span-panel.tsx";
 import { SpanHeaderRow, SpanRow } from "./span-row.tsx";
 import type { Span } from "./span.ts";

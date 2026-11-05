@@ -1,5 +1,5 @@
-import { useListState } from "../use-list-state.ts";
-import { WindowedRows } from "../windowed-rows.tsx";
+import { useListState } from "../components/use-list-state.ts";
+import { WindowedRows } from "../components/windowed-rows.tsx";
 import type { Metric } from "./metric.ts";
 import { attributeColumns, seriesLabel, sortByColumns } from "./series-columns.ts";
 import { SeriesPanel } from "./series-panel.tsx";

@@ -13,7 +13,7 @@ import {
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
 import { panelLines, textLines } from "../../testing/render.tsx";
 import { collapseWhitespace } from "../../utils/text.ts";
-import { serviceColor, THEME } from "../theme.ts";
+import { serviceColor, THEME } from "../theme/theme.ts";
 import { COLUMN_WIDTH } from "./trace-histogram.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");

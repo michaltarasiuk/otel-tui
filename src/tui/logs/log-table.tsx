@@ -1,10 +1,10 @@
 import { useBindings } from "@opentui/keymap/react";
 
-import { useFocused } from "../focus.tsx";
-import { FIRST_HINT_PRIORITY } from "../key-hints.tsx";
+import { useFocused } from "../components/focus.tsx";
+import { FIRST_HINT_PRIORITY } from "../components/key-hints.tsx";
+import { useListState } from "../components/use-list-state.ts";
+import { WindowedRows } from "../components/windowed-rows.tsx";
 import { useNavigation } from "../navigation.tsx";
-import { useListState } from "../use-list-state.ts";
-import { WindowedRows } from "../windowed-rows.tsx";
 import { LogPanel } from "./log-panel.tsx";
 import { LogHeaderRow, LogRow } from "./log-row.tsx";
 import type { Log } from "./log.ts";

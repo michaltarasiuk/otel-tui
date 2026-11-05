@@ -1,9 +1,9 @@
 import { formatDuration } from "../../utils/time.ts";
-import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH } from "../columns.ts";
-import { IGNORE_CONTENT_SIZE } from "../flex.ts";
-import { ServiceName } from "../service-name.tsx";
-import { TableRow } from "../table-row.tsx";
-import { serviceColor, THEME } from "../theme.ts";
+import { ServiceName } from "../components/service-name.tsx";
+import { TableRow } from "../components/table-row.tsx";
+import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH } from "../theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
+import { serviceColor, THEME } from "../theme/theme.ts";
 import type { Span } from "./span.ts";
 
 const DURATION_WIDTH = 8;

@@ -1,9 +1,9 @@
 import { RGBA } from "@opentui/core";
 
 import { formatTime } from "../../utils/time.ts";
-import { COLUMN_GAP } from "../columns.ts";
-import { Section } from "../section.tsx";
-import { THEME } from "../theme.ts";
+import { Section } from "../components/section.tsx";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./chart-lines.ts";
 import { counterIntervals, distributionIntervals } from "./intervals.ts";
 import { LineChart } from "./line-chart.tsx";

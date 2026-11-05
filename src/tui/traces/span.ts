@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { Attributes } from "../attributes.ts";
-import { Timestamp } from "../timestamp.ts";
+import { Attributes } from "../query/attributes.ts";
+import { Timestamp } from "../query/timestamp.ts";
 
 const SPAN_KINDS = ["unspecified", "internal", "server", "client", "producer", "consumer"] as const;
 

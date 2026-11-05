@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { THEME } from "../theme.ts";
+import { THEME } from "../theme/theme.ts";
 import { isErrorLevel, lowestSeverityNumber, severityColor, severityLevel } from "./severity.ts";
 
 test.each([

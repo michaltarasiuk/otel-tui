@@ -1,8 +1,8 @@
 import { formatCount } from "../../utils/text.ts";
 import { formatDuration, formatTime } from "../../utils/time.ts";
-import { Facts, Heading } from "../heading.tsx";
-import { ServiceName } from "../service-name.tsx";
-import { THEME } from "../theme.ts";
+import { Facts, Heading } from "../components/heading.tsx";
+import { ServiceName } from "../components/service-name.tsx";
+import { THEME } from "../theme/theme.ts";
 import type { Span } from "./span.ts";
 
 interface TraceHeaderProps {

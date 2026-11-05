@@ -91,5 +91,5 @@ An in-memory DuckDB runs the receiver from its
 Each view queries DuckDB with SQL built from its own search and filters, and
 [OpenTUI](https://opentui.com/) draws the results.
 
-- `src/db/`: DuckDB instance and OTLP receiver.
+- `src/receiver/`: DuckDB instance and OTLP receiver.
 - `src/tui/`: views and charts.

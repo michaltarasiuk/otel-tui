@@ -1,7 +1,7 @@
+import { Pane } from "./components/pane.tsx";
 import { LogsView } from "./logs/logs-view.tsx";
 import { MetricsView } from "./metrics/metrics-view.tsx";
 import { useNavigation } from "./navigation.tsx";
-import { Pane } from "./pane.tsx";
 import { TracesView } from "./traces/traces-view.tsx";
 
 export function TabView() {

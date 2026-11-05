@@ -1,7 +1,7 @@
-import type { Attributes } from "./attributes.ts";
-import { COLUMN_GAP } from "./columns.ts";
-import { IGNORE_CONTENT_SIZE } from "./flex.ts";
-import { THEME } from "./theme.ts";
+import type { Attributes } from "../query/attributes.ts";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
+import { THEME } from "../theme/theme.ts";
 
 const KEY_MAX_WIDTH = 32;
 

@@ -1,8 +1,8 @@
-import type { Attributes } from "../attributes.ts";
-import { EntryList } from "../entry-list.tsx";
-import { Panel, PanelBody } from "../panel.tsx";
-import { Section } from "../section.tsx";
-import { THEME } from "../theme.ts";
+import { EntryList } from "../components/entry-list.tsx";
+import { Panel, PanelBody } from "../components/panel.tsx";
+import { Section } from "../components/section.tsx";
+import type { Attributes } from "../query/attributes.ts";
+import { THEME } from "../theme/theme.ts";
 import { MetricHeader } from "./metric-header.tsx";
 import { useMetricSeries } from "./metric-queries.ts";
 import type { Metric } from "./metric.ts";

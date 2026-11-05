@@ -1,9 +1,14 @@
 import { collapseWhitespace } from "../../utils/text.ts";
 import { formatTime } from "../../utils/time.ts";
-import { HEADER_CELL_PROPS, secondaryCellColor, SERVICE_WIDTH, TIME_WIDTH } from "../columns.ts";
-import { ServiceName } from "../service-name.tsx";
-import { TableRow } from "../table-row.tsx";
-import { THEME } from "../theme.ts";
+import { ServiceName } from "../components/service-name.tsx";
+import { TableRow } from "../components/table-row.tsx";
+import {
+  HEADER_CELL_PROPS,
+  secondaryCellColor,
+  SERVICE_WIDTH,
+  TIME_WIDTH,
+} from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
 

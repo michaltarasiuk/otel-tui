@@ -4,11 +4,11 @@ import { useRef, useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
 import { formatShownCount } from "../../utils/text.ts";
-import { FilterBar } from "../filter-bar.tsx";
-import { FocusScope, useFocused } from "../focus.tsx";
-import { Placeholder } from "../placeholder.tsx";
-import { THEME } from "../theme.ts";
-import { useSearch } from "../use-search.ts";
+import { FilterBar } from "../components/filter-bar.tsx";
+import { FocusScope, useFocused } from "../components/focus.tsx";
+import { Placeholder } from "../components/placeholder.tsx";
+import { useSearch } from "../components/use-search.ts";
+import { THEME } from "../theme/theme.ts";
 import { type HistogramRange, stepSelection } from "./histogram.ts";
 import { timeRangeLabel } from "./time-histogram.ts";
 import { TRACE_HISTOGRAM_HEIGHT, TraceHistogram } from "./trace-histogram.tsx";

@@ -1,8 +1,8 @@
 import { type BoxRenderable, TextAttributes } from "@opentui/core";
 import { useRef, useState } from "react";
 
-import { COLUMN_GAP } from "../columns.ts";
-import { THEME } from "../theme.ts";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 import { barRows, type HistogramColumn, type HistogramRange, overlaps } from "./histogram.ts";
 import { hiddenTraces, TIME_SCALE_LABEL, timeAxis, timeColumns } from "./time-histogram.ts";
 

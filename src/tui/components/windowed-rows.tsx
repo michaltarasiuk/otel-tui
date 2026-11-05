@@ -2,10 +2,10 @@ import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { Fragment, useRef, useState } from "react";
 
-import { clamp } from "../utils/math.ts";
-import { IGNORE_CONTENT_SIZE } from "./flex.ts";
+import { clamp } from "../../utils/math.ts";
+import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
+import { THEME } from "../theme/theme.ts";
 import { useFocused } from "./focus.tsx";
-import { THEME } from "./theme.ts";
 import type { useListState } from "./use-list-state.ts";
 
 interface WindowedRowsProps<T> {

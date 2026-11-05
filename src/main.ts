@@ -1,5 +1,5 @@
-import { startReceiver } from "./db/receiver.ts";
 import { env } from "./env.ts";
+import { startReceiver } from "./receiver/receiver.ts";
 import { startTui } from "./tui/tui.tsx";
 
 await using receiver = await startReceiver({

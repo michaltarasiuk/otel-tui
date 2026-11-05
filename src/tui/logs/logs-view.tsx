@@ -3,12 +3,12 @@ import { useState } from "react";
 
 import { cycle } from "../../utils/cycle.ts";
 import { formatShownCount } from "../../utils/text.ts";
-import { FilterBar } from "../filter-bar.tsx";
-import { FocusScope, useFocused } from "../focus.tsx";
+import { FilterBar } from "../components/filter-bar.tsx";
+import { FocusScope, useFocused } from "../components/focus.tsx";
+import { Placeholder } from "../components/placeholder.tsx";
+import { useSearch } from "../components/use-search.ts";
 import { useNavigation } from "../navigation.tsx";
-import { Placeholder } from "../placeholder.tsx";
-import { THEME } from "../theme.ts";
-import { useSearch } from "../use-search.ts";
+import { THEME } from "../theme/theme.ts";
 import { useLogList, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
 import { severityColor } from "./severity.ts";

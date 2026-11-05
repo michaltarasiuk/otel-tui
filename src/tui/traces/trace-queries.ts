@@ -1,18 +1,18 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { substringPattern } from "../../db/like-pattern.ts";
-import { useConnection } from "../connection.ts";
-import { useVisible } from "../pane.tsx";
-import { POLL_INTERVAL_MS } from "../polling.ts";
+import { useVisible } from "../components/pane.tsx";
+import { useConnection } from "../query/connection.ts";
+import { substringPattern } from "../query/like-pattern.ts";
+import { POLL_INTERVAL_MS } from "../query/polling.ts";
 import type { HistogramRange } from "./histogram.ts";
-import spanDetails from "./span-details.sql" with { type: "text" };
 import { Span, SpanDetails } from "./span.ts";
+import spanDetails from "./sql/span-details.sql" with { type: "text" };
+import traceCount from "./sql/trace-count.sql" with { type: "text" };
+import traceList from "./sql/trace-list.sql" with { type: "text" };
+import traceSpans from "./sql/trace-spans.sql" with { type: "text" };
+import traceTimeline from "./sql/trace-timeline.sql" with { type: "text" };
 import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
-import traceCount from "./trace-count.sql" with { type: "text" };
-import traceList from "./trace-list.sql" with { type: "text" };
-import traceSpans from "./trace-spans.sql" with { type: "text" };
-import traceTimeline from "./trace-timeline.sql" with { type: "text" };
 import { Trace, type TraceSort } from "./trace.ts";
 
 interface TraceFilter {

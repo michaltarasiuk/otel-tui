@@ -1,11 +1,11 @@
-import type { ReceiverUrls } from "../db/receiver.ts";
-import { COLUMN_GAP } from "./columns.ts";
-import { FocusScope } from "./focus.tsx";
+import type { ReceiverUrls } from "../receiver/receiver.ts";
+import { FocusScope } from "./components/focus.tsx";
 import { Footer } from "./footer.tsx";
 import { Layout } from "./layout.tsx";
 import { ReceiverStatus } from "./receiver-status.tsx";
 import { TabView } from "./tab-view.tsx";
 import { Tabs } from "./tabs.tsx";
+import { COLUMN_GAP } from "./theme/columns.ts";
 import { useRegion } from "./use-region.ts";
 
 interface AppProps {

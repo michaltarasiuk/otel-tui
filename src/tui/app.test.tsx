@@ -7,10 +7,10 @@ import { renderApp } from "../testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "../testing/otlp.ts";
 import { startTestReceiver } from "../testing/receiver.ts";
 import { selectedBackground, textLines } from "../testing/render.tsx";
-import logList from "./logs/log-list.sql" with { type: "text" };
-import metricList from "./metrics/metric-list.sql" with { type: "text" };
-import { THEME } from "./theme.ts";
-import traceList from "./traces/trace-list.sql" with { type: "text" };
+import logList from "./logs/sql/log-list.sql" with { type: "text" };
+import metricList from "./metrics/sql/metric-list.sql" with { type: "text" };
+import { THEME } from "./theme/theme.ts";
+import traceList from "./traces/sql/trace-list.sql" with { type: "text" };
 
 const TAB_NAMES = ["Traces", "Metrics", "Logs"];
 

@@ -1,8 +1,8 @@
 import { type ColorInput, TextAttributes } from "@opentui/core";
 
-import { COLUMN_GAP } from "./columns.ts";
-import { IGNORE_CONTENT_SIZE } from "./flex.ts";
-import { THEME } from "./theme.ts";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
+import { THEME } from "../theme/theme.ts";
 
 interface HeadingProps {
   title: string;

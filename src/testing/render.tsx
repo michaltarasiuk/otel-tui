@@ -8,7 +8,7 @@ import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
 import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot, flushSync } from "@opentui/react";
 
-import { THEME } from "../tui/theme.ts";
+import { THEME } from "../tui/theme/theme.ts";
 import { RENDERER_CONFIG } from "../tui/tui.tsx";
 import { collapseWhitespace } from "../utils/text.ts";
 

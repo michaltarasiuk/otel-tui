@@ -1,6 +1,6 @@
 import { connect, type IncomingHttpHeaders } from "node:http2";
 
-import { startReceiver } from "../db/receiver.ts";
+import { startReceiver } from "../receiver/receiver.ts";
 
 const GRPC_UNCOMPRESSED_FLAG = 0;
 const GRPC_ZERO_MESSAGE_LENGTH = [0, 0, 0, 0];

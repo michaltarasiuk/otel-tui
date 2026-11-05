@@ -1,8 +1,8 @@
 import type { BoxRenderable, ColorInput } from "@opentui/core";
 import { useRef, useState } from "react";
 
-import { COLUMN_GAP } from "../columns.ts";
-import { THEME } from "../theme.ts";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 import { type Bucket, bucketsOf, limitBuckets, type Distribution } from "./distribution.ts";
 import { formatMetricValue } from "./metric-value.ts";
 

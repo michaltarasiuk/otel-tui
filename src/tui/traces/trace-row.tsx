@@ -1,4 +1,6 @@
 import { formatDuration, formatTime } from "../../utils/time.ts";
+import { ServiceName } from "../components/service-name.tsx";
+import { TableRow } from "../components/table-row.tsx";
 import {
   HEADER_CELL_PROPS,
   secondaryCellColor,
@@ -6,10 +8,8 @@ import {
   SORT_ARROW_WIDTH,
   sortArrow,
   TIME_WIDTH,
-} from "../columns.ts";
-import { ServiceName } from "../service-name.tsx";
-import { TableRow } from "../table-row.tsx";
-import { THEME } from "../theme.ts";
+} from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 import type { Trace, TraceSort } from "./trace.ts";
 
 const SPANS_WIDTH = 5 + SORT_ARROW_WIDTH;

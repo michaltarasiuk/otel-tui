@@ -1,7 +1,7 @@
 import { useActiveKeys } from "@opentui/keymap/react";
 
-import { COLUMN_GAP } from "./columns.ts";
-import { THEME } from "./theme.ts";
+import { COLUMN_GAP } from "../theme/columns.ts";
+import { THEME } from "../theme/theme.ts";
 
 export const FIRST_HINT_PRIORITY = 1;
 

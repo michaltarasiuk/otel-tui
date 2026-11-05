@@ -1,14 +1,14 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { substringPattern } from "../../db/like-pattern.ts";
-import { useConnection } from "../connection.ts";
-import { useVisible } from "../pane.tsx";
-import { POLL_INTERVAL_MS } from "../polling.ts";
-import logCount from "./log-count.sql" with { type: "text" };
-import logList from "./log-list.sql" with { type: "text" };
+import { useVisible } from "../components/pane.tsx";
+import { useConnection } from "../query/connection.ts";
+import { substringPattern } from "../query/like-pattern.ts";
+import { POLL_INTERVAL_MS } from "../query/polling.ts";
 import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
+import logCount from "./sql/log-count.sql" with { type: "text" };
+import logList from "./sql/log-list.sql" with { type: "text" };
 
 const ANY_SEVERITY_NUMBER = 0;
 
