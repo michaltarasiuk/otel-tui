@@ -11,7 +11,7 @@ const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("grpc"), listen_url: z.url() }),
 ]);
 
-const TELEMETRY_TIMES = {
+const TABLE_TIME_COLUMNS = {
   otlp_traces: "start_time_unix_nano",
   otlp_logs: "coalesce(time_unix_nano, observed_time_unix_nano, 'epoch'::TIMESTAMP)",
   otlp_metrics_gauge: "time_unix_nano",
@@ -24,8 +24,8 @@ const HOST = "127.0.0.1";
 
 export const PRUNE_INTERVAL_MS = 5 * 1000;
 
-const TRIM_START_SHARE = 0.8;
-const TRIM_TARGET_SHARE = 0.6;
+const TRIM_WHEN_MEMORY_ABOVE = 0.8;
+const TRIM_MEMORY_DOWN_TO = 0.6;
 
 export interface ReceiverUrls {
   http: string;
@@ -86,7 +86,7 @@ export async function startReceiver({
   }
 
   async function deleteTelemetryUpTo(cutoff: DuckDBValue) {
-    for (const [table, time] of Object.entries(TELEMETRY_TIMES)) {
+    for (const [table, time] of Object.entries(TABLE_TIME_COLUMNS)) {
       await connection.run(`DELETE FROM ${table} WHERE ${time} <= $cutoff`, { cutoff });
     }
   }
@@ -107,7 +107,7 @@ export async function startReceiver({
   }
 
   async function oldestTelemetryCutoff(share: number) {
-    const times = Object.entries(TELEMETRY_TIMES)
+    const times = Object.entries(TABLE_TIME_COLUMNS)
       .map(([table, time]) => `SELECT ${time} AS time FROM ${table}`)
       .join(" UNION ALL ");
     const reader = await connection.runAndReadAll(
@@ -119,11 +119,11 @@ export async function startReceiver({
 
   async function trimOldestTelemetry() {
     const bytes = await storedBytes();
-    if (bytes <= TRIM_START_SHARE * memoryLimitBytes) {
+    if (bytes <= TRIM_WHEN_MEMORY_ABOVE * memoryLimitBytes) {
       return;
     }
 
-    const targetBytes = TRIM_TARGET_SHARE * memoryLimitBytes;
+    const targetBytes = TRIM_MEMORY_DOWN_TO * memoryLimitBytes;
     await deleteTelemetryUpTo(await oldestTelemetryCutoff(1 - targetBytes / bytes));
     await releaseDeletedRows();
   }

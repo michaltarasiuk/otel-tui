@@ -28,8 +28,8 @@ const ANNOTATION_UNIT = /^\{[^}]*\}$/;
 const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"] as const;
 const BYTE_UNIT_BASE = 1024;
 
-const COMPACT_THRESHOLD = 1e6;
-const GROUPING_THRESHOLD = 1000;
+const COMPACT_FROM = 1e6;
+const ROUND_FROM = 1000;
 
 const compactFormatter = new Intl.NumberFormat(undefined, {
   notation: "compact",
@@ -40,10 +40,10 @@ const fractionFormatter = new Intl.NumberFormat(undefined, { maximumSignificantD
 
 function formatNumber(value: number) {
   const absoluteValue = Math.abs(value);
-  if (absoluteValue >= COMPACT_THRESHOLD) {
+  if (absoluteValue >= COMPACT_FROM) {
     return compactFormatter.format(value);
   }
-  if (absoluteValue >= GROUPING_THRESHOLD || Number.isInteger(value)) {
+  if (absoluteValue >= ROUND_FROM || Number.isInteger(value)) {
     return integerFormatter.format(value);
   }
   return fractionFormatter.format(value);

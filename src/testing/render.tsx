@@ -14,14 +14,13 @@ import { collapseWhitespace } from "../utils/text.ts";
 
 const WAIT_TIMEOUT_MS = 3000;
 const WAIT_POLL_INTERVAL_MS = 10;
-const WAIT_FOR_BINDINGS_MS = 10;
+const WAIT_FOR_KEY_BINDINGS_MS = 10;
 
-const SCROLLBAR_CHARACTERS = /[\u2580-\u259F]/g;
+const BORDER = "─";
+const SCROLLBAR = /[\u2580-\u259F]/g;
+const FOOTER_HEIGHT = 1;
 
-export const BRAILLE_DOTS = /[\u2801-\u28FF]/;
-
-const FOOTER_LINES = 1;
-
+export const CHART_DOTS = /[\u2801-\u28FF]/;
 export const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
 
 interface RenderOptions {
@@ -52,7 +51,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       await setup.renderOnce();
       const captured = capture();
       if (captured !== undefined && matches(captured)) {
-        await Bun.sleep(WAIT_FOR_BINDINGS_MS);
+        await Bun.sleep(WAIT_FOR_KEY_BINDINGS_MS);
         return captured;
       }
       await Bun.sleep(WAIT_POLL_INTERVAL_MS);
@@ -103,9 +102,9 @@ export function textLines(frame: string) {
 }
 
 export function panelLines(frame: string) {
-  const lines = textLines(frame.replaceAll(SCROLLBAR_CHARACTERS, ""));
-  const border = lines.findIndex((line) => line.startsWith("─"));
-  return border === -1 ? [] : lines.slice(border + 1, -FOOTER_LINES);
+  const lines = textLines(frame.replaceAll(SCROLLBAR, ""));
+  const border = lines.findIndex((line) => line.startsWith(BORDER));
+  return border === -1 ? [] : lines.slice(border + 1, -FOOTER_HEIGHT);
 }
 
 function createDiagnosedKeymap(renderer: CliRenderer) {

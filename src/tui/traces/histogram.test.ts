@@ -14,7 +14,7 @@ function bar(traceCount: number, errorCount: number, maxCount: number, height: n
   return barRows(columns, height).map(([row]) => row?.cell);
 }
 
-const EMPTY = { glyph: " ", foreground: undefined, background: undefined } satisfies BarCell;
+const EMPTY_CELL = { glyph: " ", foreground: undefined, background: undefined } satisfies BarCell;
 
 function ok(glyph: string) {
   return { glyph, foreground: "ok", background: undefined } satisfies BarCell;
@@ -68,12 +68,12 @@ test("selects only the range, not the counts of the column it came from", () => 
 
 test("scales a bar against the tallest column in eighths of a cell", () => {
   expect(bar(10, 0, 10, 2)).toEqual([ok("█"), ok("█")]);
-  expect(bar(5, 0, 10, 2)).toEqual([EMPTY, ok("█")]);
+  expect(bar(5, 0, 10, 2)).toEqual([EMPTY_CELL, ok("█")]);
   expect(bar(3, 0, 8, 1)).toEqual([ok("▃")]);
 });
 
 test("draws a column with any traces at least one eighth tall", () => {
-  expect(bar(1, 0, 1000, 2)).toEqual([EMPTY, ok("▁")]);
+  expect(bar(1, 0, 1000, 2)).toEqual([EMPTY_CELL, ok("▁")]);
 });
 
 test("stacks errors under the other traces", () => {

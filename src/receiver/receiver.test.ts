@@ -19,7 +19,7 @@ const TABLES = [
 ];
 
 const RETENTION_MS = 60 * 1000;
-const RETENTION_EXPIRED_LOG_COUNT = 10_000;
+const EXPIRED_LOG_COUNT = 10_000;
 
 const MEMORY_LIMIT_BYTES = 8 * 1024 * 1024;
 const MEMORY_BATCH_COUNT = 20;
@@ -249,7 +249,7 @@ test("releases the memory of pruned telemetry", async () => {
     "/v1/logs",
     logsRequest({
       service: "cart",
-      logs: Array.from({ length: RETENTION_EXPIRED_LOG_COUNT }, (_, index) => ({
+      logs: Array.from({ length: EXPIRED_LOG_COUNT }, (_, index) => ({
         time: expired,
         body: `GetCartAsync called with userId=${index}`,
       })),

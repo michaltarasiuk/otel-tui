@@ -9,11 +9,11 @@ import type { Metric } from "./metric.ts";
 import { attributeValues } from "./series-attributes.ts";
 import type { Series } from "./series.ts";
 
-const LISTED_VALUE_COUNT = 3;
+const MAX_LISTED_VALUES = 3;
 
 function describeValues(values: string[]) {
-  const listed = values.slice(0, LISTED_VALUE_COUNT).join(", ");
-  const unlistedCount = values.length - LISTED_VALUE_COUNT;
+  const listed = values.slice(0, MAX_LISTED_VALUES).join(", ");
+  const unlistedCount = values.length - MAX_LISTED_VALUES;
   return unlistedCount > 0 ? `${listed} and ${unlistedCount.toLocaleString()} more` : listed;
 }
 

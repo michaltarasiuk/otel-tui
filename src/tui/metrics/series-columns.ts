@@ -5,7 +5,7 @@ import type { Series } from "./series.ts";
 const MIN_COLUMN_WEIGHT = 8;
 const MAX_COLUMN_WEIGHT = 32;
 
-const SOURCES = ["attributes", "resource_attributes"] as const;
+const ATTRIBUTE_SOURCES = ["attributes", "resource_attributes"] as const;
 
 const LABEL_SEPARATOR = " · ";
 const UNLABELED_SERIES = "no attributes";
@@ -17,7 +17,7 @@ export interface AttributeColumn {
 }
 
 export function attributeColumns(series: Series[]) {
-  const sources = series.length === 1 ? (["attributes"] as const) : SOURCES;
+  const sources = series.length === 1 ? (["attributes"] as const) : ATTRIBUTE_SOURCES;
   return sources.flatMap((source) => {
     const attributeSets = series.map((row) => row[source]);
     return attributeValues(attributeSets)

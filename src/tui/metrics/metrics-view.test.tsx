@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 import { renderApp } from "../../testing/app.tsx";
 import { metricsRequest, TEMPORALITY } from "../../testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
-import { BRAILLE_DOTS, panelLines, textLines } from "../../testing/render.tsx";
+import { CHART_DOTS, panelLines, textLines } from "../../testing/render.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
@@ -349,7 +349,7 @@ test("opens a counter's series with their rates and totals", async () => {
   await using app = await openMetric(receiver, FLAG_REQUESTS_ROW);
 
   const frame = await app.waitForFrame(
-    (frame) => BRAILLE_DOTS.test(frame) && textLines(frame).includes("failedReadinessProbe 2/s 50"),
+    (frame) => CHART_DOTS.test(frame) && textLines(frame).includes("failedReadinessProbe 2/s 50"),
   );
 
   expect(textLines(frame).slice(1, 7)).toEqual([
@@ -426,7 +426,7 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
   const frame = await app.waitForFrame(
     (frame) =>
       frame.includes("Exemplars") &&
-      BRAILLE_DOTS.test(frame) &&
+      CHART_DOTS.test(frame) &&
       textLines(frame).includes("none 10 42.0ms 125.0ms 145.0ms 150.0ms"),
   );
 
@@ -530,7 +530,7 @@ test("adds up a delta updowncounter's changes", async () => {
   app.mockInput.pressEnter();
 
   const frame = await app.waitForFrame(
-    (frame) => BRAILLE_DOTS.test(frame) && textLines(frame).includes("none 4 1 4"),
+    (frame) => CHART_DOTS.test(frame) && textLines(frame).includes("none 4 1 4"),
   );
   const panel = panelLines(frame);
   expect(panel.slice(0, 3)).toEqual(["no attributes 12:00:30.000", "last 4 min 1 max 4", "Value"]);
@@ -603,7 +603,7 @@ test("scrolls the series panel down and back up", async () => {
   }
   app.mockInput.pressEnter();
   await app.waitForFrame(
-    (frame) => panelLines(frame).includes("Exemplars") && BRAILLE_DOTS.test(frame),
+    (frame) => panelLines(frame).includes("Exemplars") && CHART_DOTS.test(frame),
   );
 
   app.mockInput.pressKey("d", { ctrl: true });

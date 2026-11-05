@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
-import { BRAILLE_DOTS, render, textLines } from "../../testing/render.tsx";
+import { CHART_DOTS, render, textLines } from "../../testing/render.tsx";
 import { LineChart } from "./line-chart.tsx";
 
 interface ChartLine {
@@ -26,7 +26,7 @@ async function renderChart(lines: ChartLine[], { gapSlots = 1, includeZero = fal
     { width: 20, height: 4 },
   );
   const frame = await screen.waitForFrame(
-    (frame) => BRAILLE_DOTS.test(frame) || frame.includes("Not enough data"),
+    (frame) => CHART_DOTS.test(frame) || frame.includes("Not enough data"),
   );
   return { ...screen, rows: frame.split("\n").map((line) => line.trimEnd()) };
 }
@@ -35,12 +35,14 @@ function line(values: (number | null)[]) {
   return { color: "#FF0000", values };
 }
 
-const SLOTS = 20;
+const SLOT_COUNT = 20;
 
 const stepWithGap = [1, 1, 1, 1, ...Array<null>(8).fill(null), 3, 3, 3, 3];
 
 test("draws a line in braille between labels for its highest and lowest values", async () => {
-  await using chart = await renderChart([line(Array.from({ length: SLOTS }, (_, slot) => slot))]);
+  await using chart = await renderChart([
+    line(Array.from({ length: SLOT_COUNT }, (_, slot) => slot)),
+  ]);
 
   expect(chart.rows.slice(0, 3)).toEqual([
     "     19.0      ⣀⣠⠴⠒⠋",
@@ -68,13 +70,13 @@ test("joins the line across missing values within the gap slots", async () => {
 });
 
 test("pads the range around a flat line", async () => {
-  await using chart = await renderChart([line(Array.from({ length: SLOTS }, () => 4))]);
+  await using chart = await renderChart([line(Array.from({ length: SLOT_COUNT }, () => 4))]);
 
   expect(chart.rows.slice(0, 2)).toEqual(["      6.0", "      2.0 ⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉"]);
 });
 
 test("keeps a flat line at zero on the bottom when zero is included", async () => {
-  await using chart = await renderChart([line(Array.from({ length: SLOTS }, () => 0))], {
+  await using chart = await renderChart([line(Array.from({ length: SLOT_COUNT }, () => 0))], {
     includeZero: true,
   });
 
@@ -82,7 +84,7 @@ test("keeps a flat line at zero on the bottom when zero is included", async () =
 });
 
 test("says when there is nothing to plot yet", async () => {
-  await using chart = await renderChart([line(Array.from({ length: SLOTS }, () => null))]);
+  await using chart = await renderChart([line(Array.from({ length: SLOT_COUNT }, () => null))]);
 
   expect(textLines(chart.rows.join("\n")).join(" ")).toContain(
     "Not enough data points to plot yet",
@@ -97,7 +99,7 @@ test("colors each line's dots", async () => {
 
   const dotColors = chart
     .captureSpans()
-    .lines.flatMap(({ spans }) => spans.filter((span) => BRAILLE_DOTS.test(span.text)))
+    .lines.flatMap(({ spans }) => spans.filter((span) => CHART_DOTS.test(span.text)))
     .map((span) => span.fg);
 
   expect(dotColors).toEqual([RGBA.fromHex("#FF0000"), RGBA.fromHex("#0000FF")]);
