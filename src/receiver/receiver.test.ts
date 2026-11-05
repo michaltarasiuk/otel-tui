@@ -186,12 +186,6 @@ test("listens for OTLP/HTTP and OTLP/gRPC on the IPv4 loopback address", async (
   });
 });
 
-test("accepts OTLP/gRPC exports", async () => {
-  await using receiver = await startTestReceiver();
-
-  await receiver.sendGrpc(LOGS_EXPORT);
-});
-
 test("stores every signal where its connections can query it", async () => {
   await using receiver = await startTestReceiver();
   const connection = await receiver.connect();
