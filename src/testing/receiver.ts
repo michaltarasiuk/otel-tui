@@ -1,12 +1,4 @@
-import { connect, type IncomingHttpHeaders } from "node:http2";
-
 import { startReceiver } from "../receiver/receiver.ts";
-
-const GRPC_UNCOMPRESSED_FLAG = 0;
-const GRPC_ZERO_MESSAGE_LENGTH = [0, 0, 0, 0];
-const emptyGrpcMessageFrame = new Uint8Array([GRPC_UNCOMPRESSED_FLAG, ...GRPC_ZERO_MESSAGE_LENGTH]);
-
-const GRPC_STATUS_OK = "0";
 
 function freePort() {
   using listener = Bun.listen({
@@ -51,42 +43,10 @@ export async function startTestReceiver({
     await flush();
   }
 
-  async function sendGrpc(method: string) {
-    const session = connect(receiver.urls.grpc);
-    try {
-      const status = await new Promise<string | string[]>((resolve, reject) => {
-        function resolveStatus(headers: IncomingHttpHeaders) {
-          const status = headers["grpc-status"];
-          if (status !== undefined) {
-            resolve(status);
-          }
-        }
-        session.on("error", (error) => reject(error));
-        session
-          .request({
-            ":method": "POST",
-            ":path": method,
-            "content-type": "application/grpc",
-          })
-          .on("response", (headers) => resolveStatus(headers))
-          .on("trailers", (trailers) => resolveStatus(trailers))
-          .on("error", (error) => reject(error))
-          .end(emptyGrpcMessageFrame);
-      });
-      if (status !== GRPC_STATUS_OK) {
-        throw new Error(`gRPC ${method} failed with status ${String(status)}`);
-      }
-    } finally {
-      session.close();
-    }
-    await flush();
-  }
-
   return {
     urls: receiver.urls,
     connect: () => receiver.connect(),
     sendHttp,
-    sendGrpc,
     [Symbol.asyncDispose]: () => receiver[Symbol.asyncDispose](),
   };
 }

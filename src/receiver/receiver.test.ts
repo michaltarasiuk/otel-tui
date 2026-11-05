@@ -18,8 +18,6 @@ const TABLES = [
   "otlp_metrics_exp_histogram",
 ];
 
-const LOGS_EXPORT = "/opentelemetry.proto.collector.logs.v1.LogsService/Export";
-
 const RETENTION_MS = 60 * 1000;
 const RETENTION_EXPIRED_LOG_COUNT = 10_000;
 
@@ -344,6 +342,6 @@ test("closes its connections and stops listening when disposed", async () => {
   await receiver[Symbol.asyncDispose]();
 
   expect(connection.run("SELECT 1")).rejects.toThrow("connection disconnected");
-  expect(fetch(`${receiver.urls.http}/v1/logs`, { method: "POST", body: "{}" })).rejects.toThrow();
-  expect(receiver.sendGrpc(LOGS_EXPORT)).rejects.toThrow();
+  expect(fetch(receiver.urls.http)).rejects.toMatchObject({ code: "ECONNREFUSED" });
+  expect(fetch(receiver.urls.grpc)).rejects.toMatchObject({ code: "ECONNREFUSED" });
 });
