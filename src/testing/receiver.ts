@@ -1,4 +1,4 @@
-import { startReceiver } from "../receiver/receiver.ts";
+import { startReceiver } from "#receiver/receiver.ts";
 
 function freePort() {
   using listener = Bun.listen({

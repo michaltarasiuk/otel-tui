@@ -1,7 +1,7 @@
 import type { BoxRenderable, ColorInput } from "@opentui/core";
 import { useRef, useState } from "react";
 
-import { THEME } from "../theme/theme.ts";
+import { THEME } from "#tui/theme/theme.ts";
 
 const BRAILLE_DOT_COLUMNS = 2;
 const BRAILLE_DOT_ROWS = 4;

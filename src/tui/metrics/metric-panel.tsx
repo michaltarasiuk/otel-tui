@@ -1,8 +1,9 @@
-import { EntryList } from "../components/entry-list.tsx";
-import { Panel, PanelBody } from "../components/panel.tsx";
-import { Section } from "../components/section.tsx";
-import type { Attributes } from "../query/attributes.ts";
-import { THEME } from "../theme/theme.ts";
+import { EntryList } from "#tui/components/entry-list.tsx";
+import { Panel, PanelBody } from "#tui/components/panel.tsx";
+import { Section } from "#tui/components/section.tsx";
+import type { Attributes } from "#tui/query/attributes.ts";
+import { THEME } from "#tui/theme/theme.ts";
+
 import { MetricHeader } from "./metric-header.tsx";
 import { useMetricSeries } from "./metric-queries.ts";
 import type { Metric } from "./metric.ts";

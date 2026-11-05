@@ -1,6 +1,8 @@
-import { Facts, Heading } from "../components/heading.tsx";
-import { ServiceName } from "../components/service-name.tsx";
-import { THEME } from "../theme/theme.ts";
+import { Facts, Heading } from "#tui/components/heading.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatCount } from "#utils/format-count.ts";
+
 import { type Metric, temporalityLabel, typeLabel } from "./metric.ts";
 
 interface MetricHeaderProps {
@@ -31,7 +33,7 @@ export function MetricHeader({ metric, seriesCount }: MetricHeaderProps) {
           </text>
         )}
         <text fg={THEME.textMuted} flexShrink={0}>
-          {seriesCount.toLocaleString()} series
+          {formatCount(seriesCount, "series", "series")}
         </text>
       </Facts>
       {metric.description !== "" && <text fg={THEME.textMuted}>{metric.description}</text>}

@@ -1,3 +1,5 @@
+import { MINUTE_MS } from "#utils/time-units.ts";
+
 import { env } from "./env.ts";
 import { startReceiver } from "./receiver/receiver.ts";
 import { startTui } from "./tui/tui.tsx";
@@ -5,7 +7,7 @@ import { startTui } from "./tui/tui.tsx";
 await using receiver = await startReceiver({
   httpPort: env.OTEL_TUI_HTTP_PORT,
   grpcPort: env.OTEL_TUI_GRPC_PORT,
-  retentionMs: env.OTEL_TUI_RETENTION_MINUTES * 60 * 1000,
+  retentionMs: env.OTEL_TUI_RETENTION_MINUTES * MINUTE_MS,
   memoryLimitBytes: env.OTEL_TUI_MEMORY_LIMIT_MB * 1024 * 1024,
 });
 const connection = await receiver.connect();

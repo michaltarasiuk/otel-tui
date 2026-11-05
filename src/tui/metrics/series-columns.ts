@@ -1,5 +1,7 @@
-import { clamp } from "../../utils/math.ts";
-import { attributeValues, compareValues } from "./series-attributes.ts";
+import { clamp } from "#utils/clamp.ts";
+import { compareText } from "#utils/compare-text.ts";
+
+import { attributeValues } from "./series-attributes.ts";
 import type { Series } from "./series.ts";
 
 const MIN_COLUMN_WEIGHT = 8;
@@ -52,7 +54,7 @@ export function seriesLabel(series: Series, columns: AttributeColumn[]) {
 export function sortByColumns(series: Series[], columns: AttributeColumn[]) {
   return series.toSorted((a, b) => {
     for (const column of columns) {
-      const order = compareValues(cellValue(a, column), cellValue(b, column));
+      const order = compareText(cellValue(a, column), cellValue(b, column));
       if (order !== 0) {
         return order;
       }

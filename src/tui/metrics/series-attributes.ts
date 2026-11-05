@@ -1,10 +1,5 @@
-import type { Attributes } from "../query/attributes.ts";
-
-const collator = new Intl.Collator(undefined, { numeric: true });
-
-export function compareValues(a: string, b: string) {
-  return collator.compare(a, b);
-}
+import type { Attributes } from "#tui/query/attributes.ts";
+import { compareText } from "#utils/compare-text.ts";
 
 export function attributeValues(attributeSets: Attributes[]) {
   const byKey = new Map<string, { values: Set<string>; setCount: number }>();
@@ -22,7 +17,7 @@ export function attributeValues(attributeSets: Attributes[]) {
 
   return [...byKey].map(([key, { values, setCount }]) => ({
     key,
-    values: [...values].sort((a, b) => compareValues(a, b)),
+    values: [...values].sort((a, b) => compareText(a, b)),
     setCount,
   }));
 }

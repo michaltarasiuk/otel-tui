@@ -2,8 +2,9 @@ import type { ScrollBoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { useRef } from "react";
 
-import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
-import { THEME } from "../theme/theme.ts";
+import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
+import { THEME } from "#tui/theme/theme.ts";
+
 import { useFocused } from "./focus.tsx";
 
 const HALF_VIEWPORT = 0.5;

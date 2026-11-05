@@ -1,6 +1,5 @@
-import { formatDuration, formatTime } from "../../utils/time.ts";
-import { ServiceName } from "../components/service-name.tsx";
-import { TableRow } from "../components/table-row.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { TableRow } from "#tui/components/table-row.tsx";
 import {
   HEADER_CELL_PROPS,
   secondaryCellColor,
@@ -8,8 +7,11 @@ import {
   COLUMN_SORT_ARROW_WIDTH,
   sortArrow,
   COLUMN_TIME_WIDTH,
-} from "../theme/columns.ts";
-import { THEME } from "../theme/theme.ts";
+} from "#tui/theme/columns.ts";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatDuration } from "#utils/format-duration.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+
 import type { Trace, TraceSort } from "./trace.ts";
 
 const COLUMN_SPANS_WIDTH = 5 + COLUMN_SORT_ARROW_WIDTH;
@@ -56,7 +58,7 @@ export function TraceRow({ trace, selected }: TraceRowProps) {
   return (
     <TableRow selected={selected}>
       <text width={COLUMN_TIME_WIDTH} fg={secondaryColor}>
-        {formatTime(trace.start_time)}
+        {formatTimeOfDay(trace.start_time)}
       </text>
       <text width={COLUMN_SERVICE_WIDTH} fg={secondaryColor} wrapMode="none" truncate>
         {trace.service_name !== null && <ServiceName name={trace.service_name} />}

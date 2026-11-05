@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-import { formatTime } from "../../utils/time.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
+
 import type { HistogramColumn, HistogramRange } from "./histogram.ts";
 
 const LABEL_GAP = 2;
@@ -9,27 +11,27 @@ const LABEL_WIDTHS = {
   second: "00:00:00".length,
 };
 
-export const TIME_BUCKET_MS = 10 * 1000;
-export const TIME_SCALE_LABEL = `${TIME_BUCKET_MS / 1000}s per column`;
+export const TIME_BUCKET_MS = 10 * SECOND_MS;
+export const TIME_SCALE_LABEL = `${TIME_BUCKET_MS / SECOND_MS}s per column`;
 
 const TICK_INTERVALS_MS = [
-  1000,
-  2 * 1000,
-  5 * 1000,
-  10 * 1000,
-  15 * 1000,
-  30 * 1000,
-  60 * 1000,
-  2 * 60 * 1000,
-  5 * 60 * 1000,
-  10 * 60 * 1000,
-  15 * 60 * 1000,
-  30 * 60 * 1000,
-  60 * 60 * 1000,
-  2 * 60 * 60 * 1000,
-  6 * 60 * 60 * 1000,
-  12 * 60 * 60 * 1000,
-  24 * 60 * 60 * 1000,
+  SECOND_MS,
+  2 * SECOND_MS,
+  5 * SECOND_MS,
+  10 * SECOND_MS,
+  15 * SECOND_MS,
+  30 * SECOND_MS,
+  MINUTE_MS,
+  2 * MINUTE_MS,
+  5 * MINUTE_MS,
+  10 * MINUTE_MS,
+  15 * MINUTE_MS,
+  30 * MINUTE_MS,
+  HOUR_MS,
+  2 * HOUR_MS,
+  6 * HOUR_MS,
+  12 * HOUR_MS,
+  DAY_MS,
 ];
 
 export const TimeBucket = z
@@ -53,7 +55,7 @@ export function bucketStart(timeMs: number) {
 }
 
 function clockPrecision(intervalMs: number) {
-  return intervalMs < 60 * 1000 ? "second" : "minute";
+  return intervalMs < MINUTE_MS ? "second" : "minute";
 }
 
 export function timeColumns(
@@ -92,7 +94,7 @@ export function hiddenTraces(occupied: HistogramColumn[], columns: HistogramColu
 
 export function timeRangeLabel({ from, to }: HistogramRange) {
   const precision = clockPrecision(to - from);
-  return `${formatTime(from, precision)}–${formatTime(to, precision)}`;
+  return `${formatTimeOfDay(from, precision)}–${formatTimeOfDay(to, precision)}`;
 }
 
 function tickInterval(columnWidth: number) {
@@ -101,7 +103,7 @@ function tickInterval(columnWidth: number) {
       (interval) =>
         (interval / TIME_BUCKET_MS) * columnWidth >=
         LABEL_WIDTHS[clockPrecision(interval)] + LABEL_GAP,
-    ) ?? 24 * 60 * 60 * 1000
+    ) ?? DAY_MS
   );
 }
 
@@ -112,12 +114,12 @@ export function timeAxis(columns: HistogramColumn[], columnWidth: number) {
   let axis = "";
 
   for (const [position, { from }] of columns.entries()) {
-    const localFrom = from - new Date(from).getTimezoneOffset() * 60 * 1000;
+    const localFrom = from - new Date(from).getTimezoneOffset() * MINUTE_MS;
     const untilTick = (interval - (localFrom % interval)) % interval;
     if (untilTick >= TIME_BUCKET_MS) {
       continue;
     }
-    const label = formatTime(from + untilTick, precision);
+    const label = formatTimeOfDay(from + untilTick, precision);
     const labelStart = position * columnWidth;
     if (labelStart + label.length <= axisWidth) {
       axis = axis.padEnd(labelStart) + label;

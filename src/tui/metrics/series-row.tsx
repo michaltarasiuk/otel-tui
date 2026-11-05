@@ -1,7 +1,8 @@
-import { TableRow } from "../components/table-row.tsx";
-import { HEADER_CELL_PROPS, secondaryCellColor } from "../theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
-import { THEME } from "../theme/theme.ts";
+import { TableRow } from "#tui/components/table-row.tsx";
+import { HEADER_CELL_PROPS, secondaryCellColor } from "#tui/theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
+import { THEME } from "#tui/theme/theme.ts";
+
 import type { Metric } from "./metric.ts";
 import { type AttributeColumn, cellValue } from "./series-columns.ts";
 import { seriesStats, statKeys, statLabel } from "./series-stats.ts";

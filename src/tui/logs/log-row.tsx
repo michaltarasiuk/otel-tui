@@ -1,14 +1,15 @@
-import { collapseWhitespace } from "../../utils/text.ts";
-import { formatTime } from "../../utils/time.ts";
-import { ServiceName } from "../components/service-name.tsx";
-import { TableRow } from "../components/table-row.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { TableRow } from "#tui/components/table-row.tsx";
 import {
   HEADER_CELL_PROPS,
   secondaryCellColor,
   COLUMN_SERVICE_WIDTH,
   COLUMN_TIME_WIDTH,
-} from "../theme/columns.ts";
-import { THEME } from "../theme/theme.ts";
+} from "#tui/theme/columns.ts";
+import { THEME } from "#tui/theme/theme.ts";
+import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
 
@@ -44,7 +45,7 @@ export function LogRow({ log, selected }: LogRowProps) {
   return (
     <TableRow selected={selected}>
       <text width={COLUMN_TIME_WIDTH} fg={secondaryColor}>
-        {log.time !== null && formatTime(log.time)}
+        {log.time !== null && formatTimeOfDay(log.time)}
       </text>
       <text width={SEVERITY_WIDTH} fg={severityColor(log.severity)} wrapMode="none" truncate>
         {log.severity ?? log.severity_text}

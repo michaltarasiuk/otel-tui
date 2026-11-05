@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import type { ReceiverUrls } from "../receiver/receiver.ts";
-import { formatCount } from "../utils/text.ts";
-import { formatTimeAgo } from "../utils/time.ts";
+import type { ReceiverUrls } from "#receiver/receiver.ts";
+import { formatCount } from "#utils/format-count.ts";
+import { formatTimeAgo } from "#utils/format-time-ago.ts";
+
 import { useConnection } from "./query/connection.ts";
 import { POLL_INTERVAL_MS } from "./query/polling.ts";
 import receiverStatus from "./receiver-status.sql" with { type: "text" };

@@ -5,8 +5,9 @@ import { tmpdir } from "node:os";
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { z } from "zod";
 
-import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "../testing/otlp.ts";
-import { startTestReceiver, type TestReceiver } from "../testing/receiver.ts";
+import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "#testing/otlp.ts";
+import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
+
 import { PRUNE_INTERVAL_MS } from "./receiver.ts";
 
 const TABLES = [

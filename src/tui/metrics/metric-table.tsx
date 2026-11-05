@@ -1,9 +1,10 @@
 import { useBindings } from "@opentui/keymap/react";
 
-import { useFocused } from "../components/focus.tsx";
-import { FIRST_HINT_PRIORITY } from "../components/key-hints.tsx";
-import { useListState } from "../components/use-list-state.ts";
-import { WindowedRows } from "../components/windowed-rows.tsx";
+import { useFocused } from "#tui/components/focus.tsx";
+import { FIRST_HINT_PRIORITY } from "#tui/components/key-hints.tsx";
+import { useListState } from "#tui/components/use-list-state.ts";
+import { WindowedRows } from "#tui/components/windowed-rows.tsx";
+
 import { MetricPanel } from "./metric-panel.tsx";
 import { MetricHeaderRow, MetricRow } from "./metric-row.tsx";
 import type { Metric, MetricSort } from "./metric.ts";

@@ -2,9 +2,10 @@ import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { Fragment, useRef, useState } from "react";
 
-import { clamp } from "../../utils/math.ts";
-import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
-import { THEME } from "../theme/theme.ts";
+import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
+import { THEME } from "#tui/theme/theme.ts";
+import { clamp } from "#utils/clamp.ts";
+
 import { useFocused } from "./focus.tsx";
 import type { useListState } from "./use-list-state.ts";
 

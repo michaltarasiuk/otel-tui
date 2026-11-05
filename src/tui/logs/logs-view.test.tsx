@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 
-import { renderApp } from "../../testing/app.tsx";
-import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "../../testing/otlp.ts";
-import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
-import { panelLines, textLines } from "../../testing/render.tsx";
+import { renderApp } from "#testing/app.tsx";
+import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
+import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
+import { panelLines, textLines } from "#testing/render.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 

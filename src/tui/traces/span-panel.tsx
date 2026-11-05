@@ -1,10 +1,12 @@
-import { formatDuration, formatTime } from "../../utils/time.ts";
-import { EntryList } from "../components/entry-list.tsx";
-import { Facts, Heading } from "../components/heading.tsx";
-import { Panel, PanelBody } from "../components/panel.tsx";
-import { ScopeSection, Section } from "../components/section.tsx";
-import { ServiceName } from "../components/service-name.tsx";
-import { THEME } from "../theme/theme.ts";
+import { EntryList } from "#tui/components/entry-list.tsx";
+import { Facts, Heading } from "#tui/components/heading.tsx";
+import { Panel, PanelBody } from "#tui/components/panel.tsx";
+import { ScopeSection, Section } from "#tui/components/section.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatDuration } from "#utils/format-duration.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+
 import type { Span, SpanDetails } from "./span.ts";
 import { useSpanDetails } from "./trace-queries.ts";
 
@@ -100,7 +102,7 @@ export function SpanPanel({ traceId, span }: SpanPanelProps) {
           {span.kind}
         </text>
         <text fg={THEME.textMuted} flexShrink={0}>
-          {formatTime(span.start_time)} +{formatDuration(span.offset_ms)}
+          {formatTimeOfDay(span.start_time)} +{formatDuration(span.offset_ms)}
         </text>
         <text fg={THEME.textMuted} flexShrink={0}>
           {formatDuration(span.duration_ms)}

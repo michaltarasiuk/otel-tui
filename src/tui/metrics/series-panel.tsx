@@ -1,10 +1,11 @@
-import { formatTime } from "../../utils/time.ts";
-import { EntryList } from "../components/entry-list.tsx";
-import { Facts, Heading } from "../components/heading.tsx";
-import { Panel, PanelBody } from "../components/panel.tsx";
-import { ScopeSection, Section } from "../components/section.tsx";
-import { COLUMN_GAP, COLUMN_TIME_WIDTH } from "../theme/columns.ts";
-import { serviceColor, THEME } from "../theme/theme.ts";
+import { EntryList } from "#tui/components/entry-list.tsx";
+import { Facts, Heading } from "#tui/components/heading.tsx";
+import { Panel, PanelBody } from "#tui/components/panel.tsx";
+import { ScopeSection, Section } from "#tui/components/section.tsx";
+import { COLUMN_GAP, COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
+import { serviceColor, THEME } from "#tui/theme/theme.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+
 import { BucketBars } from "./bucket-bars.tsx";
 import { useSeriesExemplars } from "./metric-queries.ts";
 import { formatMetricValue } from "./metric-value.ts";
@@ -22,7 +23,7 @@ function ExemplarList({ exemplars, unit }: ExemplarListProps) {
   return exemplars.map((exemplar, index) => (
     <box key={index} flexDirection="row" gap={COLUMN_GAP}>
       <text width={COLUMN_TIME_WIDTH} flexShrink={0} fg={THEME.textMuted}>
-        {formatTime(exemplar.time)}
+        {formatTimeOfDay(exemplar.time)}
       </text>
       <text width={10} flexShrink={0} textAlign="right" fg={THEME.text}>
         {formatMetricValue(exemplar.value, unit)}
@@ -51,7 +52,7 @@ export function SeriesPanel({ metric, series, label, windowStart }: SeriesPanelP
 
   return (
     <Panel>
-      <Heading title={label} aside={formatTime(series.last_time)} />
+      <Heading title={label} aside={formatTimeOfDay(series.last_time)} />
       <Facts>
         {statKeys(metric.type).map((key) => (
           <text key={key} fg={THEME.textMuted} flexShrink={0}>

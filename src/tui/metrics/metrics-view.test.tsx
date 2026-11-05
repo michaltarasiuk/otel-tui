@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
-import { renderApp } from "../../testing/app.tsx";
-import { metricsRequest, TEMPORALITY } from "../../testing/otlp.ts";
-import { startTestReceiver, type TestReceiver } from "../../testing/receiver.ts";
-import { CHART_DOTS, panelLines, textLines } from "../../testing/render.tsx";
+import { renderApp } from "#testing/app.tsx";
+import { metricsRequest, TEMPORALITY } from "#testing/otlp.ts";
+import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
+import { CHART_DOTS, panelLines, textLines } from "#testing/render.tsx";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 

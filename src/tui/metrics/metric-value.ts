@@ -1,13 +1,15 @@
-import { formatDuration } from "../../utils/time.ts";
+import { formatDuration } from "#utils/format-duration.ts";
+import { roundToTenths } from "#utils/round-to-tenths.ts";
+import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
 
 const MILLISECONDS_PER_UNIT: Record<string, number> = {
   ns: 1e-6,
   us: 1e-3,
   ms: 1,
-  s: 1000,
-  min: 60 * 1000,
-  h: 60 * 60 * 1000,
-  d: 24 * 60 * 60 * 1000,
+  s: SECOND_MS,
+  min: MINUTE_MS,
+  h: HOUR_MS,
+  d: DAY_MS,
 };
 
 const BYTES_PER_UNIT: Record<string, number> = {
@@ -47,10 +49,6 @@ function formatNumber(value: number) {
     return integerFormatter.format(value);
   }
   return fractionFormatter.format(value);
-}
-
-function roundToTenths(value: number) {
-  return Math.round(value * 10) / 10;
 }
 
 function formatBytes(bytes: number) {

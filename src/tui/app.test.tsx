@@ -3,10 +3,11 @@ import { afterEach, expect, type Mock, mock, spyOn, test } from "bun:test";
 import { DuckDBConnection } from "@duckdb/node-api";
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
-import { renderApp } from "../testing/app.tsx";
-import { logsRequest, STATUS_CODE, tracesRequest } from "../testing/otlp.ts";
-import { startTestReceiver } from "../testing/receiver.ts";
-import { selectedBackground, textLines } from "../testing/render.tsx";
+import { renderApp } from "#testing/app.tsx";
+import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
+import { startTestReceiver } from "#testing/receiver.ts";
+import { selectedBackground, textLines } from "#testing/render.tsx";
+
 import logList from "./logs/sql/log-list.sql" with { type: "text" };
 import metricList from "./metrics/sql/metric-list.sql" with { type: "text" };
 import { THEME } from "./theme/theme.ts";

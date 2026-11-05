@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api";
 import { z } from "zod";
 
+import { SECOND_MS } from "#utils/time-units.ts";
+
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([
@@ -22,7 +24,7 @@ const TABLE_TIME_COLUMNS = {
 
 const HOST = "127.0.0.1";
 
-export const PRUNE_INTERVAL_MS = 5 * 1000;
+export const PRUNE_INTERVAL_MS = 5 * SECOND_MS;
 
 const TRIM_WHEN_MEMORY_ABOVE = 0.8;
 const TRIM_MEMORY_DOWN_TO = 0.6;

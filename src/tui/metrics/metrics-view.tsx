@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { Pane } from "../components/pane.tsx";
+import { Pane } from "#tui/components/pane.tsx";
+
 import { MetricDetails } from "./metric-details.tsx";
 import { MetricList } from "./metric-list.tsx";
 import type { Metric } from "./metric.ts";

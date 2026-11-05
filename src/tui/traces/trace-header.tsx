@@ -1,8 +1,10 @@
-import { formatCount } from "../../utils/text.ts";
-import { formatDuration, formatTime } from "../../utils/time.ts";
-import { Facts, Heading } from "../components/heading.tsx";
-import { ServiceName } from "../components/service-name.tsx";
-import { THEME } from "../theme/theme.ts";
+import { Facts, Heading } from "#tui/components/heading.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatCount } from "#utils/format-count.ts";
+import { formatDuration } from "#utils/format-duration.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+
 import type { Span } from "./span.ts";
 
 interface TraceHeaderProps {
@@ -29,7 +31,7 @@ export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderPro
           </text>
         )}
         <text fg={THEME.textMuted} flexShrink={0}>
-          {formatTime(startTime)}
+          {formatTimeOfDay(startTime)}
         </text>
         <text fg={THEME.textMuted} flexShrink={0}>
           {formatCount(spans.length, "span")}

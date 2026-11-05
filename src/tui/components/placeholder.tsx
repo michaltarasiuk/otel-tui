@@ -1,4 +1,4 @@
-import { THEME } from "../theme/theme.ts";
+import { THEME } from "#tui/theme/theme.ts";
 
 const VARIANT_COLORS = {
   muted: THEME.textMuted,

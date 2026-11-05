@@ -1,10 +1,11 @@
 import { useBindings } from "@opentui/keymap/react";
 
-import { useFocused } from "../components/focus.tsx";
-import { FIRST_HINT_PRIORITY } from "../components/key-hints.tsx";
-import { useListState } from "../components/use-list-state.ts";
-import { WindowedRows } from "../components/windowed-rows.tsx";
-import { useNavigation } from "../navigation.tsx";
+import { useFocused } from "#tui/components/focus.tsx";
+import { FIRST_HINT_PRIORITY } from "#tui/components/key-hints.tsx";
+import { useListState } from "#tui/components/use-list-state.ts";
+import { WindowedRows } from "#tui/components/windowed-rows.tsx";
+import { useNavigation } from "#tui/navigation.tsx";
+
 import { TraceHeaderRow, TraceRow } from "./trace-row.tsx";
 import type { Trace, TraceSort } from "./trace.ts";
 

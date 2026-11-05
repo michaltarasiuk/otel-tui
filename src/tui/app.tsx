@@ -1,4 +1,5 @@
-import type { ReceiverUrls } from "../receiver/receiver.ts";
+import type { ReceiverUrls } from "#receiver/receiver.ts";
+
 import { FocusScope } from "./components/focus.tsx";
 import { Footer } from "./footer.tsx";
 import { Layout } from "./layout.tsx";

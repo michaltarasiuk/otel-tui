@@ -1,10 +1,11 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { useVisible } from "../components/pane.tsx";
-import { useConnection } from "../query/connection.ts";
-import { substringPattern } from "../query/like-pattern.ts";
-import { POLL_INTERVAL_MS } from "../query/polling.ts";
+import { useVisible } from "#tui/components/pane.tsx";
+import { useConnection } from "#tui/query/connection.ts";
+import { substringPattern } from "#tui/query/like-pattern.ts";
+import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
+
 import type { HistogramRange } from "./histogram.ts";
 import { Span, SpanDetails } from "./span.ts";
 import spanDetails from "./sql/span-details.sql" with { type: "text" };

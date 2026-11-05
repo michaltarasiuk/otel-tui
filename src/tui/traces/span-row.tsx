@@ -1,9 +1,10 @@
-import { formatDuration } from "../../utils/time.ts";
-import { ServiceName } from "../components/service-name.tsx";
-import { TableRow } from "../components/table-row.tsx";
-import { HEADER_CELL_PROPS, secondaryCellColor, COLUMN_SERVICE_WIDTH } from "../theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
-import { serviceColor, THEME } from "../theme/theme.ts";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { TableRow } from "#tui/components/table-row.tsx";
+import { HEADER_CELL_PROPS, secondaryCellColor, COLUMN_SERVICE_WIDTH } from "#tui/theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
+import { serviceColor, THEME } from "#tui/theme/theme.ts";
+import { formatDuration } from "#utils/format-duration.ts";
+
 import type { Span } from "./span.ts";
 
 const COLUMN_DURATION_WIDTH = 8;

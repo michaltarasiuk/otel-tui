@@ -1,9 +1,10 @@
 import { useBindings } from "@opentui/keymap/react";
 
-import { useFocused } from "../components/focus.tsx";
-import { FIRST_HINT_PRIORITY } from "../components/key-hints.tsx";
-import { Placeholder } from "../components/placeholder.tsx";
-import { useNavigation } from "../navigation.tsx";
+import { useFocused } from "#tui/components/focus.tsx";
+import { FIRST_HINT_PRIORITY } from "#tui/components/key-hints.tsx";
+import { Placeholder } from "#tui/components/placeholder.tsx";
+import { useNavigation } from "#tui/navigation.tsx";
+
 import { SpanTable } from "./span-table.tsx";
 import { TraceHeader } from "./trace-header.tsx";
 import { useTraceSpans } from "./trace-queries.ts";

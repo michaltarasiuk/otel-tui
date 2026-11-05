@@ -4,6 +4,12 @@
   "private": true,
   "license": "MIT",
   "type": "module",
+  "imports": {
+    "#receiver/*": "./src/receiver/*",
+    "#testing/*": "./src/testing/*",
+    "#tui/*": "./src/tui/*",
+    "#utils/*": "./src/utils/*"
+  },
   "scripts": {
     "prepare": "lefthook install",
     "dev": "bun --watch src/main.ts",

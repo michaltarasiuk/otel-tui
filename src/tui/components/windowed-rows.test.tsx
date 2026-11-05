@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
-import { render, textLines } from "../../testing/render.tsx";
+import { render, textLines } from "#testing/render.tsx";
+
 import { FocusScope } from "./focus.tsx";
 import { useListState } from "./use-list-state.ts";
 import { WindowedRows } from "./windowed-rows.tsx";

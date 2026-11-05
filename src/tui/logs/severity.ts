@@ -1,6 +1,6 @@
 import type { ColorInput } from "@opentui/core";
 
-import { THEME } from "../theme/theme.ts";
+import { THEME } from "#tui/theme/theme.ts";
 
 export type SeverityLevel = (typeof SEVERITY_LEVELS)[number];
 

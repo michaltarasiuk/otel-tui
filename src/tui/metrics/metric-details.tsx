@@ -1,8 +1,9 @@
 import { useBindings } from "@opentui/keymap/react";
 
-import { useFocused } from "../components/focus.tsx";
-import { FIRST_HINT_PRIORITY } from "../components/key-hints.tsx";
-import { Placeholder } from "../components/placeholder.tsx";
+import { useFocused } from "#tui/components/focus.tsx";
+import { FIRST_HINT_PRIORITY } from "#tui/components/key-hints.tsx";
+import { Placeholder } from "#tui/components/placeholder.tsx";
+
 import { MetricHeader } from "./metric-header.tsx";
 import { useMetricSeries } from "./metric-queries.ts";
 import type { Metric } from "./metric.ts";

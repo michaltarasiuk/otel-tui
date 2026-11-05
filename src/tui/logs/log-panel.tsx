@@ -1,14 +1,15 @@
 import { TextAttributes } from "@opentui/core";
 
-import { prettyPrintJson } from "../../utils/text.ts";
-import { formatTime } from "../../utils/time.ts";
-import { EntryList } from "../components/entry-list.tsx";
-import { Panel, PanelBody } from "../components/panel.tsx";
-import { ScopeSection, Section } from "../components/section.tsx";
-import { ServiceName } from "../components/service-name.tsx";
-import { COLUMN_GAP } from "../theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "../theme/flex.ts";
-import { THEME } from "../theme/theme.ts";
+import { EntryList } from "#tui/components/entry-list.tsx";
+import { Panel, PanelBody } from "#tui/components/panel.tsx";
+import { ScopeSection, Section } from "#tui/components/section.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { COLUMN_GAP } from "#tui/theme/columns.ts";
+import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatJson } from "#utils/format-json.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity.ts";
 
@@ -41,7 +42,7 @@ export function LogPanel({ log }: LogPanelProps) {
           )}
           {log.time !== null && (
             <text fg={THEME.textMuted} flexShrink={0}>
-              {formatTime(log.time)}
+              {formatTimeOfDay(log.time)}
             </text>
           )}
           {log.event_name !== null && (
@@ -59,7 +60,7 @@ export function LogPanel({ log }: LogPanelProps) {
       <PanelBody contentKey={log.log_id}>
         {log.body !== null && (
           <Section title="Body">
-            <text fg={THEME.text}>{prettyPrintJson(log.body)}</text>
+            <text fg={THEME.text}>{formatJson(log.body)}</text>
           </Section>
         )}
         {log.attributes.length > 0 && (

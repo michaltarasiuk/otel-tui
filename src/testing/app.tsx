@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
-import { QUERY_CLIENT_CONFIG, TuiRoot, waitForInFlightQueries } from "../tui/tui.tsx";
+import { QUERY_CLIENT_CONFIG, TuiRoot, waitForInFlightQueries } from "#tui/tui.tsx";
+
 import type { TestReceiver } from "./receiver.ts";
 import { render } from "./render.tsx";
 

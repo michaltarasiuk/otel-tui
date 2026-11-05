@@ -1,7 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { render } from "../../testing/render.tsx";
-import { collapseWhitespace } from "../../utils/text.ts";
+import { render } from "#testing/render.tsx";
+import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+
 import { BucketBars } from "./bucket-bars.tsx";
 import { type Distribution, explicitBuckets, exponentialBuckets } from "./distribution.ts";
 

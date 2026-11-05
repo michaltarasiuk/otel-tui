@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { Timestamp } from "../query/timestamp.ts";
+import { Timestamp } from "#tui/query/timestamp.ts";
 
 const METRIC_TYPES = [
   "gauge",

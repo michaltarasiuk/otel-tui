@@ -1,9 +1,11 @@
 import { RGBA } from "@opentui/core";
 
-import { formatTime } from "../../utils/time.ts";
-import { Section } from "../components/section.tsx";
-import { COLUMN_GAP } from "../theme/columns.ts";
-import { THEME } from "../theme/theme.ts";
+import { Section } from "#tui/components/section.tsx";
+import { COLUMN_GAP } from "#tui/theme/columns.ts";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { MINUTE_MS } from "#utils/time-units.ts";
+
 import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./chart-lines.ts";
 import { counterIntervals, distributionIntervals } from "./intervals.ts";
 import { LineChart } from "./line-chart.tsx";
@@ -16,7 +18,7 @@ import type { NumberPoint, Series, SeriesPoints } from "./series.ts";
 const CHART_HEIGHT = 8;
 const CHART_TIME_AXIS_HEIGHT = 1;
 
-const MIN_WINDOW_MS = 60 * 1000;
+const MIN_WINDOW_MS = MINUTE_MS;
 
 const black = RGBA.fromHex("#000000");
 const white = RGBA.fromHex("#FFFFFF");
@@ -130,7 +132,7 @@ export function SeriesChart({ metric, series, color, windowStart }: SeriesChartP
       <LineChart
         height={CHART_HEIGHT}
         includeZero={metric.type !== "gauge" && metric.type !== "updowncounter"}
-        startLabel={formatTime(start)}
+        startLabel={formatTimeOfDay(start)}
         endLabel="now"
         formatValue={(value) =>
           metric.type === "counter"

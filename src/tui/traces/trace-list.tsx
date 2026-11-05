@@ -2,13 +2,14 @@ import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { useRef, useState } from "react";
 
-import { cycle } from "../../utils/cycle.ts";
-import { formatShownCount } from "../../utils/text.ts";
-import { FilterBar } from "../components/filter-bar.tsx";
-import { FocusScope, useFocused } from "../components/focus.tsx";
-import { Placeholder } from "../components/placeholder.tsx";
-import { useSearch } from "../components/use-search.ts";
-import { THEME } from "../theme/theme.ts";
+import { FilterBar } from "#tui/components/filter-bar.tsx";
+import { FocusScope, useFocused } from "#tui/components/focus.tsx";
+import { Placeholder } from "#tui/components/placeholder.tsx";
+import { useSearch } from "#tui/components/use-search.ts";
+import { THEME } from "#tui/theme/theme.ts";
+import { formatShownCount } from "#utils/format-shown-count.ts";
+import { nextItem } from "#utils/next-item.ts";
+
 import { type HistogramRange, stepSelection } from "./histogram.ts";
 import { timeRangeLabel } from "./time-histogram.ts";
 import { HISTOGRAM_HEIGHT, TraceHistogram } from "./trace-histogram.tsx";
@@ -94,7 +95,7 @@ export function TraceList() {
           enabled: !search.isEditing,
           run() {
             setSort((sort) => ({
-              column: cycle(TRACE_SORT_COLUMNS, sort.column, 1),
+              column: nextItem(TRACE_SORT_COLUMNS, sort.column),
               descending: true,
             }));
           },

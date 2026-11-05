@@ -1,6 +1,6 @@
 import { TextAttributes } from "@opentui/core";
 
-import { THEME } from "../theme/theme.ts";
+import { THEME } from "#tui/theme/theme.ts";
 
 interface SectionProps {
   title: string;

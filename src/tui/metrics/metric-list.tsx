@@ -1,12 +1,13 @@
 import { useBindings } from "@opentui/keymap/react";
 import { useState } from "react";
 
-import { cycle } from "../../utils/cycle.ts";
-import { formatShownCount } from "../../utils/text.ts";
-import { FilterBar } from "../components/filter-bar.tsx";
-import { FocusScope, useFocused } from "../components/focus.tsx";
-import { Placeholder } from "../components/placeholder.tsx";
-import { useSearch } from "../components/use-search.ts";
+import { FilterBar } from "#tui/components/filter-bar.tsx";
+import { FocusScope, useFocused } from "#tui/components/focus.tsx";
+import { Placeholder } from "#tui/components/placeholder.tsx";
+import { useSearch } from "#tui/components/use-search.ts";
+import { formatShownCount } from "#utils/format-shown-count.ts";
+import { nextItem } from "#utils/next-item.ts";
+
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
 import {
@@ -28,7 +29,7 @@ const DESCENDING_FIRST = {
 } satisfies Record<MetricSortColumn, boolean>;
 
 function nextSort(column: MetricSortColumn) {
-  const next = cycle(METRIC_SORT_COLUMNS, column, 1);
+  const next = nextItem(METRIC_SORT_COLUMNS, column);
   return { column: next, descending: DESCENDING_FIRST[next] };
 }
 

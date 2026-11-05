@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-import { Attributes } from "../query/attributes.ts";
-import { Timestamp } from "../query/timestamp.ts";
+import { Attributes } from "#tui/query/attributes.ts";
+import { Timestamp } from "#tui/query/timestamp.ts";
+
 import { type Distribution, explicitBuckets, exponentialBuckets } from "./distribution.ts";
 
 const IndexedCounts = z

@@ -1,5 +1,6 @@
-import { Pane } from "../components/pane.tsx";
-import { useNavigation } from "../navigation.tsx";
+import { Pane } from "#tui/components/pane.tsx";
+import { useNavigation } from "#tui/navigation.tsx";
+
 import { TraceDetails } from "./trace-details.tsx";
 import { TraceList } from "./trace-list.tsx";
 
