@@ -103,9 +103,9 @@ export function textLines(frame: string) {
 }
 
 export function panelLines(frame: string) {
-  const lines = textLines(frame.replace(SCROLLBAR_CHARACTERS, ""));
+  const lines = textLines(frame.replaceAll(SCROLLBAR_CHARACTERS, ""));
   const border = lines.findIndex((line) => line.startsWith("─"));
-  return lines.slice(border + 1, -FOOTER_LINES);
+  return border === -1 ? [] : lines.slice(border + 1, -FOOTER_LINES);
 }
 
 function createDiagnosedKeymap(renderer: CliRenderer) {
