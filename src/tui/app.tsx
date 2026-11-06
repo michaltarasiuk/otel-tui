@@ -7,9 +7,15 @@ import { LogsView } from "./logs/logs-view.tsx";
 import { MetricsView } from "./metrics/metrics-view.tsx";
 import { NavigationProvider } from "./navigation.tsx";
 import { ReceiverStatus } from "./receiver-status.tsx";
-import { TabPane, Tabs } from "./tabs.tsx";
+import { type TabOption, TabPane, Tabs } from "./tabs.tsx";
 import { TracesView } from "./traces/traces-view.tsx";
 import { useRegion } from "./use-region.ts";
+
+const TABS = [
+  { name: "Traces", description: "", value: "traces" },
+  { name: "Metrics", description: "", value: "metrics" },
+  { name: "Logs", description: "", value: "logs" },
+] as const satisfies TabOption[];
 
 interface AppProps {
   receiverUrls: ReceiverUrls;
@@ -23,7 +29,7 @@ export function App({ receiverUrls }: AppProps) {
       <AppLayout>
         <AppHeader>
           <FocusScope focused={region === "tabs"}>
-            <Tabs />
+            <Tabs tabs={TABS} />
           </FocusScope>
           <ReceiverStatus receiverUrls={receiverUrls} />
         </AppHeader>

@@ -1,6 +1,6 @@
 import { createContext, use, useState } from "react";
 
-import type { Tab } from "./tabs.tsx";
+export type Tab = "traces" | "metrics" | "logs";
 
 interface OpenTrace {
   traceId: string;
@@ -34,11 +34,17 @@ const START_HISTORY: History = {
 };
 
 function replace({ location, previous }: History, change: Partial<Location>): History {
-  return { location: { ...location, ...change }, previous };
+  return {
+    location: { ...location, ...change },
+    previous,
+  };
 }
 
 function push({ location, previous }: History, change: Partial<Location>): History {
-  return { location: { ...location, ...change }, previous: [...previous, location] };
+  return {
+    location: { ...location, ...change },
+    previous: [...previous, location],
+  };
 }
 
 function pop(history: History): History {
@@ -46,14 +52,20 @@ function pop(history: History): History {
   if (location === undefined) {
     return history;
   }
-  return { location, previous: history.previous.slice(0, -1) };
+  return {
+    location,
+    previous: history.previous.slice(0, -1),
+  };
 }
 
 function switchTab(history: History, tab: Tab): History {
   if (tab === history.location.tab) {
     return history;
   }
-  return { location: { ...history.location, tab }, previous: [] };
+  return {
+    location: { ...history.location, tab },
+    previous: [],
+  };
 }
 
 const NavigationContext = createContext<Navigation | undefined>(undefined);
