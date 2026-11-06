@@ -98,9 +98,8 @@ test("colors each line's dots", async () => {
     { color: "#0000FF", values: [null, null, null, null, null, null, 0, 0, 0, 0] },
   ]);
 
-  const dotColors = chart
-    .captureSpans()
-    .lines.flatMap(({ spans }) => spans.filter((span) => CHART_DOTS.test(span.text)))
+  const dotColors = (await chart.captureSpans()).lines
+    .flatMap(({ spans }) => spans.filter((span) => CHART_DOTS.test(span.text)))
     .map((span) => span.fg);
 
   expect(dotColors).toEqual([RGBA.fromHex("#FF0000"), RGBA.fromHex("#0000FF")]);

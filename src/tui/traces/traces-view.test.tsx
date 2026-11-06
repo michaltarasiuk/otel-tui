@@ -427,10 +427,10 @@ function axisLine(frame: string) {
   return textLines(frame)[7];
 }
 
-function barSpans(app: HistogramApp) {
-  const barRow = app
-    .captureSpans()
-    .lines.find(({ spans }) => spans.some((span) => span.text.includes("█")));
+async function barSpans(app: HistogramApp) {
+  const barRow = (await app.captureSpans()).lines.find(({ spans }) =>
+    spans.some((span) => span.text.includes("█")),
+  );
   return (barRow?.spans ?? []).filter((span) => span.text.includes("█"));
 }
 
@@ -453,7 +453,7 @@ test("colors the histogram's errors apart from the other traces", async () => {
   await using app = await renderHistogram(receiver);
   await app.waitForFrame((frame) => frame.includes("Traces over time"));
 
-  expect(barSpans(app).map((span) => span.fg.toInts())).toEqual(
+  expect((await barSpans(app)).map((span) => span.fg.toInts())).toEqual(
     [THEME.bar, THEME.textError, THEME.bar].map((hex) => RGBA.fromHex(hex).toInts()),
   );
 });
@@ -532,11 +532,9 @@ test("highlights the selected bucket's column", async () => {
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
 
-  const highlighted = app
-    .captureSpans()
-    .lines.filter(({ spans }) =>
-      spans.some((span) => span.bg.equals(RGBA.fromHex(THEME.backgroundSelected))),
-    );
+  const highlighted = (await app.captureSpans()).lines.filter(({ spans }) =>
+    spans.some((span) => span.bg.equals(RGBA.fromHex(THEME.backgroundSelected))),
+  );
   expect(highlighted).toHaveLength(4 + 1);
 });
 
@@ -612,7 +610,7 @@ test("draws each span's bar inside its parent's bar", async () => {
   await using app = await openTrace(receiver, CART_ROW);
   await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
 
-  const frame = app.captureSpans();
+  const frame = await app.captureSpans();
   const root = barExtent(frame, "GET /api/cart", serviceColor("frontend"));
   const child = barExtent(frame, "POST /oteldemo", serviceColor("cart"));
   const grandchild = barExtent(frame, "valkey-cart:6379", serviceColor("cart"));

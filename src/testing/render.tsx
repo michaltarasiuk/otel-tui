@@ -44,12 +44,20 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
   const root = createRoot(setup.renderer);
   root.render(<KeymapProvider keymap={keymap}>{node}</KeymapProvider>);
 
-  async function waitUntil<T>(capture: () => T | undefined, matches: (captured: T) => boolean) {
+  async function captureSpans() {
+    await setup.renderer.idle();
+    return setup.captureSpans();
+  }
+
+  async function waitUntil<T>(
+    capture: () => T | undefined | Promise<T | undefined>,
+    matches: (captured: T) => boolean,
+  ) {
     const deadline = performance.now() + WAIT_TIMEOUT_MS;
 
     while (performance.now() < deadline) {
       await setup.renderOnce();
-      const captured = capture();
+      const captured = await capture();
       if (captured !== undefined && matches(captured)) {
         await Bun.sleep(WAIT_FOR_KEY_BINDINGS_MS);
         return captured;
@@ -68,7 +76,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
 
   async function waitForSelection(text: string, { line }: SelectionOptions = {}) {
     const selected = await waitUntil(
-      () => firstSelectedLine(setup.captureSpans()),
+      async () => firstSelectedLine(await captureSpans()),
       (selected) => selected.text.includes(text) && (line === undefined || selected.line === line),
     );
     return selected.text;
@@ -78,7 +86,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     mockInput: setup.mockInput,
     mockMouse: setup.mockMouse,
     resize: setup.resize,
-    captureSpans: setup.captureSpans,
+    captureSpans,
     waitForFrame,
     waitForSelection,
     async [Symbol.asyncDispose]() {

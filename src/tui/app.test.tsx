@@ -56,7 +56,7 @@ test("starts on the traces tab with the tab bar focused", async () => {
   await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
 
   expect(await app.waitForSelection("Traces")).toStartWith("Traces Metrics Logs ");
-  expect(tabStyles(app.captureSpans())).toEqual({
+  expect(tabStyles(await app.captureSpans())).toEqual({
     Traces: { highlighted: true, fg: "text" },
     Metrics: { highlighted: false, fg: "muted" },
     Logs: { highlighted: false, fg: "muted" },
@@ -70,7 +70,7 @@ test("switches tabs with the arrow keys while the tab bar is focused", async () 
 
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
-  expect(tabStyles(app.captureSpans())).toMatchObject({
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
     Metrics: { highlighted: true, fg: "text" },
   });
 
@@ -91,13 +91,13 @@ test("moves focus between the tab bar and the view with tab and shift+tab", asyn
 
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));
-  expect(tabStyles(app.captureSpans())).toMatchObject({
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: false, fg: "text" },
   });
 
   app.mockInput.pressTab({ shift: true });
   await app.waitForFrame((frame) => !frame.includes("/ search"));
-  expect(tabStyles(app.captureSpans())).toMatchObject({
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: true, fg: "text" },
   });
 });
@@ -114,7 +114,7 @@ test("keeps showing the current tab while the view has focus", async () => {
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));
 
-  expect(tabStyles(app.captureSpans())).toEqual({
+  expect(tabStyles(await app.captureSpans())).toEqual({
     Traces: { highlighted: false, fg: "muted" },
     Metrics: { highlighted: false, fg: "muted" },
     Logs: { highlighted: false, fg: "text" },
@@ -262,7 +262,7 @@ test("follows to the traces tab when a log opens its trace", async () => {
   app.mockInput.pressEnter();
 
   await app.waitForFrame((frame) => frame.includes("1 span"));
-  expect(tabStyles(app.captureSpans())).toEqual({
+  expect(tabStyles(await app.captureSpans())).toEqual({
     Traces: { highlighted: false, fg: "text" },
     Metrics: { highlighted: false, fg: "muted" },
     Logs: { highlighted: false, fg: "muted" },
@@ -316,7 +316,7 @@ test("forgets where a trace was opened from after switching tabs", async () => {
   app.mockInput.pressEscape();
 
   await app.waitForFrame((frame) => frame.includes("1 trace"));
-  expect(tabStyles(app.captureSpans())).toMatchObject({
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: false, fg: "text" },
   });
 });
