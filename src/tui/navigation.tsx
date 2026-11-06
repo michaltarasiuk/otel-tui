@@ -2,10 +2,14 @@ import { createContext, use, useState } from "react";
 
 import type { Tab } from "./tabs.tsx";
 
+interface OpenTrace {
+  traceId: string;
+  spanId: string | undefined;
+}
+
 interface Location {
   tab: Tab;
-  openTraceId: string | undefined;
-  openSpanId: string | undefined;
+  trace: OpenTrace | undefined;
   logsTraceId: string | undefined;
 }
 
@@ -24,25 +28,20 @@ interface Navigation extends Location {
   goBack: () => void;
 }
 
-const CLOSED_TRACE = {
-  openTraceId: undefined,
-  openSpanId: undefined,
-};
-
 const START_HISTORY: History = {
-  location: { tab: "traces", ...CLOSED_TRACE, logsTraceId: undefined },
+  location: { tab: "traces", trace: undefined, logsTraceId: undefined },
   previous: [],
 };
 
-function replace({ location, previous }: History, change: Partial<Location>) {
+function replace({ location, previous }: History, change: Partial<Location>): History {
   return { location: { ...location, ...change }, previous };
 }
 
-function push({ location, previous }: History, change: Partial<Location>) {
+function push({ location, previous }: History, change: Partial<Location>): History {
   return { location: { ...location, ...change }, previous: [...previous, location] };
 }
 
-function pop(history: History) {
+function pop(history: History): History {
   const location = history.previous.at(-1);
   if (location === undefined) {
     return history;
@@ -50,7 +49,7 @@ function pop(history: History) {
   return { location, previous: history.previous.slice(0, -1) };
 }
 
-function switchTab(history: History, tab: Tab) {
+function switchTab(history: History, tab: Tab): History {
   if (tab === history.location.tab) {
     return history;
   }
@@ -74,11 +73,11 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         setTab(tab) {
           setHistory((history) => switchTab(history, tab));
         },
-        openTrace(openTraceId, openSpanId) {
-          setHistory((history) => push(history, { tab: "traces", openTraceId, openSpanId }));
+        openTrace(traceId, spanId) {
+          setHistory((history) => push(history, { tab: "traces", trace: { traceId, spanId } }));
         },
         closeTrace() {
-          setHistory((history) => replace(history, CLOSED_TRACE));
+          setHistory((history) => replace(history, { trace: undefined }));
         },
         openLogs(traceId) {
           setHistory((history) => push(history, { tab: "logs", logsTraceId: traceId }));

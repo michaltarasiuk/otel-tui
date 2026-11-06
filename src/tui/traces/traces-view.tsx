@@ -5,15 +5,15 @@ import { TraceDetails } from "./trace-details.tsx";
 import { TraceList } from "./trace-list.tsx";
 
 export function TracesView() {
-  const { openTraceId, openSpanId } = useNavigation();
+  const { trace } = useNavigation();
 
   return (
     <>
-      <Pane visible={openTraceId === undefined}>
+      <Pane visible={trace === undefined}>
         <TraceList />
       </Pane>
-      {openTraceId !== undefined && (
-        <TraceDetails key={openTraceId} traceId={openTraceId} initialSpanId={openSpanId} />
+      {trace !== undefined && (
+        <TraceDetails key={trace.traceId} traceId={trace.traceId} initialSpanId={trace.spanId} />
       )}
     </>
   );
