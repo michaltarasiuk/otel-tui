@@ -19,8 +19,11 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 - Traces: the trace list works today, and `return` opens a trace as a span
   waterfall with each span's events, attributes, links, and resource, and
   `l` there opens the trace's logs. `e` jumps to the next trace or span
-  with errors, and `s` shows only traces with errors. A histogram above the list charts the traces over time in
-  10-second columns, with the errors in red, so a spike or a gap stands out.
+  with errors, and `s` shows only traces with errors. `o` sorts by start
+  time, span count, error count, or duration, `shift+o` reverses the order,
+  and `/` searches trace IDs, span names, and services. A histogram above the
+  list charts the traces over time in 10-second columns, with the errors in
+  red, so a spike or a gap stands out.
   `←` or `→` marks the latest column with traces and narrows the list to it;
   they then move the mark to the previous or next column with traces,
   scrolling the chart along, and `escape` clears it.
@@ -29,8 +32,8 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
   blows up cardinality stands out. `return` opens a metric's series with
   their rates, last values, or percentiles, plus the selected series' chart,
   histogram buckets, and exemplars. `o` sorts by name, series count, or last
-  update, and `/` searches names, descriptions, services, and attributes. A
-  time brush is planned.
+  update, `shift+o` reverses the order, and `/` searches names, descriptions,
+  services, and attributes. A time brush is planned.
 - Logs: the log table works today, with a panel for the selected log's body,
   attributes, resource, and trace ID. `e` jumps to the next error, `return`
   opens the selected log's trace (`escape` there comes back to the log), `t`
