@@ -6,7 +6,7 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
 ![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-view.png)
 
-![Trace details with a span waterfall and the selected span's attributes, resource, and scope](docs/trace-details.png)
+![Trace details with a span waterfall and the selected span's attributes](docs/trace-details.png)
 
 ![Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource](docs/metrics-list.png)
 
