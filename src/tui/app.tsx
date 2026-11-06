@@ -8,7 +8,7 @@ import { NavigationProvider } from "./navigation.tsx";
 import { ReceiverStatus } from "./receiver-status.tsx";
 import { type TabOption, TabPane, Tabs } from "./tabs.tsx";
 import { TracesView } from "./traces/traces-view.tsx";
-import { useRegion } from "./use-region.ts";
+import { useFocusedRegion } from "./use-focused-region.ts";
 import { WindowContent, WindowFooter, WindowHeader, Window } from "./window.tsx";
 
 const TABS = [
@@ -22,20 +22,20 @@ interface AppProps {
 }
 
 export function App({ receiverUrls }: AppProps) {
-  const region = useRegion();
+  const focusedRegion = useFocusedRegion();
 
   return (
     <NavigationProvider>
       <Window>
         <WindowHeader>
-          <FocusScope focused={region === "tabs"}>
+          <FocusScope focused={focusedRegion === "tabs"}>
             <Tabs tabs={TABS} />
           </FocusScope>
           <ReceiverStatus receiverUrls={receiverUrls} />
         </WindowHeader>
 
         <WindowContent>
-          <FocusScope focused={region === "content"}>
+          <FocusScope focused={focusedRegion === "content"}>
             <TabPane tab="traces">
               <TracesView />
             </TabPane>

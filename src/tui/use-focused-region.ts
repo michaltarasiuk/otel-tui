@@ -7,28 +7,28 @@ import { previousItem } from "#utils/previous-item.ts";
 const REGIONS = ["tabs", "content"] as const;
 type Region = (typeof REGIONS)[number];
 
-export function useRegion() {
+export function useFocusedRegion() {
   const [region, setRegion] = useState<Region>("tabs");
 
   useBindings(() => ({
     commands: [
       {
-        name: "focus.next",
+        name: "region.next",
         desc: "next region",
         run() {
           setRegion((region) => nextItem(REGIONS, region));
         },
       },
       {
-        name: "focus.previous",
+        name: "region.previous",
         run() {
           setRegion((region) => previousItem(REGIONS, region));
         },
       },
     ],
     bindings: [
-      { key: "tab", cmd: "focus.next" },
-      { key: "shift+tab", cmd: "focus.previous" },
+      { key: "tab", cmd: "region.next" },
+      { key: "shift+tab", cmd: "region.previous" },
     ],
   }));
 
