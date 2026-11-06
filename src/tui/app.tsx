@@ -2,7 +2,6 @@ import type { ReceiverUrls } from "#receiver/receiver.ts";
 
 import { FocusScope } from "./components/focus.tsx";
 import { KeyHints } from "./components/key-hints.tsx";
-import { AppContent, AppFooter, AppHeader, AppLayout } from "./layout.tsx";
 import { LogsView } from "./logs/logs-view.tsx";
 import { MetricsView } from "./metrics/metrics-view.tsx";
 import { NavigationProvider } from "./navigation.tsx";
@@ -10,6 +9,7 @@ import { ReceiverStatus } from "./receiver-status.tsx";
 import { type TabOption, TabPane, Tabs } from "./tabs.tsx";
 import { TracesView } from "./traces/traces-view.tsx";
 import { useRegion } from "./use-region.ts";
+import { WindowContent, WindowFooter, WindowHeader, Window } from "./window.tsx";
 
 const TABS = [
   { name: "Traces", description: "", value: "traces" },
@@ -26,15 +26,15 @@ export function App({ receiverUrls }: AppProps) {
 
   return (
     <NavigationProvider>
-      <AppLayout>
-        <AppHeader>
+      <Window>
+        <WindowHeader>
           <FocusScope focused={region === "tabs"}>
             <Tabs tabs={TABS} />
           </FocusScope>
           <ReceiverStatus receiverUrls={receiverUrls} />
-        </AppHeader>
+        </WindowHeader>
 
-        <AppContent>
+        <WindowContent>
           <FocusScope focused={region === "content"}>
             <TabPane tab="traces">
               <TracesView />
@@ -46,12 +46,12 @@ export function App({ receiverUrls }: AppProps) {
               <LogsView />
             </TabPane>
           </FocusScope>
-        </AppContent>
+        </WindowContent>
 
-        <AppFooter>
+        <WindowFooter>
           <KeyHints />
-        </AppFooter>
-      </AppLayout>
+        </WindowFooter>
+      </Window>
     </NavigationProvider>
   );
 }
