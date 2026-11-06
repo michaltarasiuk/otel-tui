@@ -13,7 +13,6 @@ import {
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
 import { App } from "./app.tsx";
-import { NavigationProvider } from "./navigation.tsx";
 import { ConnectionContext } from "./query/connection.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
@@ -43,20 +42,16 @@ export async function waitForInFlightQueries(queryClient: QueryClient) {
   await Promise.allSettled(promises);
 }
 
-interface TuiRootProps {
+interface QueryProviderProps {
   queryClient: QueryClient;
   connection: DuckDBConnection;
-  receiverUrls: ReceiverUrls;
+  children: React.ReactNode;
 }
 
-export function TuiRoot({ queryClient, connection, receiverUrls }: TuiRootProps) {
+export function QueryProvider({ queryClient, connection, children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ConnectionContext value={connection}>
-        <NavigationProvider>
-          <App receiverUrls={receiverUrls} />
-        </NavigationProvider>
-      </ConnectionContext>
+      <ConnectionContext value={connection}>{children}</ConnectionContext>
     </QueryClientProvider>
   );
 }
@@ -80,7 +75,9 @@ export async function startTui({ connection, receiverUrls }: TuiOptions) {
 
   createRoot(renderer).render(
     <KeymapProvider keymap={keymap}>
-      <TuiRoot queryClient={queryClient} connection={connection} receiverUrls={receiverUrls} />
+      <QueryProvider queryClient={queryClient} connection={connection}>
+        <App receiverUrls={receiverUrls} />
+      </QueryProvider>
     </KeymapProvider>,
   );
 
