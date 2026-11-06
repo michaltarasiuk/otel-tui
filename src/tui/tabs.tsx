@@ -2,6 +2,7 @@ import type { TabSelectOption, TabSelectRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
 
 import { useFocused } from "./components/focus.tsx";
+import { Pane } from "./components/pane.tsx";
 import { useNavigation } from "./navigation.tsx";
 import { THEME } from "./theme/theme.ts";
 
@@ -22,8 +23,11 @@ export function Tabs() {
   const tabsRef = useRef<TabSelectRenderable>(null);
 
   useEffect(() => {
+    if (tabsRef.current === null) {
+      return;
+    }
     const selectedIndex = TABS.findIndex((option) => option.value === tab);
-    tabsRef.current?.setSelectedIndex(selectedIndex);
+    tabsRef.current.setSelectedIndex(selectedIndex);
   }, [tab]);
 
   return (
@@ -47,4 +51,15 @@ export function Tabs() {
       }}
     />
   );
+}
+
+interface TabPaneProps {
+  tab: Tab;
+  children: React.ReactNode;
+}
+
+export function TabPane({ tab, children }: TabPaneProps) {
+  const navigation = useNavigation();
+
+  return <Pane visible={navigation.tab === tab}>{children}</Pane>;
 }

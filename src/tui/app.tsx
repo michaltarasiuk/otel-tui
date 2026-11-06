@@ -1,12 +1,13 @@
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
 import { FocusScope } from "./components/focus.tsx";
-import { Footer } from "./footer.tsx";
-import { Layout } from "./layout.tsx";
+import { KeyHints } from "./components/key-hints.tsx";
+import { AppContent, AppFooter, AppHeader, AppLayout } from "./layout.tsx";
+import { LogsView } from "./logs/logs-view.tsx";
+import { MetricsView } from "./metrics/metrics-view.tsx";
 import { ReceiverStatus } from "./receiver-status.tsx";
-import { TabView } from "./tab-view.tsx";
-import { Tabs } from "./tabs.tsx";
-import { COLUMN_GAP } from "./theme/columns.ts";
+import { TabPane, Tabs } from "./tabs.tsx";
+import { TracesView } from "./traces/traces-view.tsx";
 import { useRegion } from "./use-region.ts";
 
 interface AppProps {
@@ -17,20 +18,31 @@ export function App({ receiverUrls }: AppProps) {
   const region = useRegion();
 
   return (
-    <Layout
-      tabs={
-        <box flexDirection="row" justifyContent="space-between" gap={COLUMN_GAP} paddingRight={1}>
-          <FocusScope focused={region === "tabs"}>
-            <Tabs />
-          </FocusScope>
-          <ReceiverStatus receiverUrls={receiverUrls} />
-        </box>
-      }
-      footer={<Footer />}
-    >
-      <FocusScope focused={region === "content"}>
-        <TabView />
-      </FocusScope>
-    </Layout>
+    <AppLayout>
+      <AppHeader>
+        <FocusScope focused={region === "tabs"}>
+          <Tabs />
+        </FocusScope>
+        <ReceiverStatus receiverUrls={receiverUrls} />
+      </AppHeader>
+
+      <AppContent>
+        <FocusScope focused={region === "content"}>
+          <TabPane tab="traces">
+            <TracesView />
+          </TabPane>
+          <TabPane tab="metrics">
+            <MetricsView />
+          </TabPane>
+          <TabPane tab="logs">
+            <LogsView />
+          </TabPane>
+        </FocusScope>
+      </AppContent>
+
+      <AppFooter>
+        <KeyHints />
+      </AppFooter>
+    </AppLayout>
   );
 }
