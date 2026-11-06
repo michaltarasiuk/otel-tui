@@ -4,9 +4,8 @@ import { useState } from "react";
 import { nextItem } from "#utils/next-item.ts";
 import { previousItem } from "#utils/previous-item.ts";
 
-type Region = (typeof REGIONS)[number];
-
 const REGIONS = ["tabs", "content"] as const;
+type Region = (typeof REGIONS)[number];
 
 export function useRegion() {
   const [region, setRegion] = useState<Region>("tabs");

@@ -50,5 +50,4 @@ export async function startTestReceiver({
     [Symbol.asyncDispose]: () => receiver[Symbol.asyncDispose](),
   };
 }
-
 export type TestReceiver = Awaited<ReturnType<typeof startTestReceiver>>;

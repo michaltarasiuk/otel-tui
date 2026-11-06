@@ -123,7 +123,6 @@ export const ExponentialHistogramSeries = SeriesIdentity.extend({
     distribution,
   })),
 });
-
 export type Series =
   | z.infer<typeof NumberSeries>
   | z.infer<typeof HistogramSeries>

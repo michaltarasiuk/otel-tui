@@ -415,7 +415,6 @@ async function renderHistogram(
   await app.waitForFrame((frame) => frame.includes("/ search"));
   return app;
 }
-
 type HistogramApp = Awaited<ReturnType<typeof renderHistogram>>;
 
 async function showsOnly(app: HistogramApp, row: string, range: string, totalCount = 3) {

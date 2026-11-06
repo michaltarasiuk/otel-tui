@@ -2,9 +2,8 @@ import type { ColorInput } from "@opentui/core";
 
 import { THEME } from "#tui/theme/theme.ts";
 
-export type SeverityLevel = (typeof SEVERITY_LEVELS)[number];
-
 const SEVERITY_LEVELS = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
+export type SeverityLevel = (typeof SEVERITY_LEVELS)[number];
 
 const SEVERITY_NUMBERS_PER_LEVEL = 4;
 

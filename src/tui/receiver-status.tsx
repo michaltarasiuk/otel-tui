@@ -14,8 +14,9 @@ const ReceiverCounters = z.object({
   total_rows: z.number(),
   last_received_age_ms: z.number().nullable(),
 });
+type ReceiverCounters = z.infer<typeof ReceiverCounters>;
 
-function formatReceived({ total_rows, last_received_age_ms }: z.infer<typeof ReceiverCounters>) {
+function formatReceived({ total_rows, last_received_age_ms }: ReceiverCounters) {
   if (total_rows === 0) {
     return "nothing received yet";
   }

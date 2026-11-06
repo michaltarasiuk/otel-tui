@@ -6,13 +6,12 @@ import { Pane } from "./components/pane.tsx";
 import { useNavigation } from "./navigation.tsx";
 import { THEME } from "./theme/theme.ts";
 
-export type Tab = (typeof TABS)[number]["value"];
-
 const TABS = [
   { name: "Traces", description: "", value: "traces" },
   { name: "Metrics", description: "", value: "metrics" },
   { name: "Logs", description: "", value: "logs" },
 ] as const satisfies TabSelectOption[];
+export type Tab = (typeof TABS)[number]["value"];
 
 const TAB_WIDTH = 12;
 
