@@ -2,14 +2,14 @@ import { createContext, use, useState } from "react";
 
 export type Tab = "traces" | "metrics" | "logs";
 
-interface OpenTrace {
+interface TraceLocation {
   traceId: string;
   spanId: string | undefined;
 }
 
 interface Location {
   tab: Tab;
-  trace: OpenTrace | undefined;
+  trace: TraceLocation | undefined;
   logsTraceId: string | undefined;
 }
 
