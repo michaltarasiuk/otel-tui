@@ -5,7 +5,6 @@ import { Panel, PanelBody } from "#tui/components/panel.tsx";
 import { ScopeSection, Section } from "#tui/components/section.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatJson } from "#utils/format-json.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
@@ -23,13 +22,7 @@ export function LogPanel({ log }: LogPanelProps) {
   return (
     <Panel>
       <box flexDirection="row" gap={COLUMN_GAP}>
-        <box
-          flexGrow={1}
-          flexBasis={IGNORE_CONTENT_SIZE}
-          flexDirection="row"
-          gap={COLUMN_GAP}
-          overflow="hidden"
-        >
+        <box flexGrow={1} flexBasis={0} flexDirection="row" gap={COLUMN_GAP} overflow="hidden">
           {severityLabel !== null && (
             <text fg={severityColor(log.severity)} attributes={TextAttributes.BOLD} flexShrink={0}>
               {severityLabel}

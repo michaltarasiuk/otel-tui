@@ -2,7 +2,6 @@ import type { ScrollBoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { useRef } from "react";
 
-import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
 import { useFocused } from "./focus.tsx";
@@ -17,13 +16,7 @@ interface PanelProps {
 
 export function Panel({ children }: PanelProps) {
   return (
-    <box
-      flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
-      border={["top"]}
-      borderColor={THEME.textMuted}
-      paddingX={1}
-    >
+    <box flexGrow={1} flexBasis={0} border={["top"]} borderColor={THEME.textMuted} paddingX={1}>
       {children}
     </box>
   );
@@ -70,7 +63,7 @@ export function PanelBody({ contentKey, children }: PanelBodyProps) {
       key={contentKey}
       ref={bodyRef}
       flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
+      flexBasis={0}
       scrollbarOptions={{ showArrows: false }}
       contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
     >

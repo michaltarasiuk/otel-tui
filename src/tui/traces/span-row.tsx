@@ -1,7 +1,6 @@
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { TableRow } from "#tui/components/table-row.tsx";
 import { HEADER_CELL_PROPS, secondaryCellColor, COLUMN_SERVICE_WIDTH } from "#tui/theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 
@@ -32,7 +31,7 @@ export function SpanHeaderRow({ traceDurationMs }: SpanHeaderRowProps) {
       <text {...HEADER_CELL_PROPS} width={COLUMN_SERVICE_WIDTH}>
         Service
       </text>
-      <text {...HEADER_CELL_PROPS} flexGrow={COLUMN_NAME_GROW} flexBasis={IGNORE_CONTENT_SIZE}>
+      <text {...HEADER_CELL_PROPS} flexGrow={COLUMN_NAME_GROW} flexBasis={0}>
         Name
       </text>
       <text {...HEADER_CELL_PROPS} width={COLUMN_DURATION_WIDTH} textAlign="right">
@@ -42,7 +41,7 @@ export function SpanHeaderRow({ traceDurationMs }: SpanHeaderRowProps) {
         flexDirection="row"
         justifyContent="space-between"
         flexGrow={COLUMN_TIMELINE_GROW}
-        flexBasis={IGNORE_CONTENT_SIZE}
+        flexBasis={0}
       >
         <text {...HEADER_CELL_PROPS}>0</text>
         <text {...HEADER_CELL_PROPS}>{formatDuration(traceDurationMs)}</text>
@@ -66,15 +65,10 @@ function SpanBar({ span, traceDurationMs }: SpanBarProps) {
   const after = Math.max(0, TIMELINE_GROW_TOTAL - before - during);
 
   return (
-    <box flexDirection="row" flexGrow={COLUMN_TIMELINE_GROW} flexBasis={IGNORE_CONTENT_SIZE}>
-      <box flexGrow={before} flexBasis={IGNORE_CONTENT_SIZE} />
-      <box
-        flexGrow={during}
-        flexBasis={IGNORE_CONTENT_SIZE}
-        minWidth={1}
-        backgroundColor={barColor(span)}
-      />
-      <box flexGrow={after} flexBasis={IGNORE_CONTENT_SIZE} />
+    <box flexDirection="row" flexGrow={COLUMN_TIMELINE_GROW} flexBasis={0}>
+      <box flexGrow={before} flexBasis={0} />
+      <box flexGrow={during} flexBasis={0} minWidth={1} backgroundColor={barColor(span)} />
+      <box flexGrow={after} flexBasis={0} />
     </box>
   );
 }
@@ -95,7 +89,7 @@ export function SpanRow({ span, traceDurationMs, selected }: SpanRowProps) {
       </text>
       <text
         flexGrow={COLUMN_NAME_GROW}
-        flexBasis={IGNORE_CONTENT_SIZE}
+        flexBasis={0}
         fg={span.is_error ? THEME.textError : THEME.text}
         wrapMode="none"
         truncate

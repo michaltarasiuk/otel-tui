@@ -1,6 +1,5 @@
 import { TableRow } from "#tui/components/table-row.tsx";
 import { HEADER_CELL_PROPS, secondaryCellColor } from "#tui/theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
 import type { Metric } from "./metric.ts";
@@ -28,7 +27,7 @@ export function SeriesHeaderRow({ metric, columns }: SeriesHeaderRowProps) {
             key={`${source}.${key}`}
             {...HEADER_CELL_PROPS}
             flexGrow={weight}
-            flexBasis={IGNORE_CONTENT_SIZE}
+            flexBasis={0}
             wrapMode="none"
             truncate
           >
@@ -66,7 +65,7 @@ export function SeriesRow({ metric, columns, series, selected }: SeriesRowProps)
           <text
             key={`${column.source}.${column.key}`}
             flexGrow={column.weight}
-            flexBasis={IGNORE_CONTENT_SIZE}
+            flexBasis={0}
             fg={THEME.text}
             wrapMode="none"
             truncate

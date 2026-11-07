@@ -1,6 +1,5 @@
 import type { Attributes } from "#tui/query/attributes.ts";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
-import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
 const KEY_MAX_WIDTH = 32;
@@ -18,7 +17,7 @@ export function EntryList({ entries }: EntryListProps) {
       <text width={keyWidth} fg={THEME.textMuted} wrapMode="none" truncate>
         {key}
       </text>
-      <text flexGrow={1} flexBasis={IGNORE_CONTENT_SIZE} fg={THEME.text}>
+      <text flexGrow={1} flexBasis={0} fg={THEME.text}>
         {value ?? "null"}
       </text>
     </box>

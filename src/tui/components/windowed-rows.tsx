@@ -2,7 +2,6 @@ import type { BoxRenderable } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { Fragment, useRef, useState } from "react";
 
-import { IGNORE_CONTENT_SIZE } from "#tui/theme/flex.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { clamp } from "#utils/clamp.ts";
 
@@ -92,7 +91,7 @@ export function WindowedRows<T>({ list, children }: WindowedRowsProps<T>) {
     <box
       ref={rowsRef}
       flexGrow={1}
-      flexBasis={IGNORE_CONTENT_SIZE}
+      flexBasis={0}
       maxHeight={items.length}
       overflow="hidden"
       onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
