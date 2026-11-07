@@ -6,8 +6,6 @@ import { THEME } from "#tui/theme/theme.ts";
 
 import { useFocused } from "./focus.tsx";
 
-const HALF_VIEWPORT = 0.5;
-
 const SCROLLBAR_WIDTH = 1;
 
 interface PanelProps {
@@ -40,13 +38,13 @@ export function PanelBody({ contentKey, children }: PanelBodyProps) {
           name: "panel.scroll-down",
           desc: "scroll",
           run() {
-            bodyRef.current?.scrollBy(HALF_VIEWPORT, "viewport");
+            bodyRef.current?.scrollBy(0.5, "viewport");
           },
         },
         {
           name: "panel.scroll-up",
           run() {
-            bodyRef.current?.scrollBy(-HALF_VIEWPORT, "viewport");
+            bodyRef.current?.scrollBy(-0.5, "viewport");
           },
         },
       ],
