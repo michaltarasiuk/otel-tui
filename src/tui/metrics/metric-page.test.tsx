@@ -303,3 +303,15 @@ test("opens an exemplar's trace from the exemplars region and comes back", async
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => keyHints(frame) === "tab next region ? help");
 });
+
+test("moves into the exemplars when one is clicked", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await using app = await openMetric(receiver, DURATION_ROW);
+  const frame = await app.waitForFrame((frame) => detailsLines(frame).includes("Exemplars"));
+  const exemplarLine = frame.split("\n").findIndex((line) => line.includes("2b2b2b2b"));
+
+  await app.mockMouse.click(20, exemplarLine);
+
+  await app.waitForFrame((frame) => keyHints(frame).includes("return open trace"));
+});

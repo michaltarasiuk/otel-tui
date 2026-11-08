@@ -68,7 +68,8 @@ bodies, attributes, services, and trace IDs. A severity histogram is planned.
 
 ### Everywhere
 
-`?` lists every key the focused page takes, including the ones the footer
+Click a tab to switch to it, or a row to select it and move the focus
+there; the wheel scrolls lists. `?` lists every key the focused page takes, including the ones the footer
 leaves out. `p` pauses live updates so rows stop moving while you read them,
 and `y` copies the selected trace ID, span ID (`shift+y` the trace ID), log
 body, or metric name. Searches also take `key=value` terms that match a span,

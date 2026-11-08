@@ -54,7 +54,9 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
   const exemplar = exemplars[exemplarIndex];
   const exemplarTraceId = exemplar?.has_trace === true ? exemplar.trace_id : null;
 
-  const [region, stepRegion] = useRegion(exemplars.length > 0 ? SERIES_AND_EXEMPLARS : SERIES_ONLY);
+  const [region, stepRegion, focusRegion] = useRegion(
+    exemplars.length > 0 ? SERIES_AND_EXEMPLARS : SERIES_ONLY,
+  );
 
   return (
     <box flexGrow={1}>
@@ -70,7 +72,7 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
             <MetricHeader metric={metric} seriesCount={series.length} />
           </box>
           <Split>
-            <FocusScope focused={region === "series"}>
+            <FocusScope focused={region === "series"} onFocusRequest={() => focusRegion("series")}>
               <SeriesTable
                 series={rows}
                 selectedIndex={selectedIndex}
@@ -87,12 +89,16 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
               label={seriesLabel(selected, columns)}
               windowStart={windowStart}
             >
-              <FocusScope focused={region === "exemplars"}>
+              <FocusScope
+                focused={region === "exemplars"}
+                onFocusRequest={() => focusRegion("exemplars")}
+              >
                 <ExemplarList
                   exemplars={exemplars}
                   failed={seriesExemplars.isError}
                   unit={metric.unit}
                   selectedIndex={exemplarIndex}
+                  onSelect={(index) => selectExemplar(index)}
                 />
               </FocusScope>
             </SeriesDetails>

@@ -141,6 +141,15 @@ test("moves half a page with ctrl+d and ctrl+u when asked", async () => {
   await screen.waitForFrame(selected(3));
 });
 
+test("selects the row a click lands on", async () => {
+  await using screen = await render(<NumberedRows count={20} />, SCREEN_SIZE);
+  await screen.waitForFrame(selected(1));
+
+  await screen.mockMouse.click(2, 3);
+
+  await screen.waitForFrame(selected(4));
+});
+
 test("moves the selection once for every scroll event, however fast they come", async () => {
   await using screen = await render(<NumberedRows count={20} />, SCREEN_SIZE);
   await screen.waitForFrame(selected(1));

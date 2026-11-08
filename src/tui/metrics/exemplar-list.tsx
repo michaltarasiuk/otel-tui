@@ -1,4 +1,7 @@
+import { MouseButton } from "@opentui/core";
+
 import { Description } from "#tui/components/details.tsx";
+import { useFocusRequest } from "#tui/components/focus.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { Cell, Row, SelectedContext } from "#tui/components/table.tsx";
 import { COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
@@ -23,9 +26,18 @@ interface ExemplarListProps {
   failed: boolean;
   unit: string;
   selectedIndex: number;
+  onSelect: (index: number) => void;
 }
 
-export function ExemplarList({ exemplars, failed, unit, selectedIndex }: ExemplarListProps) {
+export function ExemplarList({
+  exemplars,
+  failed,
+  unit,
+  selectedIndex,
+  onSelect,
+}: ExemplarListProps) {
+  const requestFocus = useFocusRequest();
+
   if (failed) {
     return <Description color={THEME.textError}>Failed to load exemplars</Description>;
   }
@@ -36,19 +48,29 @@ export function ExemplarList({ exemplars, failed, unit, selectedIndex }: Exempla
   return (
     <Section title="Exemplars">
       {exemplars.map((exemplar, index) => (
-        <SelectedContext key={index} value={index === selectedIndex}>
-          <Row>
-            <Cell width={COLUMN_TIME_WIDTH} muted>
-              {formatTimeOfDay(exemplar.time)}
-            </Cell>
-            <Cell width={COLUMN_VALUE_WIDTH} align="right">
-              {formatMetricValue(exemplar.value, unit)}
-            </Cell>
-            <Cell grow={1} muted={!exemplar.has_trace}>
-              {traceLabel(exemplar)}
-            </Cell>
-          </Row>
-        </SelectedContext>
+        <box
+          key={index}
+          onMouseDown={(event) => {
+            if (event.button === MouseButton.LEFT) {
+              requestFocus();
+              onSelect(index);
+            }
+          }}
+        >
+          <SelectedContext value={index === selectedIndex}>
+            <Row>
+              <Cell width={COLUMN_TIME_WIDTH} muted>
+                {formatTimeOfDay(exemplar.time)}
+              </Cell>
+              <Cell width={COLUMN_VALUE_WIDTH} align="right">
+                {formatMetricValue(exemplar.value, unit)}
+              </Cell>
+              <Cell grow={1} muted={!exemplar.has_trace}>
+                {traceLabel(exemplar)}
+              </Cell>
+            </Row>
+          </SelectedContext>
+        </box>
       ))}
     </Section>
   );

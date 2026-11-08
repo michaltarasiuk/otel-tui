@@ -373,3 +373,40 @@ test("types ? into the search instead of opening help", async () => {
   const frame = await app.waitForFrame((frame) => frame.includes("/?"));
   expect(frame).not.toContain("Keys");
 });
+
+function lineOf(frame: string, text: string) {
+  return frame.split("\n").findIndex((line) => line.includes(text));
+}
+
+test("switches tabs and selects rows with the mouse", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "checkout",
+      spans: ["1", "2"].map((digit, index) => ({
+        traceId: digit.repeat(32),
+        spanId: digit.repeat(16),
+        name: `request ${digit}`,
+        start: new Date(index),
+        end: new Date(index + 10),
+      })),
+    }),
+  );
+  await using app = await renderApp(receiver);
+  await app.waitForFrame((frame) => / services?$/.test(pageHeader(frame)));
+
+  await app.mockMouse.click(12, 0);
+  let frame = await app.waitForFrame((frame) => frame.includes("request 1"));
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
+    Traces: { highlighted: true, fg: "text" },
+  });
+
+  await app.mockMouse.click(30, lineOf(frame, "request 1"));
+
+  expect(await app.waitForSelection("request 1")).toContain("checkout");
+  frame = await app.waitForFrame((frame) => keyHints(frame).includes("/ search"));
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
+    Traces: { highlighted: false, fg: "text" },
+  });
+});

@@ -1,7 +1,7 @@
-import type { TabSelectOption, TabSelectRenderable } from "@opentui/core";
+import { MouseButton, type TabSelectOption, type TabSelectRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
 
-import { useFocused } from "./components/focus.tsx";
+import { useFocused, useFocusRequest } from "./components/focus.tsx";
 import type { Tab } from "./pages.ts";
 import { THEME } from "./theme/theme.ts";
 
@@ -25,6 +25,7 @@ interface TabsProps {
 
 export function Tabs({ current, onSelect }: TabsProps) {
   const focused = useFocused();
+  const requestFocus = useFocusRequest();
 
   const tabsRef = useRef<TabSelectRenderable>(null);
 
@@ -45,6 +46,13 @@ export function Tabs({ current, onSelect }: TabsProps) {
       selectedBackgroundColor={focused ? THEME.backgroundSelected : THEME.background}
       showDescription={false}
       showUnderline={false}
+      onMouseDown={(event) => {
+        const tab = TABS[Math.floor((event.x - (event.currentTarget?.x ?? 0)) / TAB_WIDTH)];
+        if (event.button === MouseButton.LEFT && tab !== undefined) {
+          requestFocus();
+          onSelect(tab.value);
+        }
+      }}
       onChange={(index) => {
         const option = TABS[index];
         if (option !== undefined) {

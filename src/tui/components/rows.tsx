@@ -1,11 +1,11 @@
-import type { BoxRenderable } from "@opentui/core";
+import { type BoxRenderable, MouseButton } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
 import { type SetStateAction, useEffectEvent, useRef, useState } from "react";
 
 import { THEME } from "#tui/theme/theme.ts";
 import { clamp } from "#utils/clamp.ts";
 
-import { useFocused } from "./focus.tsx";
+import { useFocused, useFocusRequest } from "./focus.tsx";
 import { SelectedContext } from "./table.tsx";
 
 interface RowsProps<T> {
@@ -26,6 +26,7 @@ export function Rows<T>({
   children,
 }: RowsProps<T>) {
   const focused = useFocused();
+  const requestFocus = useFocusRequest();
 
   const [visibleRowCount, setVisibleRowCount] = useState(0);
 
@@ -106,9 +107,19 @@ export function Rows<T>({
       }}
     >
       {visibleItems.map((item, offset) => (
-        <SelectedContext key={getKey(item)} value={firstVisibleIndex + offset === selectedIndex}>
-          {children(item)}
-        </SelectedContext>
+        <box
+          key={getKey(item)}
+          onMouseDown={(event) => {
+            if (event.button === MouseButton.LEFT) {
+              requestFocus();
+              onSelect(firstVisibleIndex + offset);
+            }
+          }}
+        >
+          <SelectedContext value={firstVisibleIndex + offset === selectedIndex}>
+            {children(item)}
+          </SelectedContext>
+        </box>
       ))}
       {visibleRowCount > 0 && hiddenRowCount > 0 && (
         <text position="absolute" right={0} top={scrollThumbTop} fg={THEME.textMuted}>

@@ -61,7 +61,9 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
   const canOpenLink =
     linkedSpanIndex !== -1 || (link !== undefined && link.trace_id !== traceId && link.has_trace);
 
-  const [region, stepRegion] = useRegion(links.length > 0 ? SPANS_AND_LINKS : SPANS_ONLY);
+  const [region, stepRegion, focusRegion] = useRegion(
+    links.length > 0 ? SPANS_AND_LINKS : SPANS_ONLY,
+  );
 
   function openLink(link: SpanLink) {
     if (linkedSpanIndex !== -1) {
@@ -84,7 +86,7 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
         <>
           <TraceHeader traceId={traceId} root={root} spans={spans} durationMs={durationMs} />
           <Split>
-            <FocusScope focused={region === "spans"}>
+            <FocusScope focused={region === "spans"} onFocusRequest={() => focusRegion("spans")}>
               <SpanWaterfall
                 spans={spans}
                 selectedIndex={selectedIndex}
@@ -99,8 +101,13 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
               content={spanContent.data}
               failed={spanContent.isError}
             >
-              <FocusScope focused={region === "links"}>
-                <LinkList links={links} traceId={traceId} selectedIndex={linkIndex} />
+              <FocusScope focused={region === "links"} onFocusRequest={() => focusRegion("links")}>
+                <LinkList
+                  links={links}
+                  traceId={traceId}
+                  selectedIndex={linkIndex}
+                  onSelect={(index) => selectLink(index)}
+                />
               </FocusScope>
             </SpanDetails>
           </Split>

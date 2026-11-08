@@ -1,3 +1,6 @@
+import { MouseButton } from "@opentui/core";
+
+import { useFocusRequest } from "#tui/components/focus.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { Cell, Row, SelectedContext } from "#tui/components/table.tsx";
@@ -18,9 +21,12 @@ interface LinkListProps {
   links: SpanLink[];
   traceId: string;
   selectedIndex: number;
+  onSelect: (index: number) => void;
 }
 
-export function LinkList({ links, traceId, selectedIndex }: LinkListProps) {
+export function LinkList({ links, traceId, selectedIndex, onSelect }: LinkListProps) {
+  const requestFocus = useFocusRequest();
+
   if (links.length === 0) {
     return null;
   }
@@ -28,7 +34,15 @@ export function LinkList({ links, traceId, selectedIndex }: LinkListProps) {
   return (
     <Section title="Links">
       {links.map((link, index) => (
-        <box key={`${link.trace_id}:${link.span_id}`}>
+        <box
+          key={`${link.trace_id}:${link.span_id}`}
+          onMouseDown={(event) => {
+            if (event.button === MouseButton.LEFT) {
+              requestFocus();
+              onSelect(index);
+            }
+          }}
+        >
           <SelectedContext value={index === selectedIndex}>
             <Row>
               <Cell grow={1} muted={!link.has_trace}>
