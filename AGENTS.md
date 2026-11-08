@@ -15,6 +15,24 @@
 
 - Don't pass a function as a callback unless it was designed for it; wrap it in an arrow that forwards only the arguments you mean (`items.map((item) => format(item))`, not `items.map(format)`). If either side later gains a parameter, the extra arguments flow in silently and change behavior. See https://jakearchibald.com/2021/function-callback-risks/.
 
+## React
+
+- A page file shows its screen top to bottom: page header, regions, `KeyHints`. Layout shells (`Split`, `PageHeader`, `DetailsHeader`, `Section`) only arrange `children`; don't hide layout behind config props.
+- Pages own their state: filters, search, and the selection from `useSelection`. Pass data down and events up (`selectedIndex` + `onSelect`), the way `<select>` works; don't pass controller objects with methods.
+- Custom hooks return what the caller needs, shaped like `useState` (`[value, set]`), and accept updaters when events can arrive faster than renders.
+- Derive values during render instead of storing them. Reset a subtree with `key`, not an effect.
+- Handlers that run from subscriptions registered in effects (key bindings) go through `useEffectEvent`, so the bindings don't re-register on every render.
+- Declare keys with `<Key name onPress>label</Key>` inside `KeyHints`. JSX order is hint order, and plain JSX conditions decide when a key is active. Use `FocusScope` to disable a group.
+- Keep hidden screens alive with `Screen` (`Activity`), not with visibility flags in queries.
+- Use Suspense + `ErrorBoundary` only for data that a single region owns. A page reads its own list with `useQuery`, because its header, selection, and keys need that data.
+- Write pure helpers as functions in `#utils` (e.g. `stepItem`, `findNextIndex`), not as methods on hooks.
+
+## Tests
+
+- Test through the rendered app: press keys, read the screen. Read regions with `#testing/screen.ts` (`pageHeader`, `tableRows`, `detailsLines`, `keyHints`), never by line index.
+- Open pages with `renderPage` and pick rows with `selectRow`. Inject failures through `renderApp({ connection })`.
+- Wait for a concrete frame, never for time.
+
 ## Commits
 
 - Use Conventional Commits: `<type>: <subject>`, with types `feat`, `fix`, `refactor`, `test`, `docs`, or `chore`. No scope.
