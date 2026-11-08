@@ -57,6 +57,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       await setup.renderOnce();
       const captured = await capture();
       if (captured !== undefined && matches(captured)) {
+        await runPendingEffects();
         return captured;
       }
       await Bun.sleep(WAIT_POLL_INTERVAL_MS);
@@ -97,6 +98,10 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       }
     },
   };
+}
+
+function runPendingEffects() {
+  return new Promise((resolve) => setImmediate(resolve));
 }
 
 function createDiagnosedKeymap(renderer: CliRenderer) {
