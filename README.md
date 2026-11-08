@@ -77,7 +77,13 @@ log, or metric attribute or a resource attribute exactly, as in
 
 ## Usage
 
-Download the archive for your system from the
+Install with [Homebrew](https://brew.sh) on macOS or Linux:
+
+```shell
+brew install michaltarasiuk/tap/otel-tui
+```
+
+Or download the archive for your system from the
 [latest release](https://github.com/michaltarasiuk/otel-tui/releases/latest)
 (macOS and Linux, arm64 and x64), unpack it, and run `otel-tui`:
 
