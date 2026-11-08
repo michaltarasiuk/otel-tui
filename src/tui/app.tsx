@@ -60,7 +60,12 @@ export function App({ receiverUrls }: AppProps) {
           </Screen>
           {metric !== undefined && (
             <Screen when={page === "metric"}>
-              <MetricPage key={metric.metric_id} metric={metric} onBack={() => back()} />
+              <MetricPage
+                key={metric.metric_id}
+                metric={metric}
+                onBack={() => back()}
+                onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+              />
             </Screen>
           )}
           <Screen when={page === "logs"}>

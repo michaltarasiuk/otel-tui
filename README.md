@@ -31,7 +31,9 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
   with a panel listing the values each attribute takes, so an attribute that
   blows up cardinality stands out. `return` opens a metric's series with
   their rates, last values, or percentiles, plus the selected series' chart,
-  histogram buckets, and exemplars. `o` sorts by name, series count, or last
+  histogram buckets, and exemplars. `tab` moves into the exemplars, where
+  `return` opens an exemplar's trace at its span; exemplars whose trace
+  otel-tui never received are marked "not stored". `o` sorts by name, series count, or last
   update, `shift+o` reverses the order, and `/` searches names, descriptions,
   services, and attributes. A time brush is planned.
 - Logs: the log table works today, with a panel for the selected log's body,

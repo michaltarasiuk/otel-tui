@@ -156,20 +156,21 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
   });
 }
 
-export function useSeriesExemplars(metric: Metric, seriesId: string) {
+export function useSeriesExemplars(metric: Metric, seriesId: string | undefined) {
   const connection = useConnection();
 
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "exemplars"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(seriesExemplars, {
         ...metricIdentity(metric),
         type: metric.type,
-        seriesId,
+        seriesId: seriesId ?? null,
         limit: 10,
       });
       return Exemplar.array().parse(reader.getRowObjectsJS());
     },
+    enabled: seriesId !== undefined,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }

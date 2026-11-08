@@ -3,7 +3,8 @@ import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 import { renderPage } from "#testing/app.tsx";
 import { metricsRequest, TEMPORALITY } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { CHART_DOTS, detailsLines, tableRows, textLines } from "#testing/screen.ts";
+import { CHART_DOTS, detailsLines, keyHints, tableRows, textLines } from "#testing/screen.ts";
+import { otlpTraces } from "#tui/traces/test-traces.ts";
 
 import {
   atSecond,
@@ -132,7 +133,7 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
   const exemplarsIndex = panel.indexOf("Exemplars");
   expect(panel.slice(exemplarsIndex, exemplarsIndex + 3)).toEqual([
     "Exemplars",
-    `12:00:19.000 140.0ms ${"2".repeat(32)} ${"2b".repeat(8)}`,
+    `12:00:19.000 140.0ms ${"2".repeat(32)} ${"2b".repeat(8)} (not stored)`,
     "12:00:09.000 75.0ms no trace",
   ]);
 });
@@ -281,4 +282,24 @@ test("says when an open metric is no longer available", async () => {
   await connection.run("DELETE FROM otlp_metrics_sum WHERE name = 'demo.shipping.items_shipped'");
 
   await app.waitForFrame((frame) => frame.includes("This metric is no longer available"));
+});
+
+test("opens an exemplar's trace from the exemplars region and comes back", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await using app = await openMetric(receiver, DURATION_ROW);
+  await app.waitForFrame((frame) => detailsLines(frame).includes("Exemplars"));
+  expect(keyHints(await app.waitForFrame(() => true))).not.toContain("open trace");
+
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => keyHints(frame).includes("return open trace"));
+  app.mockInput.pressEnter();
+
+  expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => frame.includes("http.server.request.duration"));
+  expect(keyHints(await app.waitForFrame(() => true))).toContain("return open trace");
+
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => keyHints(frame) === "tab next region");
 });

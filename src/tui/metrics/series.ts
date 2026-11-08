@@ -133,5 +133,6 @@ export const Exemplar = z.object({
   value: z.number(),
   trace_id: z.string().nullable(),
   span_id: z.string().nullable(),
+  has_trace: z.boolean(),
 });
 export type Exemplar = z.infer<typeof Exemplar>;

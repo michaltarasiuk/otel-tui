@@ -42,7 +42,10 @@ SELECT
   make_timestamp(time_unix_nano // 1000) AS time,
   value,
   nullif(trace_id, '') AS trace_id,
-  nullif(span_id, '') AS span_id
+  nullif(span_id, '') AS span_id,
+  EXISTS (
+    SELECT 1 FROM otlp_traces WHERE otlp_traces.trace_id = exemplars.trace_id
+  ) AS has_trace
 FROM exemplars
 ORDER BY value DESC, time DESC
 LIMIT $limit
