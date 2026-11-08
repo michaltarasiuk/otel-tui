@@ -6,14 +6,12 @@ export function formatDuration(ms: number) {
     throw new Error(`Duration must not be negative: ${ms}ms`);
   }
   const microseconds = Math.round(ms * 1000);
-  const milliseconds = roundToTenths(ms);
-  let duration: string;
   if (microseconds < 1000) {
-    duration = `${microseconds}µs`;
-  } else if (milliseconds < SECOND_MS) {
-    duration = `${milliseconds.toFixed(1)}ms`;
-  } else {
-    duration = `${(ms / SECOND_MS).toFixed(2)}s`;
+    return `${microseconds}µs`;
   }
-  return duration;
+  const milliseconds = roundToTenths(ms);
+  if (milliseconds < SECOND_MS) {
+    return `${milliseconds.toFixed(1)}ms`;
+  }
+  return `${(ms / SECOND_MS).toFixed(2)}s`;
 }
