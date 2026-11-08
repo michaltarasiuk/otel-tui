@@ -1,7 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { TextAttributes } from "@opentui/core";
 
-import { DetailsHeader, Id, Meta, Muted, ScopeName } from "#tui/components/details.tsx";
+import { DetailsHeader, Id, Meta, Fact, ScopeName } from "#tui/components/details.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
@@ -42,12 +42,12 @@ export function LogDetails({ ref, log }: LogDetailsProps) {
             <SeverityLabel severity={log.severity}>{severityLabel}</SeverityLabel>
           )}
           {log.service_name !== null && (
-            <Muted>
+            <Fact>
               <ServiceName name={log.service_name} />
-            </Muted>
+            </Fact>
           )}
-          {log.time !== null && <Muted>{formatTimeOfDay(log.time)}</Muted>}
-          {log.event_name !== null && <Muted>{log.event_name}</Muted>}
+          {log.time !== null && <Fact>{formatTimeOfDay(log.time)}</Fact>}
+          {log.event_name !== null && <Fact>{log.event_name}</Fact>}
         </Meta>
         {log.trace_id !== null && (
           <Id>

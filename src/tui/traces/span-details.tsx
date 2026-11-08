@@ -6,7 +6,7 @@ import {
   DetailsHeader,
   Id,
   Meta,
-  Muted,
+  Fact,
   ScopeName,
   Title,
 } from "#tui/components/details.tsx";
@@ -113,16 +113,16 @@ export function SpanDetails({ ref, traceId, span }: SpanDetailsProps) {
       </DetailsHeader>
       <Meta>
         {span.service_name !== null && (
-          <Muted>
+          <Fact>
             <ServiceName name={span.service_name} />
-          </Muted>
+          </Fact>
         )}
-        <Muted>{span.kind}</Muted>
-        <Muted>
+        <Fact>{span.kind}</Fact>
+        <Fact>
           {formatTimeOfDay(span.start_time)} +{formatDuration(span.offset_ms)}
-        </Muted>
-        <Muted>{formatDuration(span.duration_ms)}</Muted>
-        {detached && <Muted>parent {span.parent_span_id} not received</Muted>}
+        </Fact>
+        <Fact>{formatDuration(span.duration_ms)}</Fact>
+        {detached && <Fact>parent {span.parent_span_id} not received</Fact>}
       </Meta>
       {span.status_message !== null && (
         <Description color={span.is_error ? THEME.textError : THEME.textMuted}>

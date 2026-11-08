@@ -1,4 +1,4 @@
-import { DetailsHeader, Id, Meta, Muted, Title } from "#tui/components/details.tsx";
+import { DetailsHeader, Id, Meta, Fact, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatCount } from "#utils/format-count.ts";
@@ -29,16 +29,14 @@ export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderPro
       </DetailsHeader>
       <Meta>
         {root.service_name !== null && (
-          <Muted>
+          <Fact>
             <ServiceName name={root.service_name} />
-          </Muted>
+          </Fact>
         )}
-        <Muted>{formatTimeOfDay(startTime)}</Muted>
-        <Muted>{formatCount(spans.length, "span")}</Muted>
-        {errorCount > 0 && (
-          <Muted color={THEME.textError}>{formatCount(errorCount, "error")}</Muted>
-        )}
-        <Muted>{formatDuration(durationMs)}</Muted>
+        <Fact>{formatTimeOfDay(startTime)}</Fact>
+        <Fact>{formatCount(spans.length, "span")}</Fact>
+        {errorCount > 0 && <Fact color={THEME.textError}>{formatCount(errorCount, "error")}</Fact>}
+        <Fact>{formatDuration(durationMs)}</Fact>
       </Meta>
     </box>
   );

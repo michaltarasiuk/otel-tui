@@ -1,4 +1,4 @@
-import { Description, DetailsHeader, Id, Meta, Muted, Title } from "#tui/components/details.tsx";
+import { Description, DetailsHeader, Id, Meta, Fact, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { formatCount } from "#utils/format-count.ts";
 
@@ -20,13 +20,13 @@ export function MetricHeader({ metric, seriesCount }: MetricHeaderProps) {
       </DetailsHeader>
       <Meta>
         {metric.service_name !== null && (
-          <Muted>
+          <Fact>
             <ServiceName name={metric.service_name} />
-          </Muted>
+          </Fact>
         )}
-        {metric.unit !== "" && <Muted>unit {metric.unit}</Muted>}
-        {temporality !== null && <Muted>{temporality}</Muted>}
-        <Muted>{formatCount(seriesCount, "series", "series")}</Muted>
+        {metric.unit !== "" && <Fact>unit {metric.unit}</Fact>}
+        {temporality !== null && <Fact>{temporality}</Fact>}
+        <Fact>{formatCount(seriesCount, "series", "series")}</Fact>
       </Meta>
       {metric.description !== "" && <Description>{metric.description}</Description>}
     </>

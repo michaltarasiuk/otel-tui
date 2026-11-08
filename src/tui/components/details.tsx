@@ -52,12 +52,12 @@ export function Meta({ children }: MetaProps) {
   );
 }
 
-interface MutedProps {
+interface FactProps {
   color?: ColorInput;
   children: React.ReactNode;
 }
 
-export function Muted({ color = THEME.textMuted, children }: MutedProps) {
+export function Fact({ color = THEME.textMuted, children }: FactProps) {
   return (
     <text fg={color} wrapMode="none" flexShrink={0}>
       {children}
