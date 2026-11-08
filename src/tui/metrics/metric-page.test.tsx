@@ -301,5 +301,5 @@ test("opens an exemplar's trace from the exemplars region and comes back", async
   expect(keyHints(await app.waitForFrame(() => true))).toContain("return open trace");
 
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => keyHints(frame) === "tab next region");
+  await app.waitForFrame((frame) => keyHints(frame) === "tab next region ? help");
 });
