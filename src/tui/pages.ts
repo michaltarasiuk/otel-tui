@@ -21,12 +21,7 @@ interface History {
   previous: Location[];
 }
 
-export type Page =
-  | { name: "traces"; tab: "traces" }
-  | { name: "trace"; tab: "traces"; traceId: string; spanId: string | undefined }
-  | { name: "metrics"; tab: "metrics" }
-  | { name: "metric"; tab: "metrics"; metric: Metric }
-  | { name: "logs"; tab: "logs" };
+type PageName = "traces" | "trace" | "metrics" | "metric" | "logs";
 
 type Destination =
   | { name: "trace"; traceId: string; spanId?: string | undefined }
@@ -38,16 +33,14 @@ const START_HISTORY: History = {
   previous: [],
 };
 
-function pageAt({ tab, trace, metric }: Location): Page {
+function pageAt({ tab, trace, metric }: Location): PageName {
   switch (tab) {
     case "traces":
-      return trace === undefined
-        ? { name: "traces", tab }
-        : { name: "trace", tab, traceId: trace.traceId, spanId: trace.spanId };
+      return trace === undefined ? "traces" : "trace";
     case "metrics":
-      return metric === undefined ? { name: "metrics", tab } : { name: "metric", tab, metric };
+      return metric === undefined ? "metrics" : "metric";
     case "logs":
-      return { name: "logs", tab };
+      return "logs";
   }
 }
 
@@ -122,6 +115,9 @@ export function usePages() {
 
   return {
     page: pageAt(history.location),
+    tab: history.location.tab,
+    trace: history.location.trace,
+    metric: history.location.metric,
     logsTrace: history.location.logsTrace,
     canGoBack: history.previous.length > 0,
     selectTab: (tab: Tab) => {

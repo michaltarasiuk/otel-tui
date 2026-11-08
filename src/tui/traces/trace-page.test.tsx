@@ -304,6 +304,21 @@ test("opens the logs of the selected span", async () => {
   expect(frame).not.toContain("[PlaceOrder]");
 });
 
+test("comes back from the span's logs to the same span", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/logs", checkoutLogs);
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForSelection(PLACE_ORDER);
+  app.mockInput.pressArrow("down");
+  await app.waitForSelection("charge");
+  app.mockInput.pressKey("l", { shift: true });
+  await app.waitForFrame((frame) => frame.includes("span 2b2b2b2b"));
+
+  app.mockInput.pressEscape();
+
+  expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
+});
+
 test("goes back from the trace's logs to the trace, then to the list", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp(

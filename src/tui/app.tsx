@@ -20,7 +20,8 @@ interface AppProps {
 
 export function App({ receiverUrls }: AppProps) {
   const { region, focusStep } = useFocusedRegion();
-  const { page, logsTrace, canGoBack, selectTab, open, replace, back } = usePages();
+  const { page, tab, trace, metric, logsTrace, canGoBack, selectTab, open, replace, back } =
+    usePages();
 
   return (
     <AppKeys
@@ -35,28 +36,34 @@ export function App({ receiverUrls }: AppProps) {
       <Window>
         <TopBar>
           <FocusScope focused={region === "tabs"}>
-            <Tabs current={page.tab} onSelect={(tab) => selectTab(tab)} />
+            <Tabs current={tab} onSelect={(tab) => selectTab(tab)} />
           </FocusScope>
           <ReceiverStatus receiverUrls={receiverUrls} />
         </TopBar>
         <FocusScope focused={region === "content"}>
-          <Screen when={page.name === "traces"}>
+          <Screen when={page === "traces"}>
             <TracesPage onOpen={(traceId) => open({ name: "trace", traceId })} />
           </Screen>
-          {page.name === "trace" && (
-            <TracePage
-              key={`${page.traceId}:${page.spanId}`}
-              traceId={page.traceId}
-              spanId={page.spanId}
-              onBack={() => back()}
-              onOpenLogs={(spanId) => open({ name: "logs", traceId: page.traceId, spanId })}
-            />
+          {trace !== undefined && (
+            <Screen when={page === "trace"}>
+              <TracePage
+                key={`${trace.traceId}:${trace.spanId}`}
+                traceId={trace.traceId}
+                spanId={trace.spanId}
+                onBack={() => back()}
+                onOpenLogs={(spanId) => open({ name: "logs", traceId: trace.traceId, spanId })}
+              />
+            </Screen>
           )}
-          <Screen when={page.name === "metrics"}>
+          <Screen when={page === "metrics"}>
             <MetricsPage onOpen={(metric) => open({ name: "metric", metric })} />
           </Screen>
-          {page.name === "metric" && <MetricPage metric={page.metric} onBack={() => back()} />}
-          <Screen when={page.name === "logs"}>
+          {metric !== undefined && (
+            <Screen when={page === "metric"}>
+              <MetricPage key={metric.metric_id} metric={metric} onBack={() => back()} />
+            </Screen>
+          )}
+          <Screen when={page === "logs"}>
             <LogsPage
               traceId={logsTrace?.traceId}
               spanId={logsTrace?.spanId}
