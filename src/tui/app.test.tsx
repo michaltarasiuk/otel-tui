@@ -189,7 +189,7 @@ test("hints the view's described keys, the selected row's actions first", async 
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
 
   expect(keyHints(frame)).toBe(
-    "return open / search right range s status o sort shift+o reverse tab next region",
+    "return open / search right range s status o sort shift+o reverse p pause tab next region",
   );
 });
 

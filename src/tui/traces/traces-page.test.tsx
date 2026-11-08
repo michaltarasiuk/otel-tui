@@ -1,10 +1,12 @@
 import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 
 import { renderApp } from "#testing/app.tsx";
+import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import { keyHints, pageHeader, tableRows, textLines } from "#testing/screen.ts";
 
 import {
+  at,
   CART_ROW,
   CHECKOUT_ROW,
   NEWEST_FIRST,
@@ -176,4 +178,35 @@ test("shows an error when traces cannot be loaded", async () => {
   await using app = await renderApp(receiver);
 
   await app.waitForFrame((frame) => frame.includes("Failed to load traces"));
+});
+
+test("pauses and resumes live updates", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+
+  app.mockInput.pressKey("p");
+  const frame = await app.waitForFrame((frame) => keyHints(frame).includes("p resume"));
+  expect(textLines(frame)[0]).toContain("paused · ");
+
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "frontend",
+      spans: [
+        {
+          traceId: "a".repeat(32),
+          spanId: "a".repeat(16),
+          name: "GET /",
+          start: at(3000),
+          end: at(3001),
+        },
+      ],
+    }),
+  );
+  app.mockInput.pressKey("p");
+
+  await app.waitForFrame((frame) => pageHeader(frame) === "4 traces");
+  expect(keyHints(await app.waitForFrame((frame) => frame.includes("p pause")))).toContain(
+    "p pause",
+  );
 });

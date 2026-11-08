@@ -6,6 +6,7 @@ import { Placeholder } from "#tui/components/placeholder.tsx";
 import { ScrollKeys } from "#tui/components/scroll-box.tsx";
 import { Split } from "#tui/components/split.tsx";
 import { useSelection } from "#tui/components/use-selection.ts";
+import { PauseKey } from "#tui/pause.tsx";
 
 import { MetricHeader } from "./metric-header.tsx";
 import { useMetricSeries } from "./metric-queries.ts";
@@ -68,6 +69,7 @@ export function MetricPage({ metric, onBack }: MetricPageProps) {
           back
         </Key>
         {selected !== undefined && <ScrollKeys target={detailsRef} />}
+        <PauseKey />
       </KeyHints>
     </box>
   );

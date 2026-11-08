@@ -5,6 +5,7 @@ import type { ReceiverUrls } from "#receiver/receiver.ts";
 import { formatCount } from "#utils/format-count.ts";
 import { formatTimeAgo } from "#utils/format-time-ago.ts";
 
+import { usePaused } from "./pause.tsx";
 import { useConnection } from "./query/connection.ts";
 import { POLL_INTERVAL_MS } from "./query/polling.ts";
 import receiverStatus from "./receiver-status.sql" with { type: "text" };
@@ -47,9 +48,11 @@ interface ReceiverStatusProps {
 
 export function ReceiverStatus({ receiverUrls }: ReceiverStatusProps) {
   const { data: counters } = useReceiverCounters(receiverUrls.http);
+  const paused = usePaused();
 
   return (
     <text fg={THEME.textMuted} wrapMode="none" truncate>
+      {paused && <span fg={THEME.textWarning}>paused · </span>}
       {counters != null && `${formatReceived(counters)} · `}
       OTLP/HTTP {new URL(receiverUrls.http).host} · OTLP/gRPC {new URL(receiverUrls.grpc).host}
     </text>

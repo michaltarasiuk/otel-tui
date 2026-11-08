@@ -6,6 +6,7 @@ import { Placeholder } from "#tui/components/placeholder.tsx";
 import { ScrollKeys } from "#tui/components/scroll-box.tsx";
 import { Split } from "#tui/components/split.tsx";
 import { useSelection } from "#tui/components/use-selection.ts";
+import { PauseKey } from "#tui/pause.tsx";
 import { findNextIndex } from "#utils/find-next-index.ts";
 
 import { SpanDetails } from "./span-details.tsx";
@@ -83,6 +84,7 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs }: TracePageProp
           </StepKeys>
         )}
         {selected !== undefined && <ScrollKeys target={detailsRef} />}
+        <PauseKey />
       </KeyHints>
     </box>
   );

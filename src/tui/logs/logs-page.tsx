@@ -10,6 +10,7 @@ import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { Split } from "#tui/components/split.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
+import { PauseKey } from "#tui/pause.tsx";
 import { findNextIndex } from "#utils/find-next-index.ts";
 import { formatShownCount } from "#utils/format-shown-count.ts";
 import { stepItem } from "#utils/step-item.ts";
@@ -137,6 +138,7 @@ export function LogsPage({ traceId, onTraceChange, onOpenTrace, onBack }: LogsPa
             severity
           </StepKeys>
           {selected !== undefined && <ScrollKeys target={detailsRef} />}
+          <PauseKey />
         </FocusScope>
       </KeyHints>
     </box>

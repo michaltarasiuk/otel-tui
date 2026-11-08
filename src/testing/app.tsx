@@ -1,5 +1,5 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
-import { QueryClient } from "@tanstack/react-query";
+import { focusManager, QueryClient } from "@tanstack/react-query";
 
 import { App } from "#tui/app.tsx";
 import type { Tab } from "#tui/pages.ts";
@@ -41,6 +41,7 @@ export async function renderApp(
     ...screen,
     async [Symbol.asyncDispose]() {
       await screen[Symbol.asyncDispose]();
+      focusManager.setFocused(undefined);
       await waitForInFlightQueries(queryClient);
     },
   };

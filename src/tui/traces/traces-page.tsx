@@ -8,6 +8,7 @@ import { Placeholder } from "#tui/components/placeholder.tsx";
 import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
+import { PauseKey } from "#tui/pause.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { findNextIndex } from "#utils/find-next-index.ts";
 import { formatShownCount } from "#utils/format-shown-count.ts";
@@ -152,6 +153,7 @@ export function TracesPage({ onOpen }: TracesPageProps) {
           >
             reverse
           </Key>
+          <PauseKey />
         </FocusScope>
       </KeyHints>
     </box>
