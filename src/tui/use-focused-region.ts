@@ -10,6 +10,9 @@ export function useFocusedRegion() {
 
   return {
     region,
+    focus: (region: Region) => {
+      setRegion(region);
+    },
     focusStep: (step: 1 | -1) => {
       setRegion((region) => stepItem(REGIONS, region, step));
     },

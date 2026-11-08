@@ -10,5 +10,9 @@ export function useRegion<T>(regions: readonly [T, ...T[]]) {
     return next !== undefined;
   }
 
-  return [region, step] as const;
+  function focus(next: T) {
+    setChosen(next);
+  }
+
+  return [region, step, focus] as const;
 }

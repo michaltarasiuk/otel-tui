@@ -25,7 +25,7 @@ interface AppProps {
 }
 
 export function App({ receiverUrls }: AppProps) {
-  const { region, focusStep } = useFocusedRegion();
+  const { region, focus, focusStep } = useFocusedRegion();
   const {
     page,
     tab,
@@ -68,12 +68,12 @@ export function App({ receiverUrls }: AppProps) {
       <Window>
         <FocusScope focused={help === undefined}>
           <TopBar>
-            <FocusScope focused={region === "tabs"}>
+            <FocusScope focused={region === "tabs"} onFocusRequest={() => focus("tabs")}>
               <Tabs current={tab} onSelect={(tab) => selectTab(tab)} />
             </FocusScope>
             <ReceiverStatus receiverUrls={receiverUrls} />
           </TopBar>
-          <FocusScope focused={region === "content"}>
+          <FocusScope focused={region === "content"} onFocusRequest={() => focus("content")}>
             <Screen when={page === "services"}>
               <ServicesPage onOpenTraces={(service) => open({ name: "traces", service })} />
             </Screen>
