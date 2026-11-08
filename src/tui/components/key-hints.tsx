@@ -24,7 +24,7 @@ export function KeyHints({ children }: KeyHintsProps) {
 interface KeyProps {
   name: string;
   onPress?: () => void;
-  children?: string;
+  children?: string | undefined;
 }
 
 export function Key({ name, onPress, children }: KeyProps) {

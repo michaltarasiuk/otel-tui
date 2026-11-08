@@ -180,6 +180,17 @@ test("shows an error when traces cannot be loaded", async () => {
   await app.waitForFrame((frame) => frame.includes("Failed to load traces"));
 });
 
+test("copies the selected trace's ID", async () => {
+  await using receiver = await startTestReceiver();
+  const copied: string[] = [];
+  await using app = await renderTraceList(receiver, { copied });
+
+  app.mockInput.pressKey("y");
+
+  await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
+  expect(copied).toEqual([statusTraceId]);
+});
+
 test("pauses and resumes live updates", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);

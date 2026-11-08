@@ -1,5 +1,11 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
-import { type CliRendererConfig, createCliRenderer } from "@opentui/core";
+import {
+  type CliRendererConfig,
+  createClipboard,
+  createCliRenderer,
+  createHostClipboard,
+  createRendererClipboardAdapter,
+} from "@opentui/core";
 import {
   registerDeadBindingWarnings,
   registerUnresolvedCommandWarnings,
@@ -19,6 +25,7 @@ import { StrictMode } from "react";
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
 import { App } from "./app.tsx";
+import { ClipboardContext } from "./clipboard.tsx";
 import { ConnectionContext } from "./query/connection.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
@@ -90,11 +97,26 @@ export async function startTui({ connection, receiverUrls }: TuiOptions) {
     }
   });
 
+  const clipboard = createClipboard({
+    host: createHostClipboard(),
+    terminal: createRendererClipboardAdapter(renderer),
+  });
+
+  async function copy(text: string) {
+    const { host, terminal } = await clipboard.writeText(text, { destination: "best-available" });
+    if (host.status === "failed") {
+      console.error("Copying to the host clipboard failed", host.error);
+    }
+    return host.status === "written" || terminal.status === "attempted";
+  }
+
   createRoot(renderer).render(
     <StrictMode>
       <KeymapProvider keymap={keymap}>
         <QueryProvider queryClient={queryClient} connection={connection}>
-          <App receiverUrls={receiverUrls} />
+          <ClipboardContext value={(text) => copy(text)}>
+            <App receiverUrls={receiverUrls} />
+          </ClipboardContext>
         </QueryProvider>
       </KeymapProvider>
     </StrictMode>,
@@ -102,6 +124,7 @@ export async function startTui({ connection, receiverUrls }: TuiOptions) {
 
   return {
     closed: renderer.closed
+      .then(() => clipboard.dispose())
       .then(() => waitForInFlightQueries(queryClient))
       .then(() => queryClient.clear()),
   };

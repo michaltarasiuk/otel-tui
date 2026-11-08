@@ -354,3 +354,17 @@ test("says when an open trace is no longer available", async () => {
 
   await app.waitForFrame((frame) => frame.includes("This trace is no longer available"));
 });
+
+test("copies the selected span's ID and the trace's ID", async () => {
+  await using receiver = await startTestReceiver();
+  const copied: string[] = [];
+  await using app = await openTrace(receiver, CART_ROW, { copied });
+  await app.waitForFrame((frame) => keyHints(frame).includes("y copy span id"));
+
+  app.mockInput.pressKey("y");
+  await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
+  app.mockInput.pressKey("y", { shift: true });
+  await app.waitForFrame((frame) => keyHints(frame).includes("shift+y copied"));
+
+  expect(copied).toEqual(["1a".repeat(8), cartTraceId]);
+});

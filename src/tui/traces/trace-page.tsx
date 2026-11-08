@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useRef } from "react";
 
+import { CopyKey } from "#tui/clipboard.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Placeholder } from "#tui/components/placeholder.tsx";
 import { ScrollKeys } from "#tui/components/scroll-box.tsx";
@@ -83,7 +84,17 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs }: TracePageProp
             next error
           </StepKeys>
         )}
-        {selected !== undefined && <ScrollKeys target={detailsRef} />}
+        {selected !== undefined && (
+          <>
+            <CopyKey name="y" text={selected.span_id}>
+              copy span id
+            </CopyKey>
+            <CopyKey name="shift+y" text={traceId}>
+              copy trace id
+            </CopyKey>
+            <ScrollKeys target={detailsRef} />
+          </>
+        )}
         <PauseKey />
       </KeyHints>
     </box>

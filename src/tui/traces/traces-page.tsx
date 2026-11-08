@@ -1,6 +1,7 @@
 import type { BoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#tui/components/page-header.tsx";
@@ -101,9 +102,14 @@ export function TracesPage({ onOpen }: TracesPageProps) {
       <KeyHints>
         <FocusScope focused={browsing}>
           {selected !== undefined && (
-            <Key name="return" onPress={() => onOpen(selected.trace_id)}>
-              open
-            </Key>
+            <>
+              <Key name="return" onPress={() => onOpen(selected.trace_id)}>
+                open
+              </Key>
+              <CopyKey name="y" text={selected.trace_id}>
+                copy id
+              </CopyKey>
+            </>
           )}
           {traces.some((trace) => hasErrors(trace)) && (
             <StepKeys

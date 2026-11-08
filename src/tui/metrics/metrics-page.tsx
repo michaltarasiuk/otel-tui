@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints } from "#tui/components/key-hints.tsx";
 import { Count, PageHeader, SearchInput } from "#tui/components/page-header.tsx";
@@ -89,9 +90,14 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
       <KeyHints>
         <FocusScope focused={browsing}>
           {selected !== undefined && (
-            <Key name="return" onPress={() => onOpen(selected)}>
-              open
-            </Key>
+            <>
+              <Key name="return" onPress={() => onOpen(selected)}>
+                open
+              </Key>
+              <CopyKey name="y" text={selected.name}>
+                copy name
+              </CopyKey>
+            </>
           )}
         </FocusScope>
         <SearchKeys search={search} />

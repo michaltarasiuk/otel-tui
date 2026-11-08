@@ -2,6 +2,7 @@ import type { DuckDBConnection } from "@duckdb/node-api";
 import { focusManager, QueryClient } from "@tanstack/react-query";
 
 import { App } from "#tui/app.tsx";
+import { ClipboardContext } from "#tui/clipboard.tsx";
 import type { Tab } from "#tui/pages.ts";
 import { QUERY_CLIENT_CONFIG, QueryProvider, waitForInFlightQueries } from "#tui/tui.tsx";
 
@@ -22,17 +23,25 @@ const PAGE_COUNTS = {
 export interface AppOptions {
   size?: { width: number; height: number } | undefined;
   connection?: DuckDBConnection;
+  copied?: string[];
 }
 
 export async function renderApp(
   receiver: TestReceiver,
-  { size = DEFAULT_SIZE, connection }: AppOptions = {},
+  { size = DEFAULT_SIZE, connection, copied = [] }: AppOptions = {},
 ) {
   const queryClient = new QueryClient(QUERY_CLIENT_CONFIG);
 
   const screen = await render(
     <QueryProvider queryClient={queryClient} connection={connection ?? (await receiver.connect())}>
-      <App receiverUrls={receiver.urls} />
+      <ClipboardContext
+        value={async (text) => {
+          copied.push(text);
+          return true;
+        }}
+      >
+        <App receiverUrls={receiver.urls} />
+      </ClipboardContext>
     </QueryProvider>,
     size,
   );

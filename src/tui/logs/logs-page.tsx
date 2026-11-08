@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#tui/components/page-header.tsx";
@@ -114,6 +115,11 @@ export function LogsPage({ traceId, onTraceChange, onOpenTrace, onBack }: LogsPa
                 trace
               </Key>
             </>
+          )}
+          {selected !== undefined && selected.body !== null && (
+            <CopyKey name="y" text={selected.body}>
+              copy body
+            </CopyKey>
           )}
         </FocusScope>
         <SearchKeys search={search} />

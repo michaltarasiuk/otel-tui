@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { renderApp, renderPage } from "#testing/app.tsx";
+import { type AppOptions, renderApp, renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { detailsLines, keyHints, pageHeader, tableRows, textLines } from "#testing/screen.ts";
@@ -140,9 +140,9 @@ const NEWEST_FIRST = [
   ORDER_ROW,
 ];
 
-async function renderLogList(receiver: TestReceiver) {
+async function renderLogList(receiver: TestReceiver, options?: AppOptions) {
   await receiver.sendHttp("/v1/logs", otlpLogs);
-  const app = await renderPage(receiver, "logs");
+  const app = await renderPage(receiver, "logs", options);
   await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
   return app;
 }
@@ -357,7 +357,9 @@ test("offers trace actions only for logs with a trace", async () => {
   await app.waitForSelection(FATAL_ROW);
   app.mockInput.pressKey("e");
   frame = await app.waitForFrame((frame) => frame.includes("t trace"));
-  expect(keyHints(frame)).toStartWith("e next error return open trace t trace / search");
+  expect(keyHints(frame)).toStartWith(
+    "e next error return open trace t trace y copy body / search",
+  );
 });
 
 test("opens the selected log's trace in the traces view and goes back to the log", async () => {
@@ -511,4 +513,15 @@ test("shows an error when logs cannot be loaded", async () => {
   await using app = await renderPage(receiver, "logs");
 
   await app.waitForFrame((frame) => frame.includes("Failed to load logs"));
+});
+
+test("copies the selected log's body", async () => {
+  await using receiver = await startTestReceiver();
+  const copied: string[] = [];
+  await using app = await renderLogList(receiver, { copied });
+
+  app.mockInput.pressKey("y");
+
+  await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
+  expect(copied).toEqual(["Database connection established"]);
 });

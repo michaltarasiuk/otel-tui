@@ -189,7 +189,7 @@ test("hints the view's described keys, the selected row's actions first", async 
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
 
   expect(keyHints(frame)).toBe(
-    "return open / search right range s status o sort shift+o reverse p pause tab next region",
+    "return open y copy id / search right range s status o sort shift+o reverse p pause tab next region",
   );
 });
 
@@ -217,7 +217,7 @@ test("hints the jump to the next error only when a trace has errors", async () =
   app.mockInput.pressTab();
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
 
-  expect(keyHints(frame)).toStartWith("return open e next error / search");
+  expect(keyHints(frame)).toStartWith("return open y copy id e next error / search");
 });
 
 test("follows to the traces tab when a log opens its trace", async () => {
