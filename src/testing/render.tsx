@@ -7,6 +7,7 @@ import {
 import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
 import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot, flushSync } from "@opentui/react";
+import { StrictMode } from "react";
 
 import { RENDERER_CONFIG } from "#tui/tui.tsx";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
@@ -35,7 +36,11 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
   const { keymap, diagnostics: keymapDiagnostics } = createDiagnosedKeymap(setup.renderer);
 
   const root = createRoot(setup.renderer);
-  root.render(<KeymapProvider keymap={keymap}>{node}</KeymapProvider>);
+  root.render(
+    <StrictMode>
+      <KeymapProvider keymap={keymap}>{node}</KeymapProvider>
+    </StrictMode>,
+  );
 
   async function captureSpans() {
     await setup.renderer.idle();

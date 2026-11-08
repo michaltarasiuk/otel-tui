@@ -1,14 +1,20 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { type CliRendererConfig, createCliRenderer } from "@opentui/core";
+import {
+  registerDeadBindingWarnings,
+  registerUnresolvedCommandWarnings,
+} from "@opentui/keymap/addons";
 import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
 import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot } from "@opentui/react";
 import {
   environmentManager,
+  QueryCache,
   QueryClient,
   type QueryClientConfig,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { StrictMode } from "react";
 
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
@@ -63,9 +69,20 @@ interface TuiOptions {
 
 export async function startTui({ connection, receiverUrls }: TuiOptions) {
   const renderer = await createCliRenderer(RENDERER_CONFIG);
-  const keymap = createDefaultOpenTuiKeymap(renderer);
 
-  const queryClient = new QueryClient(QUERY_CLIENT_CONFIG);
+  const keymap = createDefaultOpenTuiKeymap(renderer);
+  registerDeadBindingWarnings(keymap);
+  registerUnresolvedCommandWarnings(keymap);
+  keymap.on("warning", ({ message }) => console.warn(message));
+  keymap.on("error", ({ message }) => console.error(message));
+
+  const queryClient = new QueryClient({
+    ...QUERY_CLIENT_CONFIG,
+    queryCache: new QueryCache({
+      onError: (error, query) =>
+        console.error(`Query ${JSON.stringify(query.queryKey)} failed`, error),
+    }),
+  });
 
   renderer.keyInput.on("keypress", (key) => {
     if (key.name === "`" && renderer.currentFocusedEditor === null) {
@@ -74,11 +91,13 @@ export async function startTui({ connection, receiverUrls }: TuiOptions) {
   });
 
   createRoot(renderer).render(
-    <KeymapProvider keymap={keymap}>
-      <QueryProvider queryClient={queryClient} connection={connection}>
-        <App receiverUrls={receiverUrls} />
-      </QueryProvider>
-    </KeymapProvider>,
+    <StrictMode>
+      <KeymapProvider keymap={keymap}>
+        <QueryProvider queryClient={queryClient} connection={connection}>
+          <App receiverUrls={receiverUrls} />
+        </QueryProvider>
+      </KeymapProvider>
+    </StrictMode>,
   );
 
   return {
