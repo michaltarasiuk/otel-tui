@@ -16,3 +16,11 @@ export function FocusScope({ focused, children }: FocusScopeProps) {
 export function useFocused() {
   return use(FocusContext);
 }
+
+interface FocusRootProps {
+  children: React.ReactNode;
+}
+
+export function FocusRoot({ children }: FocusRootProps) {
+  return <FocusContext value>{children}</FocusContext>;
+}

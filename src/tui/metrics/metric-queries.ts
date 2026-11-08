@@ -1,7 +1,7 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { DuckDBConnection } from "@duckdb/node-api";
+import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { useVisible } from "#tui/components/pane.tsx";
 import { useConnection } from "#tui/query/connection.ts";
 import { substringPattern } from "#tui/query/like-pattern.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
@@ -42,7 +42,6 @@ interface MetricQuery {
 
 export function useMetricList({ search, sort }: MetricQuery) {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", { search, sort }],
@@ -56,7 +55,6 @@ export function useMetricList({ search, sort }: MetricQuery) {
       const rows = reader.getRowObjectsJS();
       return Metric.array().parse(rows);
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -64,7 +62,6 @@ export function useMetricList({ search, sort }: MetricQuery) {
 
 export function useMetricTotalCount() {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["metrics", "count"],
@@ -72,16 +69,12 @@ export function useMetricTotalCount() {
       const reader = await connection.runAndReadAll(metricCount);
       return z.number().parse(reader.value(0, 0));
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
-export function useMetricSeries(metric: Metric) {
-  const connection = useConnection();
-  const visible = useVisible();
-
-  return useQuery({
+function metricSeriesQuery(connection: DuckDBConnection, metric: Metric) {
+  return queryOptions({
     queryKey: ["metrics", metric.metric_id, "series"],
     queryFn: async () => {
       const identity = metricIdentity(metric);
@@ -108,16 +101,22 @@ export function useMetricSeries(metric: Metric) {
           throw new Error(`Unknown metric type: ${metric.type}`);
       }
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
+export function useMetricSeries(metric: Metric) {
+  return useQuery(metricSeriesQuery(useConnection(), metric));
+}
+
+export function useSuspenseMetricSeries(metric: Metric) {
+  return useSuspenseQuery(metricSeriesQuery(useConnection(), metric));
+}
+
 export function useSeriesPoints(metric: Metric, seriesId: string) {
   const connection = useConnection();
-  const visible = useVisible();
 
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "points"],
     queryFn: async () => {
       const identity = { ...metricIdentity(metric), seriesId };
@@ -153,16 +152,14 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
           throw new Error(`Unknown metric type: ${metric.type}`);
       }
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useSeriesExemplars(metric: Metric, seriesId: string) {
   const connection = useConnection();
-  const visible = useVisible();
 
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "exemplars"],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(seriesExemplars, {
@@ -173,7 +170,6 @@ export function useSeriesExemplars(metric: Metric, seriesId: string) {
       });
       return Exemplar.array().parse(reader.getRowObjectsJS());
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }

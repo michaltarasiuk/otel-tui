@@ -1,4 +1,4 @@
-import { Facts, Heading } from "#tui/components/heading.tsx";
+import { DetailsHeader, Id, Meta, Muted, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatCount } from "#utils/format-count.ts";
@@ -23,28 +23,23 @@ export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderPro
 
   return (
     <box paddingX={1}>
-      <Heading title={root.name} aside={traceId} />
-      <Facts>
+      <DetailsHeader>
+        <Title>{root.name}</Title>
+        <Id>{traceId}</Id>
+      </DetailsHeader>
+      <Meta>
         {root.service_name !== null && (
-          <text fg={THEME.textMuted} wrapMode="none" flexShrink={0}>
+          <Muted>
             <ServiceName name={root.service_name} />
-          </text>
+          </Muted>
         )}
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {formatTimeOfDay(startTime)}
-        </text>
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {formatCount(spans.length, "span")}
-        </text>
+        <Muted>{formatTimeOfDay(startTime)}</Muted>
+        <Muted>{formatCount(spans.length, "span")}</Muted>
         {errorCount > 0 && (
-          <text fg={THEME.textError} flexShrink={0}>
-            {formatCount(errorCount, "error")}
-          </text>
+          <Muted color={THEME.textError}>{formatCount(errorCount, "error")}</Muted>
         )}
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {formatDuration(durationMs)}
-        </text>
-      </Facts>
+        <Muted>{formatDuration(durationMs)}</Muted>
+      </Meta>
     </box>
   );
 }

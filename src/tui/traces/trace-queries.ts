@@ -1,13 +1,12 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { useVisible } from "#tui/components/pane.tsx";
 import { useConnection } from "#tui/query/connection.ts";
 import { substringPattern } from "#tui/query/like-pattern.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
 
 import type { HistogramRange } from "./histogram.ts";
-import { Span, SpanDetails } from "./span.ts";
+import { Span, SpanContent } from "./span.ts";
 import spanDetails from "./sql/span-details.sql" with { type: "text" };
 import traceCount from "./sql/trace-count.sql" with { type: "text" };
 import traceList from "./sql/trace-list.sql" with { type: "text" };
@@ -28,7 +27,6 @@ interface TraceQuery extends TraceFilter {
 
 export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery) {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", { search, errorsOnly, timeRange, sort }],
@@ -45,7 +43,6 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
       const rows = reader.getRowObjectsJS();
       return Trace.array().parse(rows);
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -53,7 +50,6 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
 
 export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", "timeline", { search, errorsOnly }],
@@ -68,7 +64,6 @@ export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
       const rows = reader.getRowObjectsJS();
       return { newestBucketMs, occupied: TimeBucket.array().parse(rows) };
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -76,7 +71,6 @@ export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
 
 export function useTraceTotalCount() {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", "count"],
@@ -84,14 +78,12 @@ export function useTraceTotalCount() {
       const reader = await connection.runAndReadAll(traceCount);
       return z.number().parse(reader.value(0, 0));
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
 export function useTraceSpans(traceId: string) {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["traces", traceId, "spans"],
@@ -99,23 +91,20 @@ export function useTraceSpans(traceId: string) {
       const reader = await connection.runAndReadAll(traceSpans, { traceId });
       return Span.array().parse(reader.getRowObjectsJS());
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
-export function useSpanDetails(traceId: string, spanId: string) {
+export function useSpanContent(traceId: string, spanId: string) {
   const connection = useConnection();
-  const visible = useVisible();
 
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["traces", traceId, "spans", spanId],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(spanDetails, { traceId, spanId });
       const [row] = reader.getRowObjectsJS();
-      return row === undefined ? null : SpanDetails.parse(row);
+      return row === undefined ? null : SpanContent.parse(row);
     },
-    enabled: visible,
     staleTime: Infinity,
   });
 }

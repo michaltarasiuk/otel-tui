@@ -1,6 +1,5 @@
-import { Facts, Heading } from "#tui/components/heading.tsx";
+import { Description, DetailsHeader, Id, Meta, Muted, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
-import { THEME } from "#tui/theme/theme.ts";
 import { formatCount } from "#utils/format-count.ts";
 
 import { type Metric, temporalityLabel, typeLabel } from "./metric.ts";
@@ -15,28 +14,21 @@ export function MetricHeader({ metric, seriesCount }: MetricHeaderProps) {
 
   return (
     <>
-      <Heading title={metric.name} aside={typeLabel(metric.type)} />
-      <Facts>
+      <DetailsHeader>
+        <Title>{metric.name}</Title>
+        <Id>{typeLabel(metric.type)}</Id>
+      </DetailsHeader>
+      <Meta>
         {metric.service_name !== null && (
-          <text fg={THEME.textMuted} wrapMode="none" flexShrink={0}>
+          <Muted>
             <ServiceName name={metric.service_name} />
-          </text>
+          </Muted>
         )}
-        {metric.unit !== "" && (
-          <text fg={THEME.textMuted} flexShrink={0}>
-            unit {metric.unit}
-          </text>
-        )}
-        {temporality !== null && (
-          <text fg={THEME.textMuted} flexShrink={0}>
-            {temporality}
-          </text>
-        )}
-        <text fg={THEME.textMuted} flexShrink={0}>
-          {formatCount(seriesCount, "series", "series")}
-        </text>
-      </Facts>
-      {metric.description !== "" && <text fg={THEME.textMuted}>{metric.description}</text>}
+        {metric.unit !== "" && <Muted>unit {metric.unit}</Muted>}
+        {temporality !== null && <Muted>{temporality}</Muted>}
+        <Muted>{formatCount(seriesCount, "series", "series")}</Muted>
+      </Meta>
+      {metric.description !== "" && <Description>{metric.description}</Description>}
     </>
   );
 }

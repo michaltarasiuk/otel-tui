@@ -1,57 +1,71 @@
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
 import { FocusScope } from "./components/focus.tsx";
-import { KeyHints } from "./components/key-hints.tsx";
-import { LogsView } from "./logs/logs-view.tsx";
-import { MetricsView } from "./metrics/metrics-view.tsx";
-import { NavigationProvider } from "./navigation.tsx";
+import { AppKeys, StepKeys } from "./components/key-hints.tsx";
+import { Screen } from "./components/screen.tsx";
+import { LogsPage } from "./logs/logs-page.tsx";
+import { MetricPage } from "./metrics/metric-page.tsx";
+import { MetricsPage } from "./metrics/metrics-page.tsx";
+import { usePages } from "./pages.ts";
 import { ReceiverStatus } from "./receiver-status.tsx";
-import { type TabOption, TabPane, Tabs } from "./tabs.tsx";
-import { TracesView } from "./traces/traces-view.tsx";
+import { Tabs } from "./tabs.tsx";
+import { TracePage } from "./traces/trace-page.tsx";
+import { TracesPage } from "./traces/traces-page.tsx";
 import { useFocusedRegion } from "./use-focused-region.ts";
-import { WindowContent, WindowFooter, WindowHeader, Window } from "./window.tsx";
-
-const TABS = [
-  { name: "Traces", description: "", value: "traces" },
-  { name: "Metrics", description: "", value: "metrics" },
-  { name: "Logs", description: "", value: "logs" },
-] as const satisfies TabOption[];
+import { TopBar, Window } from "./window.tsx";
 
 interface AppProps {
   receiverUrls: ReceiverUrls;
 }
 
 export function App({ receiverUrls }: AppProps) {
-  const focusedRegion = useFocusedRegion();
+  const { region, focusStep } = useFocusedRegion();
+  const { page, logsTraceId, canGoBack, selectTab, open, replace, back } = usePages();
 
   return (
-    <NavigationProvider>
+    <AppKeys
+      value={
+        <>
+          <StepKeys forward="tab" backward="shift+tab" onStep={(step) => focusStep(step)}>
+            next region
+          </StepKeys>
+        </>
+      }
+    >
       <Window>
-        <WindowHeader>
-          <FocusScope focused={focusedRegion === "tabs"}>
-            <Tabs tabs={TABS} />
+        <TopBar>
+          <FocusScope focused={region === "tabs"}>
+            <Tabs current={page.tab} onSelect={(tab) => selectTab(tab)} />
           </FocusScope>
           <ReceiverStatus receiverUrls={receiverUrls} />
-        </WindowHeader>
-
-        <WindowContent>
-          <FocusScope focused={focusedRegion === "content"}>
-            <TabPane tab="traces">
-              <TracesView />
-            </TabPane>
-            <TabPane tab="metrics">
-              <MetricsView />
-            </TabPane>
-            <TabPane tab="logs">
-              <LogsView />
-            </TabPane>
-          </FocusScope>
-        </WindowContent>
-
-        <WindowFooter>
-          <KeyHints />
-        </WindowFooter>
+        </TopBar>
+        <FocusScope focused={region === "content"}>
+          <Screen when={page.name === "traces"}>
+            <TracesPage onOpen={(traceId) => open({ name: "trace", traceId })} />
+          </Screen>
+          {page.name === "trace" && (
+            <TracePage
+              key={`${page.traceId}:${page.spanId}`}
+              traceId={page.traceId}
+              spanId={page.spanId}
+              onBack={() => back()}
+              onOpenLogs={() => open({ name: "logs", traceId: page.traceId })}
+            />
+          )}
+          <Screen when={page.name === "metrics"}>
+            <MetricsPage onOpen={(metric) => open({ name: "metric", metric })} />
+          </Screen>
+          {page.name === "metric" && <MetricPage metric={page.metric} onBack={() => back()} />}
+          <Screen when={page.name === "logs"}>
+            <LogsPage
+              traceId={logsTraceId}
+              onTraceChange={(traceId) => replace({ name: "logs", traceId })}
+              onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+              onBack={canGoBack ? () => back() : undefined}
+            />
+          </Screen>
+        </FocusScope>
       </Window>
-    </NavigationProvider>
+    </AppKeys>
   );
 }

@@ -1,5 +1,7 @@
 import { RGBA } from "@opentui/core";
+import { Suspense } from "react";
 
+import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
@@ -105,6 +107,35 @@ function PercentileLegend({ color }: PercentileLegendProps) {
   );
 }
 
+interface SeriesPlotProps {
+  metric: Metric;
+  series: Series;
+  color: string;
+  windowStart: number;
+}
+
+function SeriesPlot({ metric, series, color, windowStart }: SeriesPlotProps) {
+  const { data, dataUpdatedAt } = useSeriesPoints(metric, series.series_id);
+
+  const end = dataUpdatedAt;
+  const start = Math.min(windowStart, end - MIN_WINDOW_MS);
+
+  return (
+    <LineChart
+      height={CHART_HEIGHT}
+      includeZero={metric.type !== "gauge" && metric.type !== "updowncounter"}
+      startLabel={formatTimeOfDay(start)}
+      endLabel="now"
+      formatValue={(value) =>
+        metric.type === "counter"
+          ? formatMetricRate(value, metric.unit)
+          : formatMetricValue(value, metric.unit)
+      }
+      getLines={(slotCount) => chartLines(metric, data, color, { start, end, slotCount })}
+    />
+  );
+}
+
 interface SeriesChartProps {
   metric: Metric;
   series: Series;
@@ -113,41 +144,14 @@ interface SeriesChartProps {
 }
 
 export function SeriesChart({ metric, series, color, windowStart }: SeriesChartProps) {
-  const seriesPoints = useSeriesPoints(metric, series.series_id);
-
-  const { data, dataUpdatedAt } = seriesPoints;
-
-  function renderChart() {
-    if (seriesPoints.isError) {
-      return <text fg={THEME.textError}>Failed to load data points</text>;
-    }
-    if (data === undefined) {
-      return <box height={CHART_HEIGHT + CHART_TIME_AXIS_HEIGHT} />;
-    }
-
-    const end = dataUpdatedAt;
-    const start = Math.min(windowStart, end - MIN_WINDOW_MS);
-
-    return (
-      <LineChart
-        height={CHART_HEIGHT}
-        includeZero={metric.type !== "gauge" && metric.type !== "updowncounter"}
-        startLabel={formatTimeOfDay(start)}
-        endLabel="now"
-        formatValue={(value) =>
-          metric.type === "counter"
-            ? formatMetricRate(value, metric.unit)
-            : formatMetricValue(value, metric.unit)
-        }
-        getLines={(slotCount) => chartLines(metric, data, color, { start, end, slotCount })}
-      />
-    );
-  }
-
   return (
     <Section title={chartTitle(metric)}>
       {series.stats.kind === "distribution" && <PercentileLegend color={color} />}
-      {renderChart()}
+      <ErrorBoundary fallback={<text fg={THEME.textError}>Failed to load data points</text>}>
+        <Suspense fallback={<box height={CHART_HEIGHT + CHART_TIME_AXIS_HEIGHT} />}>
+          <SeriesPlot metric={metric} series={series} color={color} windowStart={windowStart} />
+        </Suspense>
+      </ErrorBoundary>
     </Section>
   );
 }

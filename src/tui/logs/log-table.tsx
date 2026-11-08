@@ -1,101 +1,56 @@
-import { useBindings } from "@opentui/keymap/react";
+import type { SetStateAction } from "react";
 
-import { useFocused } from "#tui/components/focus.tsx";
-import { FIRST_HINT_PRIORITY } from "#tui/components/key-hints.tsx";
-import { useListState } from "#tui/components/use-list-state.ts";
-import { WindowedRows } from "#tui/components/windowed-rows.tsx";
-import { useNavigation } from "#tui/navigation.tsx";
+import { Rows } from "#tui/components/rows.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
+import { Cell, Column, Row, Secondary, TableHeader } from "#tui/components/table.tsx";
+import { COLUMN_SERVICE_WIDTH, COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
+import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 
-import { LogPanel } from "./log-panel.tsx";
-import { LogHeaderRow, LogRow } from "./log-row.tsx";
 import type { Log } from "./log.ts";
-import { isErrorLevel } from "./severity.ts";
+import { severityColor } from "./severity.ts";
+
+const COLUMN_SEVERITY_WIDTH = 8;
 
 interface LogTableProps {
   logs: Log[];
+  selectedIndex: number;
+  onSelect: (action: SetStateAction<number>) => void;
 }
 
-export function LogTable({ logs }: LogTableProps) {
-  const focused = useFocused();
-  const { logsTraceId, setLogsTraceId, openTrace } = useNavigation();
-
-  const list = useListState({
-    items: logs,
-    getKey: (log) => log.log_id,
-  });
-
-  const selectedLog = list.selectedItem;
-  const selectedTraceId = selectedLog?.trace_id ?? null;
-  const selectedSpanId = selectedLog?.span_id ?? undefined;
-  const hasErrors = logs.some((log) => isErrorLevel(log.severity));
-
-  useBindings(
-    () => ({
-      enabled: focused,
-      priority: FIRST_HINT_PRIORITY,
-      commands: [
-        {
-          name: "logs.next-error",
-          desc: "next error",
-          enabled: hasErrors,
-          run() {
-            list.selectNext((log) => isErrorLevel(log.severity));
-          },
-        },
-        {
-          name: "logs.previous-error",
-          enabled: hasErrors,
-          run() {
-            list.selectPrevious((log) => isErrorLevel(log.severity));
-          },
-        },
-        {
-          name: "logs.open-trace",
-          desc: "open trace",
-          enabled: selectedTraceId !== null,
-          run() {
-            if (selectedTraceId !== null) {
-              openTrace(selectedTraceId, selectedSpanId);
-            }
-          },
-        },
-        {
-          name: "logs.toggle-trace",
-          desc: "trace",
-          enabled: selectedTraceId !== null,
-          run() {
-            if (selectedTraceId !== null) {
-              setLogsTraceId(logsTraceId === selectedTraceId ? undefined : selectedTraceId);
-            }
-          },
-        },
-      ],
-      bindings: [
-        { key: "e", cmd: "logs.next-error" },
-        { key: "shift+e", cmd: "logs.previous-error" },
-        { key: "return", cmd: "logs.open-trace" },
-        { key: "t", cmd: "logs.toggle-trace" },
-      ],
-    }),
-    [
-      focused,
-      hasErrors,
-      list,
-      selectedTraceId,
-      selectedSpanId,
-      logsTraceId,
-      setLogsTraceId,
-      openTrace,
-    ],
-  );
-
+export function LogTable({ logs, selectedIndex, onSelect }: LogTableProps) {
   return (
-    <box flexGrow={1}>
-      <LogHeaderRow />
-      <WindowedRows list={list}>
-        {(log, selected) => <LogRow log={log} selected={selected} />}
-      </WindowedRows>
-      {selectedLog !== undefined && <LogPanel log={selectedLog} />}
-    </box>
+    <>
+      <TableHeader>
+        <Column width={COLUMN_TIME_WIDTH}>Time</Column>
+        <Column width={COLUMN_SEVERITY_WIDTH}>Severity</Column>
+        <Column width={COLUMN_SERVICE_WIDTH}>Service</Column>
+        <Column grow={1}>Body</Column>
+      </TableHeader>
+      <Rows
+        items={logs}
+        getKey={(log) => log.log_id}
+        selectedIndex={selectedIndex}
+        onSelect={(action) => onSelect(action)}
+      >
+        {(log) => (
+          <Row>
+            <Cell width={COLUMN_TIME_WIDTH} muted>
+              {log.time !== null && formatTimeOfDay(log.time)}
+            </Cell>
+            <Cell width={COLUMN_SEVERITY_WIDTH} color={severityColor(log.severity)}>
+              {log.severity ?? log.severity_text}
+            </Cell>
+            <Cell width={COLUMN_SERVICE_WIDTH} muted>
+              {log.service_name !== null && <ServiceName name={log.service_name} />}
+            </Cell>
+            <Cell grow={1}>
+              {log.event_name !== null && <Secondary>{log.event_name} </Secondary>}
+              {log.body !== null && collapseWhitespace(log.body)}
+            </Cell>
+          </Row>
+        )}
+      </Rows>
+    </>
   );
 }

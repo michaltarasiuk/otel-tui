@@ -1,10 +1,13 @@
 import { expect, test } from "bun:test";
 
+import { use } from "react";
+
 import { render, textLines } from "#testing/render.tsx";
 
 import { FocusScope } from "./focus.tsx";
-import { useListState } from "./use-list-state.ts";
-import { WindowedRows } from "./windowed-rows.tsx";
+import { Rows } from "./rows.tsx";
+import { SelectedContext } from "./table.tsx";
+import { useSelection } from "./use-selection.ts";
 
 const SCREEN_SIZE = { width: 20, height: 5 };
 
@@ -13,18 +16,33 @@ const PAGE_UP = "\x1b[5~";
 
 const SCROLL_INDICATOR = "█";
 
+interface NumberedRowProps {
+  name: string;
+}
+
+function NumberedRow({ name }: NumberedRowProps) {
+  const selected = use(SelectedContext);
+
+  return <text>{`${selected ? ">" : " "} ${name}`}</text>;
+}
+
 interface NumberedRowsProps {
   count: number;
 }
 
 function NumberedRows({ count }: NumberedRowsProps) {
   const rows = Array.from({ length: count }, (_, index) => `row ${index + 1}`);
-  const list = useListState({ items: rows, getKey: (row) => row });
+  const [selectedIndex, select] = useSelection(rows, (row) => row);
 
   return (
-    <WindowedRows list={list}>
-      {(row, selected) => <text>{`${selected ? ">" : " "} ${row}`}</text>}
-    </WindowedRows>
+    <Rows
+      items={rows}
+      getKey={(row) => row}
+      selectedIndex={selectedIndex}
+      onSelect={(action) => select(action)}
+    >
+      {(row) => <NumberedRow name={row} />}
+    </Rows>
   );
 }
 

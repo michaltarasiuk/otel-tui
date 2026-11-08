@@ -2,41 +2,42 @@ import type { TabSelectOption, TabSelectRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
 
 import { useFocused } from "./components/focus.tsx";
-import { Pane } from "./components/pane.tsx";
-import { type Tab, useNavigation } from "./navigation.tsx";
+import type { Tab } from "./pages.ts";
 import { THEME } from "./theme/theme.ts";
 
 const TAB_WIDTH = 12;
 
-export interface TabOption extends TabSelectOption {
+interface TabOption extends TabSelectOption {
   value: Tab;
 }
 
+const TABS = [
+  { name: "Traces", description: "", value: "traces" },
+  { name: "Metrics", description: "", value: "metrics" },
+  { name: "Logs", description: "", value: "logs" },
+] as const satisfies TabOption[];
+
 interface TabsProps {
-  tabs: TabOption[];
+  current: Tab;
+  onSelect: (tab: Tab) => void;
 }
 
-export function Tabs({ tabs }: TabsProps) {
+export function Tabs({ current, onSelect }: TabsProps) {
   const focused = useFocused();
-  const { tab, setTab } = useNavigation();
 
   const tabsRef = useRef<TabSelectRenderable>(null);
 
   useEffect(() => {
-    if (tabsRef.current === null) {
-      return;
-    }
-    const selectedIndex = tabs.findIndex((option) => option.value === tab);
-    tabsRef.current.setSelectedIndex(selectedIndex);
-  }, [tabs, tab]);
+    tabsRef.current?.setSelectedIndex(TABS.findIndex((option) => option.value === current));
+  }, [current]);
 
   return (
     <tab-select
       ref={tabsRef}
       focused={focused}
-      options={tabs}
+      options={TABS}
       tabWidth={TAB_WIDTH}
-      width={tabs.length * TAB_WIDTH}
+      width={TABS.length * TAB_WIDTH}
       flexShrink={0}
       textColor={THEME.textMuted}
       selectedTextColor={THEME.text}
@@ -44,22 +45,11 @@ export function Tabs({ tabs }: TabsProps) {
       showDescription={false}
       showUnderline={false}
       onChange={(index) => {
-        const option = tabs[index];
+        const option = TABS[index];
         if (option !== undefined) {
-          setTab(option.value);
+          onSelect(option.value);
         }
       }}
     />
   );
-}
-
-interface TabPaneProps {
-  tab: Tab;
-  children: React.ReactNode;
-}
-
-export function TabPane({ tab, children }: TabPaneProps) {
-  const navigation = useNavigation();
-
-  return <Pane visible={navigation.tab === tab}>{children}</Pane>;
 }

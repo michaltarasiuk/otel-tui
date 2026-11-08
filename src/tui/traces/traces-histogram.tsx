@@ -27,13 +27,13 @@ function columnBackground(column: HistogramColumn, selected: HistogramRange | un
     : THEME.background;
 }
 
-interface TraceHistogramProps {
+interface TracesHistogramProps {
   occupied: HistogramColumn[];
   newestBucketMs: number;
   selected: HistogramRange | undefined;
 }
 
-export function TraceHistogram({ occupied, newestBucketMs, selected }: TraceHistogramProps) {
+export function TracesHistogram({ occupied, newestBucketMs, selected }: TracesHistogramProps) {
   const [width, setWidth] = useState(0);
 
   const histogramRef = useRef<BoxRenderable>(null);

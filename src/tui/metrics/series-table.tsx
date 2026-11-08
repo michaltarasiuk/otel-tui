@@ -1,45 +1,74 @@
-import { useListState } from "#tui/components/use-list-state.ts";
-import { WindowedRows } from "#tui/components/windowed-rows.tsx";
+import type { SetStateAction } from "react";
+
+import { Rows } from "#tui/components/rows.tsx";
+import { Cell, Column, Row, TableHeader } from "#tui/components/table.tsx";
 
 import type { Metric } from "./metric.ts";
-import { attributeColumns, seriesLabel, sortByColumns } from "./series-columns.ts";
-import { SeriesPanel } from "./series-panel.tsx";
-import { SeriesHeaderRow, SeriesRow } from "./series-row.tsx";
+import { type AttributeColumn, cellValue } from "./series-columns.ts";
+import { seriesStats, statKeys, statLabel } from "./series-stats.ts";
 import type { Series } from "./series.ts";
 
+const COLUMN_STAT_WIDTH = 10;
+
 interface SeriesTableProps {
-  metric: Metric;
   series: Series[];
+  selectedIndex: number;
+  onSelect: (action: SetStateAction<number>) => void;
+  metric: Metric;
+  columns: AttributeColumn[];
 }
 
-export function SeriesTable({ metric, series }: SeriesTableProps) {
-  const columns = attributeColumns(series);
-  const rows = sortByColumns(series, columns);
-
-  const list = useListState({
-    items: rows,
-    getKey: (row) => row.series_id,
-  });
-
-  const selectedSeries = list.selectedItem;
-  const windowStart = Math.min(...series.map((row) => row.first_time));
-
+export function SeriesTable({
+  series,
+  selectedIndex,
+  onSelect,
+  metric,
+  columns,
+}: SeriesTableProps) {
   return (
-    <box flexGrow={1}>
-      <SeriesHeaderRow metric={metric} columns={columns} />
-      <WindowedRows list={list}>
-        {(row, selected) => (
-          <SeriesRow metric={metric} columns={columns} series={row} selected={selected} />
-        )}
-      </WindowedRows>
-      {selectedSeries !== undefined && (
-        <SeriesPanel
-          metric={metric}
-          series={selectedSeries}
-          label={seriesLabel(selectedSeries, columns)}
-          windowStart={windowStart}
-        />
-      )}
-    </box>
+    <>
+      <TableHeader>
+        {columns.length === 0 && <Column grow={1}>Attributes</Column>}
+        {columns.map(({ key, source, weight }) => (
+          <Column key={`${source}.${key}`} grow={weight}>
+            {key}
+          </Column>
+        ))}
+        {statKeys(metric.type).map((key) => (
+          <Column key={key} width={COLUMN_STAT_WIDTH} align="right">
+            {statLabel(key)}
+          </Column>
+        ))}
+      </TableHeader>
+      <Rows
+        items={series}
+        getKey={(row) => row.series_id}
+        selectedIndex={selectedIndex}
+        onSelect={(action) => onSelect(action)}
+      >
+        {(row) => {
+          const stats = seriesStats(metric, row);
+          return (
+            <Row>
+              {columns.length === 0 && (
+                <Cell grow={1} muted>
+                  none
+                </Cell>
+              )}
+              {columns.map((column) => (
+                <Cell key={`${column.source}.${column.key}`} grow={column.weight}>
+                  {cellValue(row, column)}
+                </Cell>
+              ))}
+              {statKeys(metric.type).map((key) => (
+                <Cell key={key} width={COLUMN_STAT_WIDTH} align="right">
+                  {stats[key]}
+                </Cell>
+              ))}
+            </Row>
+          );
+        }}
+      </Rows>
+    </>
   );
 }

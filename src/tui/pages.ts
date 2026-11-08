@@ -1,0 +1,134 @@
+import { useState } from "react";
+
+import type { Metric } from "./metrics/metric.ts";
+
+export type Tab = "traces" | "metrics" | "logs";
+
+interface TraceLocation {
+  traceId: string;
+  spanId: string | undefined;
+}
+
+interface Location {
+  tab: Tab;
+  trace: TraceLocation | undefined;
+  metric: Metric | undefined;
+  logsTraceId: string | undefined;
+}
+
+interface History {
+  location: Location;
+  previous: Location[];
+}
+
+export type Page =
+  | { name: "traces"; tab: "traces" }
+  | { name: "trace"; tab: "traces"; traceId: string; spanId: string | undefined }
+  | { name: "metrics"; tab: "metrics" }
+  | { name: "metric"; tab: "metrics"; metric: Metric }
+  | { name: "logs"; tab: "logs" };
+
+type Destination =
+  | { name: "trace"; traceId: string; spanId?: string | undefined }
+  | { name: "metric"; metric: Metric }
+  | { name: "logs"; traceId: string | undefined };
+
+const START_HISTORY: History = {
+  location: { tab: "traces", trace: undefined, metric: undefined, logsTraceId: undefined },
+  previous: [],
+};
+
+function pageAt({ tab, trace, metric }: Location): Page {
+  switch (tab) {
+    case "traces":
+      return trace === undefined
+        ? { name: "traces", tab }
+        : { name: "trace", tab, traceId: trace.traceId, spanId: trace.spanId };
+    case "metrics":
+      return metric === undefined ? { name: "metrics", tab } : { name: "metric", tab, metric };
+    case "logs":
+      return { name: "logs", tab };
+  }
+}
+
+function change(destination: Destination): Partial<Location> {
+  switch (destination.name) {
+    case "trace":
+      return {
+        tab: "traces",
+        trace: { traceId: destination.traceId, spanId: destination.spanId },
+      };
+    case "metric":
+      return { tab: "metrics", metric: destination.metric };
+    case "logs":
+      return { tab: "logs", logsTraceId: destination.traceId };
+  }
+}
+
+function replace({ location, previous }: History, change: Partial<Location>): History {
+  return {
+    location: { ...location, ...change },
+    previous,
+  };
+}
+
+function push({ location, previous }: History, change: Partial<Location>): History {
+  return {
+    location: { ...location, ...change },
+    previous: [...previous, location],
+  };
+}
+
+function pop(history: History): History {
+  const location = history.previous.at(-1);
+  if (location === undefined) {
+    return history;
+  }
+  return {
+    location,
+    previous: history.previous.slice(0, -1),
+  };
+}
+
+function close(history: History): History {
+  switch (history.location.tab) {
+    case "traces":
+      return replace(history, { trace: undefined });
+    case "metrics":
+      return replace(history, { metric: undefined });
+    case "logs":
+      return replace(history, { logsTraceId: undefined });
+  }
+}
+
+function switchTab(history: History, tab: Tab): History {
+  if (tab === history.location.tab) {
+    return history;
+  }
+  return {
+    location: { ...history.location, tab },
+    previous: [],
+  };
+}
+
+export function usePages() {
+  const [history, setHistory] = useState(START_HISTORY);
+
+  return {
+    page: pageAt(history.location),
+    logsTraceId: history.location.logsTraceId,
+    canGoBack: history.previous.length > 0,
+    selectTab: (tab: Tab) => {
+      setHistory((history) => switchTab(history, tab));
+    },
+    open: (destination: Destination) => {
+      setHistory((history) => push(history, change(destination)));
+    },
+    replace: (destination: Destination) => {
+      setHistory((history) => replace(history, change(destination)));
+    },
+    back: () => {
+      setHistory((history) => (history.previous.length > 0 ? pop(history) : close(history)));
+    },
+  };
+}

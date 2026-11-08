@@ -1,5 +1,3 @@
-import type { KeyEvent, Renderable } from "@opentui/core";
-import type { Binding, Command } from "@opentui/keymap";
 import { useState } from "react";
 
 export function useSearch() {
@@ -10,37 +8,15 @@ export function useSearch() {
     text,
     isEditing,
     setText,
-    commands: [
-      {
-        name: "search.edit",
-        desc: "search",
-        enabled: !isEditing,
-        run() {
-          setIsEditing(true);
-        },
-      },
-      {
-        name: "search.apply",
-        desc: "apply",
-        enabled: isEditing,
-        run() {
-          setIsEditing(false);
-        },
-      },
-      {
-        name: "search.clear",
-        desc: "clear",
-        enabled: isEditing || text !== "",
-        run() {
-          setText("");
-          setIsEditing(false);
-        },
-      },
-    ] satisfies Command<Renderable, KeyEvent>[],
-    bindings: [
-      { key: "/", cmd: "search.edit" },
-      { key: "return", cmd: "search.apply" },
-      { key: "escape", cmd: "search.clear" },
-    ] satisfies Binding<Renderable, KeyEvent>[],
+    edit() {
+      setIsEditing(true);
+    },
+    apply() {
+      setIsEditing(false);
+    },
+    clear() {
+      setText("");
+      setIsEditing(false);
+    },
   };
 }

@@ -20,7 +20,7 @@ export const Span = z.object({
 });
 export type Span = z.infer<typeof Span>;
 
-export const SpanDetails = z.object({
+export const SpanContent = z.object({
   scope_name: z.string().nullable(),
   scope_version: z.string().nullable(),
   attributes: Attributes,
@@ -34,4 +34,4 @@ export const SpanDetails = z.object({
     .nullable()
     .transform((links) => links ?? []),
 });
-export type SpanDetails = z.infer<typeof SpanDetails>;
+export type SpanContent = z.infer<typeof SpanContent>;

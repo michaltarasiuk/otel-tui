@@ -1,7 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { useVisible } from "#tui/components/pane.tsx";
 import { useConnection } from "#tui/query/connection.ts";
 import { substringPattern } from "#tui/query/like-pattern.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
@@ -21,7 +20,6 @@ interface LogQuery {
 
 export function useLogList({ search, minSeverity, traceId }: LogQuery) {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["logs", { search, minSeverity, traceId }],
@@ -36,7 +34,6 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
       const rows = reader.getRowObjectsJS();
       return Log.array().parse(rows);
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -44,7 +41,6 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
 
 export function useLogTotalCount() {
   const connection = useConnection();
-  const visible = useVisible();
 
   return useQuery({
     queryKey: ["logs", "count"],
@@ -52,7 +48,6 @@ export function useLogTotalCount() {
       const reader = await connection.runAndReadAll(logCount);
       return z.number().parse(reader.value(0, 0));
     },
-    enabled: visible,
     refetchInterval: POLL_INTERVAL_MS,
   });
 }

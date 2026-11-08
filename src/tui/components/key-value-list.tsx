@@ -4,11 +4,11 @@ import { THEME } from "#tui/theme/theme.ts";
 
 const KEY_MAX_WIDTH = 32;
 
-interface EntryListProps {
+interface KeyValueListProps {
   entries: Attributes;
 }
 
-export function EntryList({ entries }: EntryListProps) {
+export function KeyValueList({ entries }: KeyValueListProps) {
   const longestKey = Math.max(...entries.map(({ key }) => key.length));
   const keyWidth = Math.min(KEY_MAX_WIDTH, longestKey);
 
