@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Release builds
+dist/
+
 # macOS
 .DS_Store
 

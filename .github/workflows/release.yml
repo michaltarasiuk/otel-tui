@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - { runner: macos-latest, platform: darwin, arch: arm64 }
+          - { runner: macos-latest, platform: darwin, arch: x64 }
+          - { runner: ubuntu-latest, platform: linux, arch: x64 }
+          - { runner: ubuntu-24.04-arm, platform: linux, arch: arm64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile --os=${{ matrix.platform }} --cpu=${{ matrix.arch }}
+      - run: bun run build ${{ matrix.platform }} ${{ matrix.arch }}
+      - name: Package
+        run: |
+          name=otel-tui-${{ matrix.platform }}-${{ matrix.arch }}
+          mkdir -p "package/$name"
+          cp "dist/$name" "package/$name/otel-tui"
+          cp README.md LICENSE "package/$name/"
+          tar -czf "$name.tar.gz" -C package "$name"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: otel-tui-${{ matrix.platform }}-${{ matrix.arch }}
+          path: otel-tui-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - run: sha256sum otel-tui-*.tar.gz > checksums.txt
+      - run: gh release create "$GITHUB_REF_NAME" otel-tui-*.tar.gz checksums.txt --generate-notes --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

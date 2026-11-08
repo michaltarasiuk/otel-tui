@@ -77,7 +77,19 @@ log, or metric attribute or a resource attribute exactly, as in
 
 ## Usage
 
-Requires [Bun](https://bun.sh).
+Download the archive for your system from the
+[latest release](https://github.com/michaltarasiuk/otel-tui/releases/latest)
+(macOS and Linux, arm64 and x64), unpack it, and run `otel-tui`:
+
+```shell
+tar -xzf otel-tui-darwin-arm64.tar.gz
+./otel-tui-darwin-arm64/otel-tui
+```
+
+The first run unpacks DuckDB into `~/.cache/otel-tui` and downloads its OTLP
+extension, so it needs network access once.
+
+To run from source instead, install [Bun](https://bun.sh):
 
 ```shell
 bun install
@@ -120,6 +132,10 @@ it with `bun run demo:down`.
 bun run check
 bun run test
 ```
+
+`bun run build [platform] [arch]` compiles a standalone binary into `dist/`,
+for the current system by default. Pushing a `v*` tag builds every platform
+and publishes a GitHub release.
 
 ### Debugging
 

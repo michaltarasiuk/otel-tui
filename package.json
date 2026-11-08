@@ -16,6 +16,7 @@
     "dev:devtools": "DEV=true bun --watch src/main.ts",
     "dev:stats": "OTUI_SHOW_STATS=true bun --watch src/main.ts",
     "start": "bun src/main.ts",
+    "build": "bun scripts/build.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@types/bun": "^1.4.3",
     "@types/react": "^19.3.0",
+    "dedent": "^1.7.2",
     "lefthook": "^2.2.2",
     "oxfmt": "^0.73.0",
     "oxlint": "^1.88.0",
