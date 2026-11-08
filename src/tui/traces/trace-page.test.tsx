@@ -227,6 +227,9 @@ test("selects a span linked within the same trace", async () => {
   app.mockInput.pressArrow("down");
   app.mockInput.pressArrow("down");
   await app.waitForSelection("merge");
+  await app.waitForFrame((frame) =>
+    detailsLines(frame).includes(`${traceId} ${"cb".repeat(8)} (this trace)`),
+  );
 
   app.mockInput.pressTab();
   let frame = await app.waitForFrame((frame) => keyHints(frame).includes("return open link"));
