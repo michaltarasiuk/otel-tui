@@ -13,7 +13,7 @@ interface Location {
   tab: Tab;
   trace: TraceLocation | undefined;
   metric: Metric | undefined;
-  logsTraceId: string | undefined;
+  logsTrace: TraceLocation | undefined;
 }
 
 interface History {
@@ -31,10 +31,10 @@ export type Page =
 type Destination =
   | { name: "trace"; traceId: string; spanId?: string | undefined }
   | { name: "metric"; metric: Metric }
-  | { name: "logs"; traceId: string | undefined };
+  | { name: "logs"; traceId: string | undefined; spanId?: string | undefined };
 
 const START_HISTORY: History = {
-  location: { tab: "traces", trace: undefined, metric: undefined, logsTraceId: undefined },
+  location: { tab: "traces", trace: undefined, metric: undefined, logsTrace: undefined },
   previous: [],
 };
 
@@ -61,7 +61,13 @@ function change(destination: Destination): Partial<Location> {
     case "metric":
       return { tab: "metrics", metric: destination.metric };
     case "logs":
-      return { tab: "logs", logsTraceId: destination.traceId };
+      return {
+        tab: "logs",
+        logsTrace:
+          destination.traceId === undefined
+            ? undefined
+            : { traceId: destination.traceId, spanId: destination.spanId },
+      };
   }
 }
 
@@ -97,7 +103,7 @@ function close(history: History): History {
     case "metrics":
       return replace(history, { metric: undefined });
     case "logs":
-      return replace(history, { logsTraceId: undefined });
+      return replace(history, { logsTrace: undefined });
   }
 }
 
@@ -116,7 +122,7 @@ export function usePages() {
 
   return {
     page: pageAt(history.location),
-    logsTraceId: history.location.logsTraceId,
+    logsTrace: history.location.logsTrace,
     canGoBack: history.previous.length > 0,
     selectTab: (tab: Tab) => {
       setHistory((history) => switchTab(history, tab));

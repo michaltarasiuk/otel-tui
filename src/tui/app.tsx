@@ -20,7 +20,7 @@ interface AppProps {
 
 export function App({ receiverUrls }: AppProps) {
   const { region, focusStep } = useFocusedRegion();
-  const { page, logsTraceId, canGoBack, selectTab, open, replace, back } = usePages();
+  const { page, logsTrace, canGoBack, selectTab, open, replace, back } = usePages();
 
   return (
     <AppKeys
@@ -58,7 +58,7 @@ export function App({ receiverUrls }: AppProps) {
           {page.name === "metric" && <MetricPage metric={page.metric} onBack={() => back()} />}
           <Screen when={page.name === "logs"}>
             <LogsPage
-              traceId={logsTraceId}
+              traceId={logsTrace?.traceId}
               onTraceChange={(traceId) => replace({ name: "logs", traceId })}
               onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
               onBack={canGoBack ? () => back() : undefined}
