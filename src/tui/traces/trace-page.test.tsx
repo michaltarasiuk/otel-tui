@@ -5,8 +5,17 @@ import { type CapturedFrame, RGBA } from "@opentui/core";
 import { renderApp } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { detailsLines, keyHints, pageHeader, tableRows, textLines } from "#testing/screen.ts";
-import { serviceColor } from "#tui/theme/theme.ts";
+import {
+  color,
+  detailsLines,
+  keyHints,
+  lineSpans,
+  pageHeader,
+  spanColors,
+  tableRows,
+  textLines,
+} from "#testing/screen.ts";
+import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
 import spanDetails from "./sql/span-details.sql" with { type: "text" };
@@ -381,4 +390,17 @@ test("copies the selected span's ID and the trace's ID", async () => {
   await app.waitForFrame((frame) => keyHints(frame).includes("shift+y copied"));
 
   expect(copied).toEqual(["1a".repeat(8), cartTraceId]);
+});
+
+test("colors the names of spans with errors", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForFrame((frame) => frame.includes("orders process"));
+
+  const frame = await app.captureSpans();
+
+  expect(spanColors(lineSpans(frame, "charge"), "charge").fg).toEqual(color(THEME.textError));
+  expect(spanColors(lineSpans(frame, "orders process"), "orders process").fg).toEqual(
+    color(THEME.text),
+  );
 });

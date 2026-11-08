@@ -3,7 +3,17 @@ import { expect, test } from "bun:test";
 import { type AppOptions, renderApp, renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
-import { detailsLines, keyHints, pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import {
+  color,
+  detailsLines,
+  keyHints,
+  lineSpans,
+  pageHeader,
+  spanColors,
+  tableRows,
+  textLines,
+} from "#testing/screen.ts";
+import { THEME } from "#tui/theme/theme.ts";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
@@ -524,4 +534,19 @@ test("copies the selected log's body", async () => {
 
   await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
   expect(copied).toEqual(["Database connection established"]);
+});
+
+test("colors each severity", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderLogList(receiver);
+
+  const frame = await app.captureSpans();
+
+  expect(spanColors(lineSpans(frame, "Credit card info"), "ERROR").fg).toEqual(
+    color(THEME.textError),
+  );
+  expect(spanColors(lineSpans(frame, "Payment request failed"), "WARN").fg).toEqual(
+    color(THEME.textWarning),
+  );
+  expect(spanColors(lineSpans(frame, "[PlaceOrder]"), "INFO").fg).toEqual(color(THEME.text));
 });

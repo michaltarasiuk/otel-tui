@@ -3,7 +3,17 @@ import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 import { renderApp } from "#testing/app.tsx";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { keyHints, pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import {
+  color,
+  keyHints,
+  lineSpans,
+  pageHeader,
+  selectedBackground,
+  spanColors,
+  tableRows,
+  textLines,
+} from "#testing/screen.ts";
+import { serviceColor, THEME } from "#tui/theme/theme.ts";
 
 import {
   at,
@@ -220,4 +230,26 @@ test("pauses and resumes live updates", async () => {
   expect(keyHints(await app.waitForFrame((frame) => frame.includes("p pause")))).toContain(
     "p pause",
   );
+});
+
+test("colors each service and the error count", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+
+  const spans = lineSpans(await app.captureSpans(), PLACE_ORDER);
+
+  expect(spanColors(spans, "●").fg).toEqual(color(serviceColor("checkout")));
+  expect(spanColors(spans, "2").fg).toEqual(color(THEME.textError));
+});
+
+test("highlights the selected row only while its region has focus", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+  await app.waitForSelection(STATUS_ROW);
+
+  app.mockInput.pressTab({ shift: true });
+  await app.waitForFrame((frame) => !keyHints(frame).includes("/ search"));
+
+  const spans = lineSpans(await app.captureSpans(), "GET /status");
+  expect(spanColors(spans, "GET /status").bg).not.toEqual(selectedBackground.toInts());
 });

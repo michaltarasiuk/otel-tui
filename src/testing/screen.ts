@@ -1,4 +1,4 @@
-import { RGBA } from "@opentui/core";
+import { type CapturedFrame, type CapturedSpan, RGBA } from "@opentui/core";
 
 import { THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
@@ -33,4 +33,23 @@ export function detailsLines(frame: string) {
 
 export function keyHints(frame: string) {
   return textLines(frame).at(-1) ?? "";
+}
+
+export function lineSpans({ lines }: CapturedFrame, text: string) {
+  const line = lines.find(({ spans }) =>
+    spans
+      .map((span) => span.text)
+      .join("")
+      .includes(text),
+  );
+  return line?.spans ?? [];
+}
+
+export function spanColors(spans: CapturedSpan[], text: string) {
+  const span = spans.find((span) => span.text.trim().startsWith(text));
+  return { fg: span?.fg.toInts(), bg: span?.bg.toInts() };
+}
+
+export function color(hex: string) {
+  return RGBA.fromHex(hex).toInts();
 }
