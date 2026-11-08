@@ -73,6 +73,7 @@ export function App({ receiverUrls }: AppProps) {
                   spanId={trace.spanId}
                   onBack={() => back()}
                   onOpenLogs={(spanId) => open({ name: "logs", traceId: trace.traceId, spanId })}
+                  onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
                 />
               </Screen>
             )}

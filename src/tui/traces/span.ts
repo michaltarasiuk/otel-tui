@@ -30,8 +30,16 @@ export const SpanContent = z.object({
     .nullable()
     .transform((events) => events ?? []),
   links: z
-    .array(z.object({ trace_id: z.string(), span_id: z.string(), attributes: Attributes }))
+    .array(
+      z.object({
+        trace_id: z.string(),
+        span_id: z.string(),
+        attributes: Attributes,
+        has_trace: z.boolean(),
+      }),
+    )
     .nullable()
     .transform((links) => links ?? []),
 });
+export type SpanLink = SpanContent["links"][number];
 export type SpanContent = z.infer<typeof SpanContent>;

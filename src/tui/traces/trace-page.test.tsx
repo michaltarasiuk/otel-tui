@@ -174,6 +174,75 @@ test("shows a span's links and status message", async () => {
   ]);
 });
 
+test("opens a linked trace from the links region and comes back", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForFrame((frame) => detailsLines(frame).includes("Links"));
+
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => keyHints(frame).includes("return open link"));
+  app.mockInput.pressEnter();
+
+  expect(await app.waitForSelection("GET /api/cart")).toContain("● frontend GET /api/cart");
+  app.mockInput.pressEscape();
+  await app.waitForSelection(PLACE_ORDER);
+});
+
+test("selects a span linked within the same trace", async () => {
+  await using receiver = await startTestReceiver();
+  const traceId = "c".repeat(32);
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "worker",
+      spans: [
+        { traceId, spanId: "ca".repeat(8), name: "run batch", start: at(0), end: at(100) },
+        {
+          traceId,
+          spanId: "cb".repeat(8),
+          parentSpanId: "ca".repeat(8),
+          name: "load",
+          start: at(10),
+          end: at(40),
+        },
+        {
+          traceId,
+          spanId: "cc".repeat(8),
+          parentSpanId: "ca".repeat(8),
+          name: "merge",
+          start: at(50),
+          end: at(90),
+          links: [
+            { traceId, spanId: "cb".repeat(8) },
+            { traceId: "d".repeat(32), spanId: "da".repeat(8) },
+          ],
+        },
+      ],
+    }),
+  );
+  await using app = await renderApp(receiver);
+  await app.waitForFrame((frame) => frame.includes("run batch"));
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => keyHints(frame).includes("return open"));
+  app.mockInput.pressEnter();
+  await app.waitForSelection("run batch");
+  app.mockInput.pressArrow("down");
+  app.mockInput.pressArrow("down");
+  await app.waitForSelection("merge");
+
+  app.mockInput.pressTab();
+  let frame = await app.waitForFrame((frame) => keyHints(frame).includes("return open link"));
+  expect(detailsLines(frame)).toContain(`${traceId} ${"cb".repeat(8)} (this trace)`);
+  expect(detailsLines(frame)).toContain(`${"d".repeat(32)} ${"da".repeat(8)} (not stored)`);
+  app.mockInput.pressArrow("down");
+  frame = await app.waitForFrame((frame) => !keyHints(frame).includes("open link"));
+  app.mockInput.pressArrow("up");
+  await app.waitForFrame((frame) => keyHints(frame).includes("return open link"));
+  app.mockInput.pressEnter();
+
+  await app.waitForSelection("load");
+});
+
 test("points out a span whose parent never arrived", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);

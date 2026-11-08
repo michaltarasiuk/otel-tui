@@ -18,7 +18,9 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
 - Traces: the trace list works today, and `return` opens a trace as a span
   waterfall with each span's events, attributes, links, and resource, and
-  `l` there opens the trace's logs (`shift+l` only the selected span's). `e` jumps to the next trace or span
+  `l` there opens the trace's logs (`shift+l` only the selected span's). `tab`
+  moves into the span's links, where `return` opens the linked trace, or
+  selects the linked span when it is in the same trace. `e` jumps to the next trace or span
   with errors, and `s` shows only traces with errors. `o` sorts by start
   time, span count, error count, or duration, `shift+o` reverses the order,
   `ctrl+d` and `ctrl+u` move half a page, and `/` searches trace IDs, span

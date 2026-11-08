@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { useConnection } from "#tui/query/connection.ts";
@@ -95,13 +95,17 @@ export function useTraceSpans(traceId: string) {
   });
 }
 
-export function useSpanContent(traceId: string, spanId: string) {
+export function useSpanContent(traceId: string, spanId: string | undefined) {
   const connection = useConnection();
 
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: ["traces", traceId, "spans", spanId],
+    enabled: spanId !== undefined,
     queryFn: async () => {
-      const reader = await connection.runAndReadAll(spanDetails, { traceId, spanId });
+      const reader = await connection.runAndReadAll(spanDetails, {
+        traceId,
+        spanId: spanId ?? null,
+      });
       const [row] = reader.getRowObjectsJS();
       return row === undefined ? null : SpanContent.parse(row);
     },

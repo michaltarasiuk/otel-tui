@@ -1,3 +1,14 @@
+WITH span AS (
+  SELECT
+    *,
+    from_json(links_json, '[{"trace_id":"VARCHAR","span_id":"VARCHAR","attributes":"JSON"}]') AS link_list
+  FROM otlp_traces
+  WHERE trace_id = $traceId AND span_id = $spanId
+), stored_traces AS (
+  SELECT coalesce(list(DISTINCT otlp_traces.trace_id), []) AS trace_ids
+  FROM otlp_traces
+  WHERE otlp_traces.trace_id IN (SELECT unnest(link_list).trace_id FROM span)
+)
 SELECT
   scope_name,
   scope_version,
@@ -12,12 +23,12 @@ SELECT
     }
   ) AS events,
   list_transform(
-    from_json(links_json, '[{"trace_id":"VARCHAR","span_id":"VARCHAR","attributes":"JSON"}]'),
+    link_list,
     lambda link: {
       trace_id: link.trace_id,
       span_id: link.span_id,
-      attributes: attribute_entries(link.attributes)
+      attributes: attribute_entries(link.attributes),
+      has_trace: list_contains(stored_traces.trace_ids, link.trace_id)
     }
   ) AS links
-FROM otlp_traces
-WHERE trace_id = $traceId AND span_id = $spanId
+FROM span, stored_traces

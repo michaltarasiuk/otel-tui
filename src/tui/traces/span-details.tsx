@@ -1,5 +1,4 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { Suspense } from "react";
 
 import {
   Description,
@@ -10,7 +9,6 @@ import {
   ScopeName,
   Title,
 } from "#tui/components/details.tsx";
-import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
@@ -19,8 +17,7 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 
-import type { Span } from "./span.ts";
-import { useSpanContent } from "./trace-queries.ts";
+import type { Span, SpanContent } from "./span.ts";
 
 const NESTED_INDENT = 2;
 
@@ -29,17 +26,11 @@ function formatOffset(ms: number) {
 }
 
 interface SpanSectionsProps {
-  traceId: string;
-  spanId: string;
+  content: SpanContent;
+  children: React.ReactNode;
 }
 
-function SpanSections({ traceId, spanId }: SpanSectionsProps) {
-  const { data: content } = useSpanContent(traceId, spanId);
-
-  if (content === null) {
-    return <Description>Span is no longer stored</Description>;
-  }
-
+function SpanSections({ content, children }: SpanSectionsProps) {
   return (
     <>
       {content.events.length > 0 && (
@@ -66,22 +57,7 @@ function SpanSections({ traceId, spanId }: SpanSectionsProps) {
           <KeyValueList entries={content.attributes} />
         </Section>
       )}
-      {content.links.length > 0 && (
-        <Section title="Links">
-          {content.links.map((link, index) => (
-            <box key={index}>
-              <text fg={THEME.text}>
-                {link.trace_id} <span fg={THEME.textMuted}>{link.span_id}</span>
-              </text>
-              {link.attributes.length > 0 && (
-                <box paddingLeft={NESTED_INDENT}>
-                  <KeyValueList entries={link.attributes} />
-                </box>
-              )}
-            </box>
-          ))}
-        </Section>
-      )}
+      {children}
       {content.resource_attributes.length > 0 && (
         <Section title="Resource">
           <KeyValueList entries={content.resource_attributes} />
@@ -98,11 +74,13 @@ function SpanSections({ traceId, spanId }: SpanSectionsProps) {
 
 interface SpanDetailsProps {
   ref: React.Ref<ScrollBoxRenderable>;
-  traceId: string;
   span: Span;
+  content: SpanContent | null | undefined;
+  failed: boolean;
+  children: React.ReactNode;
 }
 
-export function SpanDetails({ ref, traceId, span }: SpanDetailsProps) {
+export function SpanDetails({ ref, span, content, failed, children }: SpanDetailsProps) {
   const detached = span.depth === 0 && span.parent_span_id !== null;
 
   return (
@@ -130,13 +108,11 @@ export function SpanDetails({ ref, traceId, span }: SpanDetailsProps) {
         </Description>
       )}
       <ScrollBox ref={ref}>
-        <ErrorBoundary
-          fallback={<Description color={THEME.textError}>Failed to load span details</Description>}
-        >
-          <Suspense>
-            <SpanSections traceId={traceId} spanId={span.span_id} />
-          </Suspense>
-        </ErrorBoundary>
+        {failed && <Description color={THEME.textError}>Failed to load span details</Description>}
+        {content === null && <Description>Span is no longer stored</Description>}
+        {content !== null && content !== undefined && (
+          <SpanSections content={content}>{children}</SpanSections>
+        )}
       </ScrollBox>
     </>
   );
