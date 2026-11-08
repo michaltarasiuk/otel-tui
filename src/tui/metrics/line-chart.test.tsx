@@ -2,7 +2,8 @@ import { expect, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
-import { CHART_DOTS, render, textLines } from "#testing/render.tsx";
+import { render } from "#testing/render.tsx";
+import { CHART_DOTS, textLines } from "#testing/screen.ts";
 
 import { LineChart } from "./line-chart.tsx";
 

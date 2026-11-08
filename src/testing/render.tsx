@@ -1,4 +1,4 @@
-import { type CapturedFrame, type CliRenderer, RGBA } from "@opentui/core";
+import type { CapturedFrame, CliRenderer } from "@opentui/core";
 import { createTestRenderer } from "@opentui/core/testing";
 import {
   registerDeadBindingWarnings,
@@ -8,20 +8,13 @@ import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui";
 import { KeymapProvider } from "@opentui/keymap/react";
 import { createRoot, flushSync } from "@opentui/react";
 
-import { THEME } from "#tui/theme/theme.ts";
 import { RENDERER_CONFIG } from "#tui/tui.tsx";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
+import { selectedBackground } from "./screen.ts";
+
 const WAIT_TIMEOUT_MS = 3000;
 const WAIT_POLL_INTERVAL_MS = 10;
-const WAIT_FOR_KEY_BINDINGS_MS = 10;
-
-const BORDER = "─";
-const SCROLLBAR = /[\u2580-\u259F]/g;
-const FOOTER_HEIGHT = 1;
-
-export const CHART_DOTS = /[\u2801-\u28FF]/;
-export const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
 
 interface RenderOptions {
   width: number;
@@ -59,7 +52,6 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       await setup.renderOnce();
       const captured = await capture();
       if (captured !== undefined && matches(captured)) {
-        await Bun.sleep(WAIT_FOR_KEY_BINDINGS_MS);
         return captured;
       }
       await Bun.sleep(WAIT_POLL_INTERVAL_MS);
@@ -100,19 +92,6 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       }
     },
   };
-}
-
-export function textLines(frame: string) {
-  return frame
-    .split("\n")
-    .map((line) => collapseWhitespace(line))
-    .filter((line) => line !== "");
-}
-
-export function panelLines(frame: string) {
-  const lines = textLines(frame.replaceAll(SCROLLBAR, ""));
-  const border = lines.findIndex((line) => line.startsWith(BORDER));
-  return border === -1 ? [] : lines.slice(border + 1, -FOOTER_HEIGHT);
 }
 
 function createDiagnosedKeymap(renderer: CliRenderer) {

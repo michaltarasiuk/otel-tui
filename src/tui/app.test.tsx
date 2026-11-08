@@ -6,7 +6,7 @@ import { type CapturedFrame, RGBA } from "@opentui/core";
 import { renderApp } from "#testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { selectedBackground, textLines } from "#testing/render.tsx";
+import { keyHints, selectedBackground } from "#testing/screen.ts";
 
 import logList from "./logs/sql/log-list.sql" with { type: "text" };
 import metricList from "./metrics/sql/metric-list.sql" with { type: "text" };
@@ -35,10 +35,6 @@ function tabStyles({ lines: [tabBar] }: CapturedFrame) {
     };
   }
   return styles;
-}
-
-function footer(frame: string) {
-  return textLines(frame).at(-1) ?? "";
 }
 
 function queriesRun(runAndReadAll: Mock<DuckDBConnection["runAndReadAll"]>) {
@@ -85,7 +81,7 @@ test("moves focus between the tab bar and the view with tab and shift+tab", asyn
   await using app = await renderApp(receiver);
 
   await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
-  expect(footer(await app.waitForFrame((frame) => frame.includes("tab next region")))).toBe(
+  expect(keyHints(await app.waitForFrame((frame) => frame.includes("tab next region")))).toBe(
     "tab next region",
   );
 
@@ -146,7 +142,7 @@ test("shows where the receiver listens beside the tabs", async () => {
       `^ Traces +Metrics +Logs +nothing received yet · OTLP/HTTP ${new URL(receiver.urls.http).host} · OTLP/gRPC ${new URL(receiver.urls.grpc).host} $`,
     ),
   );
-  expect(footer(frame)).toBe("tab next region");
+  expect(keyHints(frame)).toBe("tab next region");
 });
 
 test("counts the items received and says when the last arrived", async () => {
@@ -186,13 +182,13 @@ test("hints the view's described keys, the selected row's actions first", async 
       ],
     }),
   );
-  await using app = await renderApp(receiver, { width: 160, height: 10 });
+  await using app = await renderApp(receiver, { size: { width: 160, height: 10 } });
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
 
-  expect(footer(frame)).toBe(
+  expect(keyHints(frame)).toBe(
     "return open / search right range s status o sort shift+o reverse tab next region",
   );
 });
@@ -215,13 +211,13 @@ test("hints the jump to the next error only when a trace has errors", async () =
       ],
     }),
   );
-  await using app = await renderApp(receiver, { width: 160, height: 10 });
+  await using app = await renderApp(receiver, { size: { width: 160, height: 10 } });
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
 
-  expect(footer(frame)).toStartWith("return open e next error / search");
+  expect(keyHints(frame)).toStartWith("return open e next error / search");
 });
 
 test("follows to the traces tab when a log opens its trace", async () => {

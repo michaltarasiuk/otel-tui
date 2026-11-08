@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 
-import { renderApp } from "#testing/app.tsx";
+import { renderApp, renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
-import { panelLines, textLines } from "#testing/render.tsx";
+import { detailsLines, keyHints, pageHeader, tableRows, textLines } from "#testing/screen.ts";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
@@ -140,34 +140,16 @@ const NEWEST_FIRST = [
   ORDER_ROW,
 ];
 
-const LOG_COUNT = / logs? *$/m;
-
-function logRows(frame: string) {
-  return textLines(frame).filter((line) => /^\d{2}:\d{2}:\d{2}\.\d{3} /.test(line));
-}
-
-async function renderLogs(receiver: TestReceiver) {
-  const app = await renderApp(receiver);
-  await app.waitForFrame((frame) => frame.includes("tab next region"));
-  app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
-  app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => LOG_COUNT.test(frame));
-  app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
-  return app;
-}
-
 async function renderLogList(receiver: TestReceiver) {
   await receiver.sendHttp("/v1/logs", otlpLogs);
-  const app = await renderLogs(receiver);
-  await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
+  const app = await renderPage(receiver, "logs");
+  await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
   return app;
 }
 
 test("waits for logs before any arrive", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await renderLogs(receiver);
+  await using app = await renderPage(receiver, "logs");
 
   const frame = await app.waitForFrame((frame) => frame.includes("Waiting for logs..."));
 
@@ -181,7 +163,7 @@ test("lists logs newest first, falling back to the observed time", async () => {
   const frame = await app.waitForFrame((frame) => frame.includes("7 logs"));
 
   expect(textLines(frame)).toContain("Time Severity Service Body");
-  expect(logRows(frame)).toEqual(NEWEST_FIRST);
+  expect(tableRows(frame)).toEqual(NEWEST_FIRST);
 });
 
 test("shows the selected log's body, attributes, resource, and scope", async () => {
@@ -189,9 +171,11 @@ test("shows the selected log's body, attributes, resource, and scope", async () 
   await using app = await renderLogList(receiver);
 
   app.mockInput.pressKey("END");
-  const frame = await app.waitForFrame((frame) => panelLines(frame).includes("user_currency USD"));
+  const frame = await app.waitForFrame((frame) =>
+    detailsLines(frame).includes("user_currency USD"),
+  );
 
-  expect(panelLines(frame)).toEqual([
+  expect(detailsLines(frame)).toEqual([
     `INFO ● checkout 12:00:00.000 ${checkoutTraceId} ${placeOrderSpanId}`,
     "Body",
     "[PlaceOrder]",
@@ -218,7 +202,7 @@ test("pretty-prints a JSON body", async () => {
     frame.includes('"http.response.status_code": 200'),
   );
 
-  expect(panelLines(frame)).toEqual([
+  expect(detailsLines(frame)).toEqual([
     "DEBUG ● frontend 12:00:03.000",
     "Body",
     "{",
@@ -236,8 +220,8 @@ test("raises and lowers the minimum severity", async () => {
 
   async function pressSeverityKey(shift: boolean, label: string, rows: string[]) {
     app.mockInput.pressKey("s", { shift });
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(logRows(frame), rows));
-    expect(textLines(frame)[1]).toBe(`${label} ${rows.length} of 7 logs`);
+    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+    expect(pageHeader(frame)).toBe(`${label} ${rows.length} of 7 logs`);
   }
 
   await pressSeverityKey(false, "≥ DEBUG", NEWEST_FIRST.slice(1));
@@ -264,11 +248,11 @@ test("wraps the severity filter around to show every log again", async () => {
 
   app.mockInput.pressKey("s", { shift: true });
   let frame = await app.waitForFrame((frame) => frame.includes("1 of 7 logs"));
-  expect(textLines(frame)[1]).toBe("≥ FATAL 1 of 7 logs");
+  expect(pageHeader(frame)).toBe("≥ FATAL 1 of 7 logs");
 
   app.mockInput.pressKey("s");
-  frame = await app.waitForFrame((frame) => logRows(frame).length === 7);
-  expect(textLines(frame)[1]).toBe("7 logs");
+  frame = await app.waitForFrame((frame) => tableRows(frame).length === 7);
+  expect(pageHeader(frame)).toBe("7 logs");
 });
 
 test("searches bodies, attributes, services, and trace IDs", async () => {
@@ -279,10 +263,10 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
     app.mockInput.pressKey("/");
     await app.waitForFrame((frame) => frame.includes("body, attributes, service or trace ID"));
     await app.mockInput.typeText(text);
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(logRows(frame), rows));
+    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
     expect(frame).toContain(`${rows.length} of 7 logs`);
     app.mockInput.pressEscape();
-    await app.waitForFrame((frame) => logRows(frame).length === 7);
+    await app.waitForFrame((frame) => tableRows(frame).length === 7);
   }
 
   await search("OutOfMemoryError", [FATAL_ROW]);
@@ -298,14 +282,14 @@ test("keeps an applied search while browsing", async () => {
   app.mockInput.pressKey("/");
   await app.waitForFrame((frame) => frame.includes("body, attributes, service or trace ID"));
   await app.mockInput.typeText("payment");
-  await app.waitForFrame((frame) => logRows(frame).length === 2);
+  await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => frame.includes("/ search"));
 
   app.mockInput.pressArrow("down");
 
   expect(await app.waitForSelection("Payment request failed")).toBe(WARN_ROW);
-  await app.waitForFrame((frame) => textLines(frame)[1] === "/payment 2 of 7 logs");
+  await app.waitForFrame((frame) => pageHeader(frame) === "/payment 2 of 7 logs");
 });
 
 test("jumps between errors in both directions", async () => {
@@ -335,18 +319,18 @@ test("narrows the list to the selected log's trace and back", async () => {
   await app.waitForSelection(ERROR_ROW);
 
   app.mockInput.pressKey("t");
-  let frame = await app.waitForFrame((frame) => logRows(frame).length === 3);
-  expect(textLines(frame)[1]).toBe("trace 22222222 3 of 7 logs");
-  expect(logRows(frame)).toEqual([ERROR_ROW, WARN_ROW, ORDER_ROW]);
+  let frame = await app.waitForFrame((frame) => tableRows(frame).length === 3);
+  expect(pageHeader(frame)).toBe("trace 22222222 3 of 7 logs");
+  expect(tableRows(frame)).toEqual([ERROR_ROW, WARN_ROW, ORDER_ROW]);
 
   app.mockInput.pressKey("t");
-  frame = await app.waitForFrame((frame) => logRows(frame).length === 7);
-  expect(textLines(frame)[1]).toBe("7 logs");
+  frame = await app.waitForFrame((frame) => tableRows(frame).length === 7);
+  expect(pageHeader(frame)).toBe("7 logs");
 
   app.mockInput.pressKey("t");
-  await app.waitForFrame((frame) => logRows(frame).length === 3);
+  await app.waitForFrame((frame) => tableRows(frame).length === 3);
   app.mockInput.pressEscape();
-  frame = await app.waitForFrame((frame) => logRows(frame).length === 7);
+  frame = await app.waitForFrame((frame) => tableRows(frame).length === 7);
   expect(frame).not.toContain("trace 22222222");
 });
 
@@ -361,7 +345,7 @@ test("offers trace actions only for logs with a trace", async () => {
   await app.waitForSelection(FATAL_ROW);
   app.mockInput.pressKey("e");
   frame = await app.waitForFrame((frame) => frame.includes("t trace"));
-  expect(textLines(frame).at(-1)).toStartWith("e next error return open trace t trace / search");
+  expect(keyHints(frame)).toStartWith("e next error return open trace t trace / search");
 });
 
 test("opens the selected log's trace in the traces view and goes back to the log", async () => {
@@ -393,8 +377,8 @@ test("opens the selected log's trace in the traces view and goes back to the log
   ]);
 
   app.mockInput.pressEscape();
-  frame = await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
-  expect(textLines(frame)[1]).toBe("7 logs");
+  frame = await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
+  expect(pageHeader(frame)).toBe("7 logs");
   expect(await app.waitForSelection("[PlaceOrder]")).toBe(ORDER_ROW);
 });
 
@@ -431,7 +415,7 @@ test("selects the log's span in a trace that is already open", async () => {
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => logRows(frame).length === NEWEST_FIRST.length);
+  await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("/ search"));
   app.mockInput.pressKey("e");
@@ -461,10 +445,10 @@ test("lists identical logs separately and selects each in turn", async () => {
     "/v1/logs",
     logsRequest({ service: "recommendation", logs: [repeated, repeated, earlier] }),
   );
-  await using app = await renderLogs(receiver);
+  await using app = await renderPage(receiver, "logs");
 
-  const frame = await app.waitForFrame((frame) => logRows(frame).length === 3);
-  expect(logRows(frame)).toEqual([
+  const frame = await app.waitForFrame((frame) => tableRows(frame).length === 3);
+  expect(tableRows(frame)).toEqual([
     "12:00:01.000 INFO ● recommendation get_product_list: cache hit",
     "12:00:01.000 INFO ● recommendation get_product_list: cache hit",
     "12:00:00.000 INFO ● recommendation get_product_list: cache miss",
@@ -491,19 +475,19 @@ test("scrolls the log panel down and back up", async () => {
     "/v1/logs",
     logsRequest({ service: "ad", logs: [{ time: at(0), body }] }),
   );
-  await using app = await renderLogs(receiver);
+  await using app = await renderPage(receiver, "logs");
   await app.waitForFrame((frame) =>
-    panelLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+    detailsLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
   );
 
   app.mockInput.pressKey("d", { ctrl: true });
   await app.waitForFrame(
-    (frame) => !panelLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+    (frame) => !detailsLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
   );
 
   app.mockInput.pressKey("u", { ctrl: true });
   await app.waitForFrame((frame) =>
-    panelLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+    detailsLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
   );
 });
 
@@ -512,7 +496,7 @@ test("shows an error when logs cannot be loaded", async () => {
   const connection = await receiver.connect();
   await connection.run("DROP TABLE otlp_logs");
 
-  await using app = await renderLogs(receiver);
+  await using app = await renderPage(receiver, "logs");
 
   await app.waitForFrame((frame) => frame.includes("Failed to load logs"));
 });

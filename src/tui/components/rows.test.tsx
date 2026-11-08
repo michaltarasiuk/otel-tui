@@ -2,7 +2,8 @@ import { expect, test } from "bun:test";
 
 import { use } from "react";
 
-import { render, textLines } from "#testing/render.tsx";
+import { render } from "#testing/render.tsx";
+import { textLines } from "#testing/screen.ts";
 
 import { FocusScope } from "./focus.tsx";
 import { Rows } from "./rows.tsx";

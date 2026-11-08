@@ -1,0 +1,36 @@
+import { RGBA } from "@opentui/core";
+
+import { THEME } from "#tui/theme/theme.ts";
+import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+
+const DETAILS_BORDER = "─";
+const SCROLLBAR = /[▀-▟]/g;
+const TABLE_ROW = /^\d{2}:\d{2}:\d{2}\.\d{3} /;
+
+export const CHART_DOTS = /[⠁-⣿]/;
+export const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
+
+export function textLines(frame: string) {
+  return frame
+    .split("\n")
+    .map((line) => collapseWhitespace(line))
+    .filter((line) => line !== "");
+}
+
+export function pageHeader(frame: string) {
+  return textLines(frame)[1] ?? "";
+}
+
+export function tableRows(frame: string) {
+  return textLines(frame).filter((line) => TABLE_ROW.test(line));
+}
+
+export function detailsLines(frame: string) {
+  const lines = textLines(frame.replaceAll(SCROLLBAR, ""));
+  const border = lines.findIndex((line) => line.startsWith(DETAILS_BORDER));
+  return border === -1 ? [] : lines.slice(border + 1, -1);
+}
+
+export function keyHints(frame: string) {
+  return textLines(frame).at(-1) ?? "";
+}
