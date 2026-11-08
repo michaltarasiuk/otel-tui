@@ -18,14 +18,12 @@
 ## React
 
 - A page file shows its screen top to bottom: page header, regions, `KeyHints`. Layout shells (`Split`, `PageHeader`, `DetailsHeader`, `Section`) only arrange `children`; don't hide layout behind config props.
-- Pages own their state: filters, search, and the selection from `useSelection`. Pass data down and events up (`selectedIndex` + `onSelect`), the way `<select>` works; don't pass controller objects with methods.
 - Custom hooks return what the caller needs, shaped like `useState` (`[value, set]`), and accept updaters when events can arrive faster than renders.
 - Derive values during render instead of storing them. Reset a subtree with `key`, not an effect.
 - Handlers that run from subscriptions registered in effects (key bindings) go through `useEffectEvent`, so the bindings don't re-register on every render.
 - Declare keys with `<Key name onPress>label</Key>` inside `KeyHints`. JSX order is hint order, and plain JSX conditions decide when a key is active. Use `FocusScope` to disable a group.
 - Keep hidden screens alive with `Screen` (`Activity`), not with visibility flags in queries.
 - Use Suspense + `ErrorBoundary` only for data that a single region owns. A page reads its own list with `useQuery`, because its header, selection, and keys need that data.
-- Write pure helpers as functions in `#utils` (e.g. `stepItem`, `findNextIndex`), not as methods on hooks.
 
 ## Tests
 
