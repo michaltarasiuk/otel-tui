@@ -23,11 +23,12 @@ export function KeyHints({ children }: KeyHintsProps) {
 
 interface KeyProps {
   name: string;
-  onPress?: () => void;
+  priority?: number | undefined;
+  onPress?: () => unknown;
   children?: string | undefined;
 }
 
-export function Key({ name, onPress, children }: KeyProps) {
+export function Key({ name, priority = 0, onPress, children }: KeyProps) {
   const active = useFocused();
   const bound = onPress !== undefined;
 
@@ -37,17 +38,18 @@ export function Key({ name, onPress, children }: KeyProps) {
   useBindings(
     () => ({
       enabled: active && bound,
+      priority,
       commands: [
         {
           name: command,
           run() {
-            press();
+            return press() !== false;
           },
         },
       ],
       bindings: [{ key: name, cmd: command }],
     }),
-    [active, bound, command, name],
+    [active, bound, command, name, priority],
   );
 
   if (!active || children === undefined) {
@@ -64,17 +66,18 @@ export function Key({ name, onPress, children }: KeyProps) {
 interface StepKeysProps {
   forward: string;
   backward: string;
-  onStep: (step: 1 | -1) => void;
-  children: string;
+  priority?: number | undefined;
+  onStep: (step: 1 | -1) => unknown;
+  children?: string;
 }
 
-export function StepKeys({ forward, backward, onStep, children }: StepKeysProps) {
+export function StepKeys({ forward, backward, priority, onStep, children }: StepKeysProps) {
   return (
     <>
-      <Key name={forward} onPress={() => onStep(1)}>
+      <Key name={forward} priority={priority} onPress={() => onStep(1)}>
         {children}
       </Key>
-      <Key name={backward} onPress={() => onStep(-1)} />
+      <Key name={backward} priority={priority} onPress={() => onStep(-1)} />
     </>
   );
 }
