@@ -7,6 +7,7 @@
   },
   "rules": {
     "import/no-cycle": "warn",
+    "import/no-empty-named-blocks": "warn",
     "react/exhaustive-deps": [
       "warn",
       {

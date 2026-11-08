@@ -14,7 +14,6 @@ import {
   STATUS_ROW,
   statusTraceId,
 } from "./test-traces.ts";
-import {} from "./traces-histogram.tsx";
 
 afterEach(() => {
   setSystemTime();

@@ -24,7 +24,6 @@ import {
   PLACE_ORDER,
   STATUS_ROW,
 } from "./test-traces.ts";
-import {} from "./traces-histogram.tsx";
 
 afterEach(() => {
   setSystemTime();
