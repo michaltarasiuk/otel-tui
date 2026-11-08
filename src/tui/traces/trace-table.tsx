@@ -53,6 +53,7 @@ export function TraceTable({ traces, selectedIndex, onSelect, sort }: TraceTable
         getKey={(trace) => trace.trace_id}
         selectedIndex={selectedIndex}
         onSelect={(action) => onSelect(action)}
+        halfPageKeys
       >
         {(trace) => (
           <Row>

@@ -13,10 +13,18 @@ interface RowsProps<T> {
   getKey: (item: T) => string;
   selectedIndex: number;
   onSelect: (action: SetStateAction<number>) => void;
+  halfPageKeys?: boolean;
   children: (item: T) => React.ReactNode;
 }
 
-export function Rows<T>({ items, getKey, selectedIndex, onSelect, children }: RowsProps<T>) {
+export function Rows<T>({
+  items,
+  getKey,
+  selectedIndex,
+  onSelect,
+  halfPageKeys = false,
+  children,
+}: RowsProps<T>) {
   const focused = useFocused();
 
   const [visibleRowCount, setVisibleRowCount] = useState(0);
@@ -35,6 +43,9 @@ export function Rows<T>({ items, getKey, selectedIndex, onSelect, children }: Ro
 
   const moveBy = useEffectEvent((offset: number) => onSelect((index) => index + offset));
   const movePage = useEffectEvent((direction: 1 | -1) => moveBy(direction * visibleRowCount));
+  const moveHalfPage = useEffectEvent((direction: 1 | -1) =>
+    moveBy(direction * Math.max(1, Math.floor(visibleRowCount / 2))),
+  );
   const moveTo = useEffectEvent((index: number) => onSelect(index));
   const moveToLast = useEffectEvent(() => onSelect(items.length - 1));
 
@@ -61,6 +72,21 @@ export function Rows<T>({ items, getKey, selectedIndex, onSelect, children }: Ro
       ],
     }),
     [focused],
+  );
+
+  useBindings(
+    () => ({
+      enabled: focused && halfPageKeys,
+      commands: [
+        { name: "rows.next-half-page", desc: "half page down", run: () => moveHalfPage(1) },
+        { name: "rows.previous-half-page", desc: "half page up", run: () => moveHalfPage(-1) },
+      ],
+      bindings: [
+        { key: "ctrl+d", cmd: "rows.next-half-page" },
+        { key: "ctrl+u", cmd: "rows.previous-half-page" },
+      ],
+    }),
+    [focused, halfPageKeys],
   );
 
   return (

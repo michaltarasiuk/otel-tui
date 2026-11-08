@@ -21,7 +21,8 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
   `l` there opens the trace's logs (`shift+l` only the selected span's). `e` jumps to the next trace or span
   with errors, and `s` shows only traces with errors. `o` sorts by start
   time, span count, error count, or duration, `shift+o` reverses the order,
-  and `/` searches trace IDs, span names, and services. A histogram above the
+  `ctrl+d` and `ctrl+u` move half a page, and `/` searches trace IDs, span
+  names, and services. A histogram above the
   list charts the traces over time in 10-second columns, with the errors in
   red, so a spike or a gap stands out.
   `←` or `→` marks the latest column with traces and narrows the list to it;

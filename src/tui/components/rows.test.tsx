@@ -29,9 +29,10 @@ function NumberedRow({ name }: NumberedRowProps) {
 
 interface NumberedRowsProps {
   count: number;
+  halfPageKeys?: boolean;
 }
 
-function NumberedRows({ count }: NumberedRowsProps) {
+function NumberedRows({ count, halfPageKeys = false }: NumberedRowsProps) {
   const rows = Array.from({ length: count }, (_, index) => `row ${index + 1}`);
   const [selectedIndex, select] = useSelection(rows, (row) => row);
 
@@ -41,6 +42,7 @@ function NumberedRows({ count }: NumberedRowsProps) {
       getKey={(row) => row}
       selectedIndex={selectedIndex}
       onSelect={(action) => select(action)}
+      halfPageKeys={halfPageKeys}
     >
       {(row) => <NumberedRow name={row} />}
     </Rows>
@@ -124,6 +126,19 @@ test("pages by the number of visible rows", async () => {
   screen.mockInput.pressKey("HOME");
 
   await screen.waitForFrame(selected(1));
+});
+
+test("moves half a page with ctrl+d and ctrl+u when asked", async () => {
+  await using screen = await render(<NumberedRows count={20} halfPageKeys />, SCREEN_SIZE);
+  await screen.waitForFrame(selected(1));
+
+  screen.mockInput.pressKey("d", { ctrl: true });
+  await screen.waitForFrame(selected(3));
+  screen.mockInput.pressKey("d", { ctrl: true });
+  await screen.waitForFrame(selected(5));
+  screen.mockInput.pressKey("u", { ctrl: true });
+
+  await screen.waitForFrame(selected(3));
 });
 
 test("moves the selection once for every scroll event, however fast they come", async () => {
