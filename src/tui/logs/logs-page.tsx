@@ -92,6 +92,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
           {logs.some((log) => isError(log)) && (
             <StepKeys
               forward="e"
+              backwardDescription="previous error"
               backward="shift+e"
               onStep={(step) =>
                 select((index) => findNextIndex(logs, index, step, (log) => isError(log)))
@@ -138,6 +139,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
           )}
           <StepKeys
             forward="s"
+            backwardDescription="lower severity"
             backward="shift+s"
             onStep={(step) =>
               setMinSeverity((minSeverity) => stepItem(MIN_SEVERITIES, minSeverity, step))

@@ -42,12 +42,12 @@ export function Rows<T>({ items, getKey, selectedIndex, onSelect, children }: Ro
     () => ({
       enabled: focused,
       commands: [
-        { name: "rows.next", run: () => moveBy(1) },
-        { name: "rows.previous", run: () => moveBy(-1) },
-        { name: "rows.next-page", run: () => movePage(1) },
-        { name: "rows.previous-page", run: () => movePage(-1) },
-        { name: "rows.first", run: () => moveTo(0) },
-        { name: "rows.last", run: () => moveToLast() },
+        { name: "rows.next", desc: "next row", run: () => moveBy(1) },
+        { name: "rows.previous", desc: "previous row", run: () => moveBy(-1) },
+        { name: "rows.next-page", desc: "next page", run: () => movePage(1) },
+        { name: "rows.previous-page", desc: "previous page", run: () => movePage(-1) },
+        { name: "rows.first", desc: "first row", run: () => moveTo(0) },
+        { name: "rows.last", desc: "last row", run: () => moveToLast() },
       ],
       bindings: [
         { key: "down", cmd: "rows.next" },

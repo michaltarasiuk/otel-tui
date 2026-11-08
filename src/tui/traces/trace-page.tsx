@@ -81,6 +81,7 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs }: TracePageProp
         {spans.some((span) => span.is_error) && (
           <StepKeys
             forward="e"
+            backwardDescription="previous error"
             backward="shift+e"
             onStep={(step) =>
               select((index) => findNextIndex(spans, index, step, (span) => span.is_error))

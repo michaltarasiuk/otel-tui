@@ -24,11 +24,13 @@ export function KeyHints({ children }: KeyHintsProps) {
 interface KeyProps {
   name: string;
   priority?: number | undefined;
+  description?: string | undefined;
   onPress?: () => unknown;
   children?: string | undefined;
 }
 
-export function Key({ name, priority = 0, onPress, children }: KeyProps) {
+export function Key({ name, priority = 0, description, onPress, children }: KeyProps) {
+  const desc = description ?? children;
   const active = useFocused();
   const bound = onPress !== undefined;
 
@@ -42,6 +44,7 @@ export function Key({ name, priority = 0, onPress, children }: KeyProps) {
       commands: [
         {
           name: command,
+          ...(desc === undefined ? {} : { desc }),
           run() {
             return press() !== false;
           },
@@ -49,7 +52,7 @@ export function Key({ name, priority = 0, onPress, children }: KeyProps) {
       ],
       bindings: [{ key: name, cmd: command }],
     }),
-    [active, bound, command, name, priority],
+    [active, bound, command, desc, name, priority],
   );
 
   if (!active || children === undefined) {
@@ -67,17 +70,32 @@ interface StepKeysProps {
   forward: string;
   backward: string;
   priority?: number | undefined;
+  description?: string;
+  backwardDescription: string;
   onStep: (step: 1 | -1) => unknown;
   children?: string;
 }
 
-export function StepKeys({ forward, backward, priority, onStep, children }: StepKeysProps) {
+export function StepKeys({
+  forward,
+  backward,
+  priority,
+  description,
+  backwardDescription,
+  onStep,
+  children,
+}: StepKeysProps) {
   return (
     <>
-      <Key name={forward} priority={priority} onPress={() => onStep(1)}>
+      <Key name={forward} priority={priority} description={description} onPress={() => onStep(1)}>
         {children}
       </Key>
-      <Key name={backward} priority={priority} onPress={() => onStep(-1)} />
+      <Key
+        name={backward}
+        priority={priority}
+        description={backwardDescription}
+        onPress={() => onStep(-1)}
+      />
     </>
   );
 }

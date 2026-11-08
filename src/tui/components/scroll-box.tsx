@@ -14,7 +14,11 @@ export function ScrollKeys({ target }: ScrollKeysProps) {
       <Key name="ctrl+d" onPress={() => target.current?.scrollBy(0.5, "viewport")}>
         scroll
       </Key>
-      <Key name="ctrl+u" onPress={() => target.current?.scrollBy(-0.5, "viewport")} />
+      <Key
+        name="ctrl+u"
+        description="scroll up"
+        onPress={() => target.current?.scrollBy(-0.5, "viewport")}
+      />
     </>
   );
 }

@@ -114,6 +114,7 @@ export function TracesPage({ onOpen }: TracesPageProps) {
           {traces.some((trace) => hasErrors(trace)) && (
             <StepKeys
               forward="e"
+              backwardDescription="previous error"
               backward="shift+e"
               onStep={(step) =>
                 select((index) => findNextIndex(traces, index, step, (trace) => hasErrors(trace)))
@@ -133,6 +134,8 @@ export function TracesPage({ onOpen }: TracesPageProps) {
           {occupied.length > 0 && (
             <StepKeys
               forward="right"
+              description="later range"
+              backwardDescription="earlier range"
               backward="left"
               onStep={(step) => setTimeRange((range) => stepSelection(occupied, range, step))}
             >

@@ -106,11 +106,15 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
         <FocusScope focused={region === "exemplars"}>
           <StepKeys
             forward="down"
+            description="next exemplar"
+            backwardDescription="previous exemplar"
             backward="up"
             onStep={(step) => selectExemplar((index) => index + step)}
           />
           <StepKeys
             forward="j"
+            description="next exemplar"
+            backwardDescription="previous exemplar"
             backward="k"
             onStep={(step) => selectExemplar((index) => index + step)}
           />
@@ -127,6 +131,8 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
         <PauseKey />
         <StepKeys
           forward="tab"
+          description="next region"
+          backwardDescription="previous region"
           backward="shift+tab"
           priority={REGION_KEYS_PRIORITY}
           onStep={(step) => stepRegion(step)}

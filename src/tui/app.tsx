@@ -27,7 +27,12 @@ export function App({ receiverUrls }: AppProps) {
     <AppKeys
       value={
         <>
-          <StepKeys forward="tab" backward="shift+tab" onStep={(step) => focusStep(step)}>
+          <StepKeys
+            forward="tab"
+            backward="shift+tab"
+            backwardDescription="previous region"
+            onStep={(step) => focusStep(step)}
+          >
             next region
           </StepKeys>
         </>
