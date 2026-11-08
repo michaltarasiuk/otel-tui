@@ -17,6 +17,7 @@
 
 ## React
 
+- When designing or reworking components, use the `react-composition` skill.
 - A page file shows its screen top to bottom: page header, regions, `KeyHints`. Layout shells (`Split`, `PageHeader`, `DetailsHeader`, `Section`) only arrange `children`; don't hide layout behind config props.
 - Custom hooks return what the caller needs, shaped like `useState` (`[value, set]`), and accept updaters when events can arrive faster than renders.
 - Derive values during render instead of storing them. Reset a subtree with `key`, not an effect.
