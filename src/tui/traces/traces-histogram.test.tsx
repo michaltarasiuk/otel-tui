@@ -145,7 +145,7 @@ test("narrows the histogram with the search and the errors filter", async () => 
   await using app = await renderHistogram(receiver);
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
   await app.mockInput.typeText("cart");
   let frame = await app.waitForFrame((frame) => !frame.includes("■ errors"));
   expect(textLines(frame).slice(2, 4)).toEqual(["Traces over time 10s per column", bar]);
@@ -239,7 +239,7 @@ test("keeps the selected bucket when the search leaves it without traces", async
   await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
   await app.mockInput.typeText("cart");
 
   const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));

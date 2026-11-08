@@ -46,7 +46,7 @@ test("searches trace names, services, and IDs", async () => {
   await using app = await renderTraceList(receiver);
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
   await app.mockInput.typeText("cart");
   let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
   expect(tableRows(frame)).toEqual([CART_ROW]);
@@ -60,10 +60,25 @@ test("searches trace names, services, and IDs", async () => {
   expect(pageHeader(frame)).toBe("3 traces");
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
   await app.mockInput.typeText(statusTraceId.slice(0, 8));
   frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
   expect(tableRows(frame)).toEqual([STATUS_ROW]);
+});
+
+test("filters traces by a span or resource attribute", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+
+  app.mockInput.pressKey("/");
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
+  await app.mockInput.typeText("db.system=redis");
+  let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  expect(tableRows(frame)).toEqual([CART_ROW]);
+
+  await app.mockInput.typeText(" host.name=elsewhere");
+  frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
+  expect(frame).toContain("0 of 3 traces");
 });
 
 test("matches search text literally", async () => {
@@ -71,7 +86,7 @@ test("matches search text literally", async () => {
   await using app = await renderTraceList(receiver);
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
   await app.mockInput.typeText("_");
 
   const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
@@ -134,7 +149,7 @@ test("keeps the search and sort when switching tabs", async () => {
   app.mockInput.pressKey("o");
   await app.waitForFrame((frame) => frame.includes("▼ Spans"));
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service or ID"));
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
   await app.mockInput.typeText("cart");
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => frame.includes("/ search"));

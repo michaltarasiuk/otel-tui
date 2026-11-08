@@ -3,6 +3,7 @@ WITH recent_logs AS (
   FROM otlp_logs
   WHERE coalesce(severity_number, 0) >= $minSeverityNumber
     AND ($traceId IS NULL OR trace_id = $traceId)
+    AND matches_attributes($attributes, log_attributes, resource_attributes)
     AND (
       body ILIKE $pattern ESCAPE '\'
       OR event_name ILIKE $pattern ESCAPE '\'

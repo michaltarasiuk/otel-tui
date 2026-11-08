@@ -7,6 +7,7 @@ WITH traces AS (
   HAVING bool_or(parent_span_id IS NULL)
     AND (NOT $errorsOnly OR has_error)
     AND (trace_id ILIKE $pattern ESCAPE '\' OR bool_or(name ILIKE $pattern ESCAPE '\' OR service_name ILIKE $pattern ESCAPE '\'))
+    AND bool_or(matches_attributes($attributes, span_attributes, resource_attributes))
 )
 SELECT
   (floor(start_ms / $bucketMs) * $bucketMs)::DOUBLE AS bucket_start_ms,

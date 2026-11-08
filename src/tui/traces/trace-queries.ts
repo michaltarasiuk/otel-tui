@@ -2,8 +2,8 @@ import { keepPreviousData, useQuery, useSuspenseQuery } from "@tanstack/react-qu
 import { z } from "zod";
 
 import { useConnection } from "#tui/query/connection.ts";
-import { substringPattern } from "#tui/query/like-pattern.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
+import { searchParams } from "#tui/query/search.ts";
 
 import type { HistogramRange } from "./histogram.ts";
 import { Span, SpanContent } from "./span.ts";
@@ -33,7 +33,7 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
     queryFn: async () => {
       const reader = await connection.runAndReadAll(traceList, {
         limit: 500,
-        pattern: substringPattern(search),
+        ...searchParams(search),
         errorsOnly,
         minTimeMs: timeRange?.from ?? null,
         maxTimeMs: timeRange?.to ?? null,
@@ -56,7 +56,7 @@ export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
     queryFn: async () => {
       const newestBucketMs = bucketStart(Date.now());
       const reader = await connection.runAndReadAll(traceTimeline, {
-        pattern: substringPattern(search),
+        ...searchParams(search),
         errorsOnly,
         bucketMs: TIME_BUCKET_MS,
         endMs: newestBucketMs + TIME_BUCKET_MS,

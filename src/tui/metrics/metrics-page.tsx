@@ -65,7 +65,7 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <SearchInput search={search} placeholder="name, description, service or attributes" />
+        <SearchInput search={search} placeholder="name, description, service or key=value" />
         <Count>{formatShownCount(metrics.length, totalCount, "metric")}</Count>
       </PageHeader>
       {isError ? (

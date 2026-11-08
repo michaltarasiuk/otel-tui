@@ -7,6 +7,7 @@ import { z } from "zod";
 import { SECOND_MS } from "#utils/time-units.ts";
 
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
+import attributeFilters from "./attribute-filters.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("http"), listen_url: z.url() }),
@@ -56,6 +57,7 @@ export async function startReceiver({
   await connection.run("INSTALL otlp FROM community");
   await connection.run("LOAD otlp");
   await connection.run(attributeEntries);
+  await connection.run(attributeFilters);
 
   const reader = await connection.runAndReadAll(
     `SELECT transport, listen_url FROM otlp_serve(

@@ -3,8 +3,8 @@ import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from "@tan
 import { z } from "zod";
 
 import { useConnection } from "#tui/query/connection.ts";
-import { substringPattern } from "#tui/query/like-pattern.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
+import { searchParams } from "#tui/query/search.ts";
 
 import { Metric, type MetricSort } from "./metric.ts";
 import {
@@ -48,7 +48,7 @@ export function useMetricList({ search, sort }: MetricQuery) {
     queryFn: async () => {
       const reader = await connection.runAndReadAll(metricList, {
         limit: 500,
-        pattern: substringPattern(search),
+        ...searchParams(search),
         sortBy: sort.column,
         direction: sort.descending ? -1 : 1,
       });

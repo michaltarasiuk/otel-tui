@@ -261,7 +261,7 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
 
   async function search(text: string, rows: string[]) {
     app.mockInput.pressKey("/");
-    await app.waitForFrame((frame) => frame.includes("body, attributes, service or trace ID"));
+    await app.waitForFrame((frame) => frame.includes("body, service, trace ID or key=value"));
     await app.mockInput.typeText(text);
     const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
     expect(frame).toContain(`${rows.length} of 7 logs`);
@@ -275,12 +275,24 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
   await search(checkoutTraceId.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
 });
 
+test("filters logs by an attribute", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderLogList(receiver);
+
+  app.mockInput.pressKey("/");
+  await app.waitForFrame((frame) => frame.includes("body, service, trace ID or key=value"));
+  await app.mockInput.typeText("demo.user_context.loyalty_level=gold");
+
+  const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), [WARN_ROW]));
+  expect(frame).toContain("1 of 7 logs");
+});
+
 test("keeps an applied search while browsing", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("body, attributes, service or trace ID"));
+  await app.waitForFrame((frame) => frame.includes("body, service, trace ID or key=value"));
   await app.mockInput.typeText("payment");
   await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();

@@ -80,7 +80,7 @@ test("searches names, descriptions, and attributes", async () => {
 
   async function search(text: string, rows: string[]) {
     app.mockInput.pressKey("/");
-    await app.waitForFrame((frame) => frame.includes("name, description, service or attributes"));
+    await app.waitForFrame((frame) => frame.includes("name, description, service or key=value"));
     await app.mockInput.typeText(text);
     const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
     expect(frame).toContain(`${rows.length} of 6 metrics`);
@@ -93,12 +93,26 @@ test("searches names, descriptions, and attributes", async () => {
   await search("failedReadinessProbe", [FLAG_REQUESTS_ROW]);
 });
 
+test("filters metrics by an attribute", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderMetricList(receiver);
+
+  app.mockInput.pressKey("/");
+  await app.waitForFrame((frame) => frame.includes("name, description, service or key=value"));
+  await app.mockInput.typeText("feature_flag.key=cartFailure");
+
+  const frame = await app.waitForFrame((frame) =>
+    Bun.deepEquals(tableRows(frame), [FLAG_REQUESTS_ROW]),
+  );
+  expect(frame).toContain("1 of 6 metrics");
+});
+
 test("keeps an applied search while browsing", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
   app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("name, description, service or attributes"));
+  await app.waitForFrame((frame) => frame.includes("name, description, service or key=value"));
   await app.mockInput.typeText("http");
   await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();

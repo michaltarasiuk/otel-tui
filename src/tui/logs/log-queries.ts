@@ -2,8 +2,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { useConnection } from "#tui/query/connection.ts";
-import { substringPattern } from "#tui/query/like-pattern.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
+import { searchParams } from "#tui/query/search.ts";
 
 import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
@@ -26,7 +26,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
     queryFn: async () => {
       const reader = await connection.runAndReadAll(logList, {
         limit: 500,
-        pattern: substringPattern(search),
+        ...searchParams(search),
         minSeverityNumber:
           minSeverity === undefined ? ANY_SEVERITY_NUMBER : lowestSeverityNumber(minSeverity),
         traceId: traceId ?? null,

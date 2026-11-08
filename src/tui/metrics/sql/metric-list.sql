@@ -6,6 +6,7 @@ WITH series AS (
     unit,
     service_name,
     any_value(metric_attributes) AS metric_attributes,
+    any_value(resource_attributes) AS resource_attributes,
     arg_max(description, time_unix_nano) AS description,
     max(time_unix_nano) AS last_time
   FROM otlp_metrics_gauge
@@ -18,6 +19,7 @@ WITH series AS (
     unit,
     service_name,
     any_value(metric_attributes),
+    any_value(resource_attributes),
     arg_max(description, time_unix_nano),
     max(time_unix_nano)
   FROM otlp_metrics_sum
@@ -30,6 +32,7 @@ WITH series AS (
     unit,
     service_name,
     any_value(metric_attributes),
+    any_value(resource_attributes),
     arg_max(description, time_unix_nano),
     max(time_unix_nano)
   FROM otlp_metrics_histogram
@@ -42,6 +45,7 @@ WITH series AS (
     unit,
     service_name,
     any_value(metric_attributes),
+    any_value(resource_attributes),
     arg_max(description, time_unix_nano),
     max(time_unix_nano)
   FROM otlp_metrics_exp_histogram
@@ -59,10 +63,13 @@ WITH series AS (
     count(*)::INTEGER AS series_count
   FROM series
   GROUP BY type, temporality, name, unit, service_name
-  HAVING name ILIKE $pattern ESCAPE '\'
-    OR service_name ILIKE $pattern ESCAPE '\'
-    OR description ILIKE $pattern ESCAPE '\'
-    OR bool_or(metric_attributes ILIKE $pattern ESCAPE '\')
+  HAVING (
+      name ILIKE $pattern ESCAPE '\'
+      OR service_name ILIKE $pattern ESCAPE '\'
+      OR description ILIKE $pattern ESCAPE '\'
+      OR bool_or(metric_attributes ILIKE $pattern ESCAPE '\')
+    )
+    AND bool_or(matches_attributes($attributes, metric_attributes, resource_attributes))
 )
 SELECT *
 FROM metrics

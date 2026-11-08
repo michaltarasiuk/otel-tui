@@ -60,7 +60,7 @@ export function LogsPage({ traceId, onTraceChange, onOpenTrace, onBack }: LogsPa
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <SearchInput search={search} placeholder="body, attributes, service or trace ID" />
+        <SearchInput search={search} placeholder="body, service, trace ID or key=value" />
         {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_TRACE_ID_LENGTH)}</Chip>}
         {minSeverity !== undefined && (
           <Chip color={severityColor(minSeverity)}>≥ {minSeverity}</Chip>

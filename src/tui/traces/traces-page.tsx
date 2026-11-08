@@ -71,7 +71,7 @@ export function TracesPage({ onOpen }: TracesPageProps) {
   return (
     <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
       <PageHeader>
-        <SearchInput search={search} placeholder="trace name, service or ID" />
+        <SearchInput search={search} placeholder="trace name, service, ID or key=value" />
         {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
         {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
         <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
