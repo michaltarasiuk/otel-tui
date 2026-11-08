@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { type AppOptions, renderApp, renderPage } from "#testing/app.tsx";
+import { type AppOptions, renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import {
@@ -425,11 +425,9 @@ test("selects the log's span in a trace that is already open", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", checkoutTrace);
   await receiver.sendHttp("/v1/logs", otlpLogs);
-  await using app = await renderApp(receiver);
+  await using app = await renderPage(receiver, "traces");
 
   await app.waitForFrame((frame) => frame.includes(PLACE_ORDER));
-  app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => frame.includes("2 spans"));
   expect(await app.waitForSelection(PLACE_ORDER)).toBe(`● checkout ${PLACE_ORDER} 2.50s`);

@@ -12,9 +12,10 @@ import { pageHeader } from "./screen.ts";
 
 const DEFAULT_SIZE = { width: 120, height: 30 };
 
-const TAB_ORDER = ["traces", "metrics", "logs"] as const satisfies Tab[];
+const TAB_ORDER = ["services", "traces", "metrics", "logs"] as const satisfies Tab[];
 
 const PAGE_COUNTS = {
+  services: / services?$/,
   traces: / traces?$/,
   metrics: / metrics?$/,
   logs: / logs?$/,
@@ -64,7 +65,7 @@ function onPage(tab: Tab) {
 
 export async function renderPage(receiver: TestReceiver, tab: Tab, options?: AppOptions) {
   const app = await renderApp(receiver, options);
-  await app.waitForFrame(onPage("traces"));
+  await app.waitForFrame(onPage("services"));
   for (const next of TAB_ORDER.slice(1, TAB_ORDER.indexOf(tab) + 1)) {
     app.mockInput.pressArrow("right");
     await app.waitForFrame(onPage(next));

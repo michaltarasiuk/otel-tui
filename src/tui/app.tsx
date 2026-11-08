@@ -12,6 +12,7 @@ import { MetricPage } from "./metrics/metric-page.tsx";
 import { MetricsPage } from "./metrics/metrics-page.tsx";
 import { usePages } from "./pages.ts";
 import { ReceiverStatus } from "./receiver-status.tsx";
+import { ServicesPage } from "./services/services-page.tsx";
 import { Tabs } from "./tabs.tsx";
 import { TracePage } from "./traces/trace-page.tsx";
 import { TracesPage } from "./traces/traces-page.tsx";
@@ -25,8 +26,19 @@ interface AppProps {
 
 export function App({ receiverUrls }: AppProps) {
   const { region, focusStep } = useFocusedRegion();
-  const { page, tab, trace, metric, logsTrace, canGoBack, selectTab, open, replace, back } =
-    usePages();
+  const {
+    page,
+    tab,
+    tracesService,
+    trace,
+    metric,
+    logsTrace,
+    canGoBack,
+    selectTab,
+    open,
+    replace,
+    back,
+  } = usePages();
   const keymap = useKeymap();
   const editing = useEditing();
   const [help, setHelp] = useState<HelpEntry[]>();
@@ -62,8 +74,16 @@ export function App({ receiverUrls }: AppProps) {
             <ReceiverStatus receiverUrls={receiverUrls} />
           </TopBar>
           <FocusScope focused={region === "content"}>
+            <Screen when={page === "services"}>
+              <ServicesPage onOpenTraces={(service) => open({ name: "traces", service })} />
+            </Screen>
             <Screen when={page === "traces"}>
-              <TracesPage onOpen={(traceId) => open({ name: "trace", traceId })} />
+              <TracesPage
+                service={tracesService}
+                onServiceChange={(service) => replace({ name: "traces", service })}
+                onOpen={(traceId) => open({ name: "trace", traceId })}
+                onBack={canGoBack ? () => back() : undefined}
+              />
             </Screen>
             {trace !== undefined && (
               <Screen when={page === "trace"}>

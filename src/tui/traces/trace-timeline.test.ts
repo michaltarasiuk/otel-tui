@@ -34,6 +34,7 @@ async function loadTimeline(agesMs: number[]) {
   const reader = await connection.runAndReadAll(traceTimeline, {
     pattern: "%",
     attributes: "[]",
+    serviceName: null,
     errorsOnly: false,
     bucketMs: TIME_BUCKET_MS,
     endMs: newestBucketMs + TIME_BUCKET_MS,

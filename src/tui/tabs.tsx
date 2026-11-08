@@ -5,13 +5,14 @@ import { useFocused } from "./components/focus.tsx";
 import type { Tab } from "./pages.ts";
 import { THEME } from "./theme/theme.ts";
 
-const TAB_WIDTH = 12;
+const TAB_WIDTH = 10;
 
 interface TabOption extends TabSelectOption {
   value: Tab;
 }
 
 const TABS = [
+  { name: "Services", description: "", value: "services" },
   { name: "Traces", description: "", value: "traces" },
   { name: "Metrics", description: "", value: "metrics" },
   { name: "Logs", description: "", value: "logs" },

@@ -7,6 +7,7 @@ import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#tui/components/page-header.tsx";
 import { Placeholder } from "#tui/components/placeholder.tsx";
 import { SearchKeys } from "#tui/components/search-keys.tsx";
+import { ServiceName } from "#tui/components/service-name.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
@@ -40,10 +41,13 @@ function hasErrors(trace: Trace) {
 }
 
 interface TracesPageProps {
+  service: string | undefined;
+  onServiceChange: (service: string | undefined) => void;
   onOpen: (traceId: string) => void;
+  onBack: (() => void) | undefined;
 }
 
-export function TracesPage({ onOpen }: TracesPageProps) {
+export function TracesPage({ service, onServiceChange, onOpen, onBack }: TracesPageProps) {
   const search = useSearch();
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [timeRange, setTimeRange] = useState<HistogramRange>();
@@ -52,8 +56,14 @@ export function TracesPage({ onOpen }: TracesPageProps) {
 
   const pageRef = useRef<BoxRenderable>(null);
 
-  const traceList = useTraceList({ search: search.text, errorsOnly, timeRange, sort });
-  const traceTimeline = useTraceTimeline({ search: search.text, errorsOnly });
+  const traceList = useTraceList({
+    search: search.text,
+    errorsOnly,
+    serviceName: service,
+    timeRange,
+    sort,
+  });
+  const traceTimeline = useTraceTimeline({ search: search.text, errorsOnly, serviceName: service });
   const traceTotalCount = useTraceTotalCount();
 
   const { data: traces = [] } = traceList;
@@ -64,7 +74,8 @@ export function TracesPage({ onOpen }: TracesPageProps) {
   const selected = traces[selectedIndex];
 
   const occupied = timeline?.occupied ?? NO_BUCKETS;
-  const filtered = search.text !== "" || errorsOnly || timeRange !== undefined;
+  const filtered =
+    search.text !== "" || errorsOnly || timeRange !== undefined || service !== undefined;
   const browsing = !search.isEditing;
 
   const isPending = traceList.isPending || traceTotalCount.isPending;
@@ -74,6 +85,11 @@ export function TracesPage({ onOpen }: TracesPageProps) {
     <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
       <PageHeader>
         <SearchInput search={search} placeholder="trace name, service, ID or key=value" />
+        {service !== undefined && (
+          <Chip>
+            <ServiceName name={service} />
+          </Chip>
+        )}
         {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
         {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
         <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
@@ -131,6 +147,19 @@ export function TracesPage({ onOpen }: TracesPageProps) {
               any time
             </Key>
           )}
+          {search.text === "" && timeRange === undefined && onBack !== undefined && (
+            <Key name="escape" onPress={() => onBack()}>
+              back
+            </Key>
+          )}
+          {search.text === "" &&
+            timeRange === undefined &&
+            onBack === undefined &&
+            service !== undefined && (
+              <Key name="escape" onPress={() => onServiceChange(undefined)}>
+                all traces
+              </Key>
+            )}
           {occupied.length > 0 && (
             <StepKeys
               forward="right"

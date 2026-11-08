@@ -2,7 +2,7 @@ import { afterEach, expect, mock, setSystemTime, spyOn, test } from "bun:test";
 
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
-import { renderApp } from "#testing/app.tsx";
+import { renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -220,9 +220,7 @@ test("selects a span linked within the same trace", async () => {
       ],
     }),
   );
-  await using app = await renderApp(receiver);
-  await app.waitForFrame((frame) => frame.includes("run batch"));
-  app.mockInput.pressTab();
+  await using app = await renderPage(receiver, "traces");
   await app.waitForFrame((frame) => keyHints(frame).includes("return open"));
   app.mockInput.pressEnter();
   await app.waitForSelection("run batch");
@@ -435,10 +433,8 @@ test("scrolls the span panel down and back up", async () => {
       ],
     }),
   );
-  await using app = await renderApp(receiver);
+  await using app = await renderPage(receiver, "traces");
   await app.waitForFrame((frame) => tableRows(frame).length === 1);
-  app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => detailsLines(frame).includes("demo.product.id.1 0PUK6V6EV0"));
 

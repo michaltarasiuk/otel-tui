@@ -1,6 +1,6 @@
 import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 
-import { renderApp } from "#testing/app.tsx";
+import { renderPage } from "#testing/app.tsx";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -34,7 +34,7 @@ afterEach(() => {
 
 test("waits for traces before any arrive", async () => {
   await using receiver = await startTestReceiver();
-  await using app = await renderApp(receiver);
+  await using app = await renderPage(receiver, "traces");
 
   const frame = await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
 
@@ -44,7 +44,7 @@ test("waits for traces before any arrive", async () => {
 test("lists traces whose root span arrived, newest first, with span and error counts", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
-  await using app = await renderApp(receiver);
+  await using app = await renderPage(receiver, "traces");
 
   const frame = await app.waitForFrame((frame) => tableRows(frame).length === 3);
 
@@ -185,7 +185,7 @@ test("shows an error when traces cannot be loaded", async () => {
   const connection = await receiver.connect();
   await connection.run("DROP TABLE otlp_traces");
 
-  await using app = await renderApp(receiver);
+  await using app = await renderPage(receiver, "traces");
 
   await app.waitForFrame((frame) => frame.includes("Failed to load traces"));
 });

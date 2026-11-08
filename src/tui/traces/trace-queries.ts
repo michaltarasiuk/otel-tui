@@ -18,6 +18,7 @@ import { Trace, type TraceSort } from "./trace.ts";
 interface TraceFilter {
   search: string;
   errorsOnly: boolean;
+  serviceName: string | undefined;
 }
 
 interface TraceQuery extends TraceFilter {
@@ -25,16 +26,17 @@ interface TraceQuery extends TraceFilter {
   sort: TraceSort;
 }
 
-export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery) {
+export function useTraceList({ search, errorsOnly, serviceName, timeRange, sort }: TraceQuery) {
   const connection = useConnection();
 
   return useQuery({
-    queryKey: ["traces", { search, errorsOnly, timeRange, sort }],
+    queryKey: ["traces", { search, errorsOnly, serviceName, timeRange, sort }],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(traceList, {
         limit: 500,
         ...searchParams(search),
         errorsOnly,
+        serviceName: serviceName ?? null,
         minTimeMs: timeRange?.from ?? null,
         maxTimeMs: timeRange?.to ?? null,
         sortBy: sort.column,
@@ -48,16 +50,17 @@ export function useTraceList({ search, errorsOnly, timeRange, sort }: TraceQuery
   });
 }
 
-export function useTraceTimeline({ search, errorsOnly }: TraceFilter) {
+export function useTraceTimeline({ search, errorsOnly, serviceName }: TraceFilter) {
   const connection = useConnection();
 
   return useQuery({
-    queryKey: ["traces", "timeline", { search, errorsOnly }],
+    queryKey: ["traces", "timeline", { search, errorsOnly, serviceName }],
     queryFn: async () => {
       const newestBucketMs = bucketStart(Date.now());
       const reader = await connection.runAndReadAll(traceTimeline, {
         ...searchParams(search),
         errorsOnly,
+        serviceName: serviceName ?? null,
         bucketMs: TIME_BUCKET_MS,
         endMs: newestBucketMs + TIME_BUCKET_MS,
       });

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import type { Metric } from "./metrics/metric.ts";
 
-export type Tab = "traces" | "metrics" | "logs";
+export type Tab = "services" | "traces" | "metrics" | "logs";
 
 interface TraceLocation {
   traceId: string;
@@ -11,6 +11,7 @@ interface TraceLocation {
 
 interface Location {
   tab: Tab;
+  tracesService: string | undefined;
   trace: TraceLocation | undefined;
   metric: Metric | undefined;
   logsTrace: TraceLocation | undefined;
@@ -21,20 +22,29 @@ interface History {
   previous: Location[];
 }
 
-type PageName = "traces" | "trace" | "metrics" | "metric" | "logs";
+type PageName = "services" | "traces" | "trace" | "metrics" | "metric" | "logs";
 
 type Destination =
+  | { name: "traces"; service: string | undefined }
   | { name: "trace"; traceId: string; spanId?: string | undefined }
   | { name: "metric"; metric: Metric }
   | { name: "logs"; traceId: string | undefined; spanId?: string | undefined };
 
 const START_HISTORY: History = {
-  location: { tab: "traces", trace: undefined, metric: undefined, logsTrace: undefined },
+  location: {
+    tab: "services",
+    tracesService: undefined,
+    trace: undefined,
+    metric: undefined,
+    logsTrace: undefined,
+  },
   previous: [],
 };
 
 function pageAt({ tab, trace, metric }: Location): PageName {
   switch (tab) {
+    case "services":
+      return "services";
     case "traces":
       return trace === undefined ? "traces" : "trace";
     case "metrics":
@@ -46,6 +56,8 @@ function pageAt({ tab, trace, metric }: Location): PageName {
 
 function change(destination: Destination): Partial<Location> {
   switch (destination.name) {
+    case "traces":
+      return { tab: "traces", tracesService: destination.service, trace: undefined };
     case "trace":
       return {
         tab: "traces",
@@ -91,6 +103,8 @@ function pop(history: History): History {
 
 function close(history: History): History {
   switch (history.location.tab) {
+    case "services":
+      return history;
     case "traces":
       return replace(history, { trace: undefined });
     case "metrics":
@@ -116,6 +130,7 @@ export function usePages() {
   return {
     page: pageAt(history.location),
     tab: history.location.tab,
+    tracesService: history.location.tracesService,
     trace: history.location.trace,
     metric: history.location.metric,
     logsTrace: history.location.logsTrace,
