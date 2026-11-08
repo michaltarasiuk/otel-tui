@@ -49,7 +49,7 @@ export function App({ receiverUrls }: AppProps) {
               traceId={page.traceId}
               spanId={page.spanId}
               onBack={() => back()}
-              onOpenLogs={() => open({ name: "logs", traceId: page.traceId })}
+              onOpenLogs={(spanId) => open({ name: "logs", traceId: page.traceId, spanId })}
             />
           )}
           <Screen when={page.name === "metrics"}>
@@ -59,6 +59,7 @@ export function App({ receiverUrls }: AppProps) {
           <Screen when={page.name === "logs"}>
             <LogsPage
               traceId={logsTrace?.traceId}
+              spanId={logsTrace?.spanId}
               onTraceChange={(traceId) => replace({ name: "logs", traceId })}
               onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
               onBack={canGoBack ? () => back() : undefined}

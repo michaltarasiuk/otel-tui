@@ -235,42 +235,41 @@ test("goes back to the list with the opened trace still selected", async () => {
   expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
 });
 
+const checkoutLogs = logsRequest(
+  {
+    service: "checkout",
+    logs: [
+      {
+        time: at(1100),
+        severityNumber: SEVERITY_NUMBER.info,
+        body: "[PlaceOrder]",
+        traceId: checkoutTraceId,
+        spanId: "2a".repeat(8),
+      },
+      {
+        time: at(1900),
+        severityNumber: SEVERITY_NUMBER.info,
+        body: 'starting to listen on tcp: "[::]:5050"',
+      },
+    ],
+  },
+  {
+    service: "payment",
+    logs: [
+      {
+        time: at(1200),
+        severityNumber: SEVERITY_NUMBER.error,
+        body: "Credit card info is invalid.",
+        traceId: checkoutTraceId,
+        spanId: "2b".repeat(8),
+      },
+    ],
+  },
+);
+
 test("opens the logs of the open trace in the logs view", async () => {
   await using receiver = await startTestReceiver();
-  await receiver.sendHttp(
-    "/v1/logs",
-    logsRequest(
-      {
-        service: "checkout",
-        logs: [
-          {
-            time: at(1100),
-            severityNumber: SEVERITY_NUMBER.info,
-            body: "[PlaceOrder]",
-            traceId: checkoutTraceId,
-            spanId: "2a".repeat(8),
-          },
-          {
-            time: at(1900),
-            severityNumber: SEVERITY_NUMBER.info,
-            body: 'starting to listen on tcp: "[::]:5050"',
-          },
-        ],
-      },
-      {
-        service: "payment",
-        logs: [
-          {
-            time: at(1200),
-            severityNumber: SEVERITY_NUMBER.error,
-            body: "Credit card info is invalid.",
-            traceId: checkoutTraceId,
-            spanId: "2b".repeat(8),
-          },
-        ],
-      },
-    ),
-  );
+  await receiver.sendHttp("/v1/logs", checkoutLogs);
   await using app = await openTrace(receiver, CHECKOUT_ROW);
 
   app.mockInput.pressKey("l");
@@ -279,6 +278,21 @@ test("opens the logs of the open trace in the logs view", async () => {
   expect(pageHeader(frame)).toBe("trace 22222222 2 of 3 logs");
   expect(frame).toContain("Credit card info is invalid.");
   expect(frame).not.toContain("starting to listen on tcp");
+});
+
+test("opens the logs of the selected span", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/logs", checkoutLogs);
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForSelection(PLACE_ORDER);
+  app.mockInput.pressArrow("down");
+  await app.waitForSelection("charge");
+
+  app.mockInput.pressKey("l", { shift: true });
+
+  const frame = await app.waitForFrame((frame) => frame.includes("Credit card info is invalid."));
+  expect(pageHeader(frame)).toBe(`trace 22222222 span ${"2b".repeat(4)} 1 of 3 logs`);
+  expect(frame).not.toContain("[PlaceOrder]");
 });
 
 test("goes back from the trace's logs to the trace, then to the list", async () => {

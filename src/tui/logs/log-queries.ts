@@ -16,13 +16,14 @@ interface LogQuery {
   search: string;
   minSeverity: SeverityLevel | undefined;
   traceId: string | undefined;
+  spanId: string | undefined;
 }
 
-export function useLogList({ search, minSeverity, traceId }: LogQuery) {
+export function useLogList({ search, minSeverity, traceId, spanId }: LogQuery) {
   const connection = useConnection();
 
   return useQuery({
-    queryKey: ["logs", { search, minSeverity, traceId }],
+    queryKey: ["logs", { search, minSeverity, traceId, spanId }],
     queryFn: async () => {
       const reader = await connection.runAndReadAll(logList, {
         limit: 500,
@@ -30,6 +31,7 @@ export function useLogList({ search, minSeverity, traceId }: LogQuery) {
         minSeverityNumber:
           minSeverity === undefined ? ANY_SEVERITY_NUMBER : lowestSeverityNumber(minSeverity),
         traceId: traceId ?? null,
+        spanId: spanId ?? null,
       });
       const rows = reader.getRowObjectsJS();
       return Log.array().parse(rows);

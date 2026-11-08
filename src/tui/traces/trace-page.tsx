@@ -24,7 +24,7 @@ interface TracePageProps {
   traceId: string;
   spanId: string | undefined;
   onBack: () => void;
-  onOpenLogs: () => void;
+  onOpenLogs: (spanId?: string) => void;
 }
 
 export function TracePage({ traceId, spanId, onBack, onOpenLogs }: TracePageProps) {
@@ -73,6 +73,11 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs }: TracePageProp
         <Key name="l" onPress={() => onOpenLogs()}>
           logs
         </Key>
+        {selected !== undefined && (
+          <Key name="shift+l" onPress={() => onOpenLogs(selected.span_id)}>
+            span logs
+          </Key>
+        )}
         {spans.some((span) => span.is_error) && (
           <StepKeys
             forward="e"

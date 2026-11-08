@@ -25,7 +25,7 @@ import { isErrorLevel, severityColor } from "./severity.ts";
 const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
 type MinSeverity = (typeof MIN_SEVERITIES)[number];
 
-const SHORT_TRACE_ID_LENGTH = 8;
+const SHORT_ID_LENGTH = 8;
 
 function isError(log: Log) {
   return isErrorLevel(log.severity);
@@ -33,17 +33,18 @@ function isError(log: Log) {
 
 interface LogsPageProps {
   traceId: string | undefined;
+  spanId: string | undefined;
   onTraceChange: (traceId: string | undefined) => void;
   onOpenTrace: (traceId: string, spanId: string | undefined) => void;
   onBack: (() => void) | undefined;
 }
 
-export function LogsPage({ traceId, onTraceChange, onOpenTrace, onBack }: LogsPageProps) {
+export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }: LogsPageProps) {
   const search = useSearch();
   const [minSeverity, setMinSeverity] = useState<MinSeverity>();
   const detailsRef = useRef<ScrollBoxRenderable>(null);
 
-  const logList = useLogList({ search: search.text, minSeverity, traceId });
+  const logList = useLogList({ search: search.text, minSeverity, traceId, spanId });
   const logTotalCount = useLogTotalCount();
 
   const { data: logs = [] } = logList;
@@ -63,7 +64,8 @@ export function LogsPage({ traceId, onTraceChange, onOpenTrace, onBack }: LogsPa
     <box flexGrow={1}>
       <PageHeader>
         <SearchInput search={search} placeholder="body, service, trace ID or key=value" />
-        {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_TRACE_ID_LENGTH)}</Chip>}
+        {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_ID_LENGTH)}</Chip>}
+        {spanId !== undefined && <Chip>span {spanId.slice(0, SHORT_ID_LENGTH)}</Chip>}
         {minSeverity !== undefined && (
           <Chip color={severityColor(minSeverity)}>≥ {minSeverity}</Chip>
         )}
