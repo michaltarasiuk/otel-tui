@@ -8,8 +8,7 @@ import { useSearch } from "#tui/components/use-search.ts";
 import { useNavigation } from "#tui/navigation.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatShownCount } from "#utils/format-shown-count.ts";
-import { nextItem } from "#utils/next-item.ts";
-import { previousItem } from "#utils/previous-item.ts";
+import { stepItem } from "#utils/step-item.ts";
 
 import { useLogList, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
@@ -62,14 +61,14 @@ export function LogsView() {
           desc: "severity",
           enabled: !search.isEditing,
           run() {
-            setMinSeverity((minSeverity) => nextItem(MIN_SEVERITIES, minSeverity));
+            setMinSeverity((minSeverity) => stepItem(MIN_SEVERITIES, minSeverity, 1));
           },
         },
         {
           name: "logs.previous-severity",
           enabled: !search.isEditing,
           run() {
-            setMinSeverity((minSeverity) => previousItem(MIN_SEVERITIES, minSeverity));
+            setMinSeverity((minSeverity) => stepItem(MIN_SEVERITIES, minSeverity, -1));
           },
         },
       ],

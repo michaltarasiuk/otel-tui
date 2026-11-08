@@ -6,7 +6,7 @@ import { FocusScope, useFocused } from "#tui/components/focus.tsx";
 import { Placeholder } from "#tui/components/placeholder.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { formatShownCount } from "#utils/format-shown-count.ts";
-import { nextItem } from "#utils/next-item.ts";
+import { stepItem } from "#utils/step-item.ts";
 
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
@@ -29,7 +29,7 @@ const DESCENDING_FIRST = {
 } satisfies Record<MetricSortColumn, boolean>;
 
 function nextSort(column: MetricSortColumn) {
-  const next = nextItem(METRIC_SORT_COLUMNS, column);
+  const next = stepItem(METRIC_SORT_COLUMNS, column, 1);
   return { column: next, descending: DESCENDING_FIRST[next] };
 }
 

@@ -8,7 +8,7 @@ import { Placeholder } from "#tui/components/placeholder.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatShownCount } from "#utils/format-shown-count.ts";
-import { nextItem } from "#utils/next-item.ts";
+import { stepItem } from "#utils/step-item.ts";
 
 import { type HistogramRange, stepSelection } from "./histogram.ts";
 import { timeRangeLabel } from "./time-histogram.ts";
@@ -95,7 +95,7 @@ export function TraceList() {
           enabled: !search.isEditing,
           run() {
             setSort((sort) => ({
-              column: nextItem(TRACE_SORT_COLUMNS, sort.column),
+              column: stepItem(TRACE_SORT_COLUMNS, sort.column, 1),
               descending: true,
             }));
           },
