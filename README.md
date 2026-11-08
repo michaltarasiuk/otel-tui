@@ -41,6 +41,12 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
   searches bodies, attributes, services, and trace IDs. A severity histogram
   is planned.
 
+In every view, `p` pauses live updates so rows stop moving while you read
+them, and `y` copies the selected trace ID, span ID (`shift+y` the trace
+ID), log body, or metric name. Searches also take `key=value` terms that
+match a span, log, or metric attribute or a resource attribute exactly, as in
+`http.route=/api/cart service.name=cart`.
+
 ## Usage
 
 Requires [Bun](https://bun.sh).
