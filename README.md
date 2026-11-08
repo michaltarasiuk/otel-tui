@@ -4,53 +4,75 @@ A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
 Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
-![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-view.png)
-
-![Trace details with a span waterfall and the selected span's attributes](docs/trace-details.png)
-
-![Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource](docs/metrics-list.png)
-
-![Metric details with a series table, a value chart, and the selected series' resource and scope](docs/metrics-view.png)
-
-![Logs view filtered to errors, with severity, service, and body columns and the selected log's body, resource, scope, and trace ID](docs/logs-view.png)
+![Services view listing each service's rate, error rate, and p50, p95, and p99 latency, with the selected service's operations below](docs/services-view.png)
 
 ## Views
 
-- Traces: the trace list works today, and `return` opens a trace as a span
-  waterfall with each span's events, attributes, links, and resource, and
-  `l` there opens the trace's logs (`shift+l` only the selected span's). `tab`
-  moves into the span's links, where `return` opens the linked trace, or
-  selects the linked span when it is in the same trace. `e` jumps to the next trace or span
-  with errors, and `s` shows only traces with errors. `o` sorts by start
-  time, span count, error count, or duration, `shift+o` reverses the order,
-  `ctrl+d` and `ctrl+u` move half a page, and `/` searches trace IDs, span
-  names, and services. A histogram above the
-  list charts the traces over time in 10-second columns, with the errors in
-  red, so a spike or a gap stands out.
-  `←` or `→` marks the latest column with traces and narrows the list to it;
-  they then move the mark to the previous or next column with traces,
-  scrolling the chart along, and `escape` clears it.
-- Metrics: the metric list shows each metric's type, unit, and series count,
-  with a panel listing the values each attribute takes, so an attribute that
-  blows up cardinality stands out. `return` opens a metric's series with
-  their rates, last values, or percentiles, plus the selected series' chart,
-  histogram buckets, and exemplars. `tab` moves into the exemplars, where
-  `return` opens an exemplar's trace at its span; exemplars whose trace
-  otel-tui never received are marked "not stored". `o` sorts by name, series count, or last
-  update, `shift+o` reverses the order, and `/` searches names, descriptions,
-  services, and attributes. A time brush is planned.
-- Logs: the log table works today, with a panel for the selected log's body,
-  attributes, resource, and trace ID. `e` jumps to the next error, `return`
-  opens the selected log's trace (`escape` there comes back to the log), `t`
-  shows only the logs in that trace, `s` raises the minimum severity, and `/`
-  searches bodies, attributes, services, and trace IDs. A severity histogram
-  is planned.
+### Services
 
-In every view, `?` lists every key the focused page takes, including the
-ones the footer leaves out. `p` pauses live updates so rows stop moving while you read
-them, and `y` copies the selected trace ID, span ID (`shift+y` the trace
-ID), log body, or metric name. Searches also take `key=value` terms that
-match a span, log, or metric attribute or a resource attribute exactly, as in
+The app opens here. Each service's rate, error rate, and p50, p95, and p99
+latency over the last 5 minutes come from its server and consumer spans, with
+the selected service's operations below. `return` opens the service's traces,
+`o` sorts by rate, errors, or p95, and `/` searches service names.
+
+### Traces
+
+<p>
+  <img src="docs/traces-view.png" width="49%" alt="Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration">
+  <img src="docs/trace-details.png" width="49%" alt="Trace details with a span waterfall and the selected span's attributes">
+</p>
+
+A histogram above the list charts the traces over time in 10-second columns,
+with the errors in red, so a spike or a gap stands out. `←` or `→` marks the
+latest column with traces and narrows the list to it, then moves the mark to
+the previous or next column, and `escape` clears it. `e` jumps to the next
+trace with errors, `s` shows only traces with errors, `o` sorts by start time,
+span count, error count, or duration, `shift+o` reverses the order, `ctrl+d`
+and `ctrl+u` move half a page, and `/` searches trace IDs, span names, and
+services.
+
+`return` opens a trace as a span waterfall with each span's events,
+attributes, links, and resource. `e` there jumps to the next span with errors,
+`l` opens the trace's logs, and `shift+l` only the selected span's. `tab`
+moves into the span's links, where `return` opens the linked trace, or selects
+the linked span when it is in the same trace.
+
+### Metrics
+
+<p>
+  <img src="docs/metrics-list.png" width="49%" alt="Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource">
+  <img src="docs/metrics-view.png" width="49%" alt="Metric details with a series table, a value chart, and the selected series' resource and scope">
+</p>
+
+The metric list shows each metric's type, unit, and series count, with a
+panel listing the values each attribute takes, so an attribute that blows up
+cardinality stands out. `o` sorts by name, series count, or last update,
+`shift+o` reverses the order, and `/` searches names, descriptions, services,
+and attributes.
+
+`return` opens a metric's series with their rates, last values, or
+percentiles, plus the selected series' chart, histogram buckets, and
+exemplars. `tab` moves into the exemplars, where `return` opens an exemplar's
+trace at its span; exemplars whose trace otel-tui never received are marked
+"not stored". A time brush is planned.
+
+### Logs
+
+![Logs view filtered to errors, with severity, service, and body columns and the selected log's body, resource, scope, and trace ID](docs/logs-view.png)
+
+The log table comes with a panel for the selected log's body, attributes,
+resource, and trace ID. `e` jumps to the next error, `return` opens the
+selected log's trace (`escape` there comes back to the log), `t` shows only
+the logs in that trace, `s` raises the minimum severity, and `/` searches
+bodies, attributes, services, and trace IDs. A severity histogram is planned.
+
+### Everywhere
+
+`?` lists every key the focused page takes, including the ones the footer
+leaves out. `p` pauses live updates so rows stop moving while you read them,
+and `y` copies the selected trace ID, span ID (`shift+y` the trace ID), log
+body, or metric name. Searches also take `key=value` terms that match a span,
+log, or metric attribute or a resource attribute exactly, as in
 `http.route=/api/cart service.name=cart`.
 
 ## Usage
