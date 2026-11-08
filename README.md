@@ -87,6 +87,18 @@ bun run check
 bun run test
 ```
 
+### Debugging
+
+Press <kbd>`</kbd> to toggle the console. It shows `console.*`output, failed
+queries with their query key, and keymap warnings. The app runs in`StrictMode`.
+
+```shell
+npx react-devtools@7     # in one terminal
+bun run dev:devtools     # in another: inspect the React tree and state
+bun run dev:stats        # render statistics overlay
+OTUI_DUMP_CAPTURES=true bun run start  # print captured output on exit
+```
+
 ## How it works
 
 An in-memory DuckDB runs the receiver from its
