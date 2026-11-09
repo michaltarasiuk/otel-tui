@@ -1,4 +1,5 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "sortImports": true
+  "sortImports": true,
+  "overrides": [{ "files": ["*.ts", "*.tsx"], "options": { "objectWrap": "collapse" } }]
 }

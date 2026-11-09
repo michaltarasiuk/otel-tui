@@ -16,10 +16,7 @@ const HISTOGRAM_AXIS_HEIGHT = 1;
 export const HISTOGRAM_HEIGHT =
   HISTOGRAM_TITLE_HEIGHT + HISTOGRAM_BAR_HEIGHT + HISTOGRAM_AXIS_HEIGHT;
 
-const SEGMENT_COLORS = {
-  ok: THEME.bar,
-  error: THEME.textError,
-};
+const SEGMENT_COLORS = { ok: THEME.bar, error: THEME.textError };
 
 function columnBackground(column: HistogramColumn, selected: HistogramRange | undefined) {
   return selected !== undefined && overlaps(column, selected)

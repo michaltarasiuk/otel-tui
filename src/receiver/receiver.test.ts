@@ -51,12 +51,7 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
     "/v1/logs",
     logsRequest({
       service: "cart",
-      logs: [
-        {
-          time,
-          body: "GetCartAsync called with userId={userId}",
-        },
-      ],
+      logs: [{ time, body: "GetCartAsync called with userId={userId}" }],
     }),
   );
   await receiver.sendHttp(
@@ -64,10 +59,7 @@ async function sendOneOfEach(receiver: TestReceiver, time: Date) {
     metricsRequest({
       service: "frontend",
       metrics: [
-        {
-          name: "v8js.memory.heap.used",
-          gauge: [{ time, value: 4 }],
-        },
+        { name: "v8js.memory.heap.used", gauge: [{ time, value: 4 }] },
         {
           name: "nodejs.eventloop.time",
           sum: [{ start: time, time, value: 1 }],

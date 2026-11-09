@@ -241,12 +241,7 @@ export async function startReceiver({
     instance.closeSync();
   }
 
-  return {
-    urls,
-    connect,
-    clear,
-    [Symbol.asyncDispose]: close,
-  };
+  return { urls, connect, clear, [Symbol.asyncDispose]: close };
 }
 
 export type Receiver = Awaited<ReturnType<typeof startReceiver>>;

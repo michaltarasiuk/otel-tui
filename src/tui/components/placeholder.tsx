@@ -1,9 +1,6 @@
 import { THEME } from "#tui/theme/theme.ts";
 
-const VARIANT_COLORS = {
-  muted: THEME.textMuted,
-  error: THEME.textError,
-};
+const VARIANT_COLORS = { muted: THEME.textMuted, error: THEME.textError };
 
 interface PlaceholderProps {
   text: string;

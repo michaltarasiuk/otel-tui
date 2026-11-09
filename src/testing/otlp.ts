@@ -287,12 +287,7 @@ export function tracesRequest(...resources: (ResourceFixture & { spans: SpanFixt
   return {
     resourceSpans: resources.map((fixture) => ({
       resource: resource(fixture),
-      scopeSpans: [
-        {
-          scope: fixture.scope,
-          spans: fixture.spans.map((item) => span(item)),
-        },
-      ],
+      scopeSpans: [{ scope: fixture.scope, spans: fixture.spans.map((item) => span(item)) }],
     })),
   };
 }
@@ -302,10 +297,7 @@ export function logsRequest(...resources: (ResourceFixture & { logs: LogFixture[
     resourceLogs: resources.map((fixture) => ({
       resource: resource(fixture),
       scopeLogs: [
-        {
-          scope: fixture.scope,
-          logRecords: fixture.logs.map((item) => logRecord(item)),
-        },
+        { scope: fixture.scope, logRecords: fixture.logs.map((item) => logRecord(item)) },
       ],
     })),
   };
@@ -316,10 +308,7 @@ export function metricsRequest(...resources: (ResourceFixture & { metrics: Metri
     resourceMetrics: resources.map((fixture) => ({
       resource: resource(fixture),
       scopeMetrics: [
-        {
-          scope: fixture.scope,
-          metrics: fixture.metrics.map((item) => metric(item)),
-        },
+        { scope: fixture.scope, metrics: fixture.metrics.map((item) => metric(item)) },
       ],
     })),
   };

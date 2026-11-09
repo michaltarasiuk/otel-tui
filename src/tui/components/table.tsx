@@ -9,10 +9,7 @@ import { useFocused } from "./focus.tsx";
 type Align = "left" | "right";
 export type SortDirection = "ascending" | "descending";
 
-const SORT_ARROWS = {
-  ascending: "▲",
-  descending: "▼",
-} satisfies Record<SortDirection, string>;
+const SORT_ARROWS = { ascending: "▲", descending: "▼" } satisfies Record<SortDirection, string>;
 
 export function sortDirection<C>(
   sort: { column: C; descending: boolean },

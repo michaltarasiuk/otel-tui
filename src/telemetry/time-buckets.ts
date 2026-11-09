@@ -10,11 +10,7 @@ export interface TimeRange {
 }
 
 export const TimeBucket = z
-  .object({
-    bucket_start_ms: z.number(),
-    count: z.number(),
-    error_count: z.number(),
-  })
+  .object({ bucket_start_ms: z.number(), count: z.number(), error_count: z.number() })
   .transform((row) => ({
     from: row.bucket_start_ms,
     to: row.bucket_start_ms + TIME_BUCKET_MS,

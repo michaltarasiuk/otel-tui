@@ -31,15 +31,9 @@ const MIN_HEIGHT_FOR_HISTOGRAM =
 
 const NO_BUCKETS: HistogramRange[] = [];
 
-const NEWEST_FIRST: TraceSort = {
-  column: "start_time",
-  descending: true,
-};
+const NEWEST_FIRST: TraceSort = { column: "start_time", descending: true };
 
-const SLOWEST_FIRST: TraceSort = {
-  column: "duration_ms",
-  descending: true,
-};
+const SLOWEST_FIRST: TraceSort = { column: "duration_ms", descending: true };
 
 function hasErrors(trace: Trace) {
   return trace.error_count > 0;

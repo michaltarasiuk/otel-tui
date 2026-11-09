@@ -66,10 +66,7 @@ function change(destination: Destination): Partial<Location> {
         trace: undefined,
       };
     case "trace":
-      return {
-        tab: "traces",
-        trace: { traceId: destination.traceId, spanId: destination.spanId },
-      };
+      return { tab: "traces", trace: { traceId: destination.traceId, spanId: destination.spanId } };
     case "metric":
       return { tab: "metrics", metric: destination.metric };
     case "logs":
@@ -84,17 +81,11 @@ function change(destination: Destination): Partial<Location> {
 }
 
 function replace({ location, previous }: History, change: Partial<Location>): History {
-  return {
-    location: { ...location, ...change },
-    previous,
-  };
+  return { location: { ...location, ...change }, previous };
 }
 
 function push({ location, previous }: History, change: Partial<Location>): History {
-  return {
-    location: { ...location, ...change },
-    previous: [...previous, location],
-  };
+  return { location: { ...location, ...change }, previous: [...previous, location] };
 }
 
 function pop(history: History): History {
@@ -102,10 +93,7 @@ function pop(history: History): History {
   if (location === undefined) {
     return history;
   }
-  return {
-    location,
-    previous: history.previous.slice(0, -1),
-  };
+  return { location, previous: history.previous.slice(0, -1) };
 }
 
 function close(history: History): History {
@@ -125,10 +113,7 @@ function switchTab(history: History, tab: Tab): History {
   if (tab === history.location.tab) {
     return history;
   }
-  return {
-    location: { ...history.location, tab },
-    previous: [],
-  };
+  return { location: { ...history.location, tab }, previous: [] };
 }
 
 export function usePages() {

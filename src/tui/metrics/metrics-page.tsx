@@ -25,16 +25,12 @@ import { MetricDetails } from "./metric-details.tsx";
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
 
-const BY_NAME: MetricSort = {
-  column: "name",
-  descending: false,
-};
+const BY_NAME: MetricSort = { column: "name", descending: false };
 
-const DESCENDING_FIRST = {
-  name: false,
-  series_count: true,
-  last_time: true,
-} satisfies Record<MetricSortColumn, boolean>;
+const DESCENDING_FIRST = { name: false, series_count: true, last_time: true } satisfies Record<
+  MetricSortColumn,
+  boolean
+>;
 
 function nextSort(column: MetricSortColumn) {
   const next = stepItem(METRIC_SORT_COLUMNS, column, 1);

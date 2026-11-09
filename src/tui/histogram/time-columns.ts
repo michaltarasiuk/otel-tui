@@ -5,10 +5,7 @@ import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
 import type { HistogramColumn, HistogramRange } from "./bars.ts";
 
 const LABEL_GAP = 2;
-const LABEL_WIDTHS = {
-  minute: "00:00".length,
-  second: "00:00:00".length,
-};
+const LABEL_WIDTHS = { minute: "00:00".length, second: "00:00:00".length };
 
 export const TIME_SCALE_LABEL = `${TIME_BUCKET_MS / SECOND_MS}s per column`;
 

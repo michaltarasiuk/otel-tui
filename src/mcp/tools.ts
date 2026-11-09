@@ -18,10 +18,7 @@ const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 200;
 const MAX_TRACE_SPANS = 200;
 
-const READ_ONLY = {
-  readOnlyHint: true,
-  openWorldHint: false,
-} as const;
+const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
 const SEARCH_HELP =
   "Words match names, services, and IDs. key=value, key!=value, and key>number (also >=, <, <=) match span, log, metric, or resource attributes. On traces, duration>500ms compares span durations.";
@@ -278,15 +275,17 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
         timeRange: undefined,
       });
       return jsonResult(
-        logs.slice(0, limit).map((log) => ({
-          time: isoTime(log.time),
-          severity: log.severity ?? log.severity_text,
-          service: log.service_name,
-          body: log.body,
-          trace_id: log.trace_id,
-          span_id: log.span_id,
-          attributes: attributeObject(log.attributes),
-        })),
+        logs
+          .slice(0, limit)
+          .map((log) => ({
+            time: isoTime(log.time),
+            severity: log.severity ?? log.severity_text,
+            service: log.service_name,
+            body: log.body,
+            trace_id: log.trace_id,
+            span_id: log.span_id,
+            attributes: attributeObject(log.attributes),
+          })),
       );
     },
   );

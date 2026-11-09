@@ -30,14 +30,10 @@ import { ConnectionContext } from "./query/connection.ts";
 
 const FOCUS_CONTROLLED_BY_APP = true;
 
-export const RENDERER_CONFIG = {
-  autoFocus: !FOCUS_CONTROLLED_BY_APP,
-} satisfies CliRendererConfig;
+export const RENDERER_CONFIG = { autoFocus: !FOCUS_CONTROLLED_BY_APP } satisfies CliRendererConfig;
 
 export const QUERY_CLIENT_CONFIG = {
-  defaultOptions: {
-    queries: { retry: false },
-  },
+  defaultOptions: { queries: { retry: false } },
 } satisfies QueryClientConfig;
 
 function enableRefetchWithoutWindow() {

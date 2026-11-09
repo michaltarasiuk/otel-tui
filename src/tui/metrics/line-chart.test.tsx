@@ -54,19 +54,13 @@ test("draws a line in braille between labels for its highest and lowest values",
 });
 
 test("breaks the line where values are missing for more than the gap slots", async () => {
-  await using chart = await renderChart([line(stepWithGap)], {
-    gapSlots: 2,
-    includeZero: true,
-  });
+  await using chart = await renderChart([line(stepWithGap)], { gapSlots: 2, includeZero: true });
 
   expect(chart.rows.slice(0, 2)).toEqual(["      3.0       ⠉⠉", "      0.0 ⠒⠒"]);
 });
 
 test("joins the line across missing values within the gap slots", async () => {
-  await using chart = await renderChart([line(stepWithGap)], {
-    gapSlots: 10,
-    includeZero: true,
-  });
+  await using chart = await renderChart([line(stepWithGap)], { gapSlots: 10, includeZero: true });
 
   expect(chart.rows.slice(0, 2)).toEqual(["      3.0    ⣀⡤⠖⠋⠉", "      0.0 ⠒⠒⠋⠁"]);
 });

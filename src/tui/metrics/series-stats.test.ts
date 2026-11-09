@@ -68,10 +68,7 @@ describe("seriesStats", () => {
 
     expect(
       seriesStats(metric("counter", "feature_flag.evaluation_requests_total", "{request}"), series),
-    ).toEqual({
-      rate: "5/s",
-      total: "150",
-    });
+    ).toEqual({ rate: "5/s", total: "150" });
   });
 
   test("shows a delta counter's rate from its last point", () => {
@@ -85,10 +82,7 @@ describe("seriesStats", () => {
         metric("counter", "feature_flag.evaluation_requests_total", "{request}", 1),
         series,
       ),
-    ).toEqual({
-      rate: "4/s",
-      total: "70",
-    });
+    ).toEqual({ rate: "4/s", total: "70" });
   });
 
   test("leaves the rate blank before a cumulative counter's second export", () => {
