@@ -1,6 +1,6 @@
-import { afterEach, expect, setSystemTime, test } from "bun:test";
+import { expect, test } from "bun:test";
 
-import { at } from "#testing/clock.ts";
+import { at, fakeClock } from "#testing/clock.ts";
 import { startTestMcp } from "#testing/mcp.ts";
 import { logsRequest, metricsRequest, SEVERITY_NUMBER, TEMPORALITY } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
@@ -15,10 +15,6 @@ import {
 
 import { StartupError } from "../startup-error.ts";
 import { startMcpServer } from "./mcp-server.ts";
-
-afterEach(() => {
-  setSystemTime();
-});
 
 test("lists read-only tools for each view", async () => {
   await using receiver = await startTestReceiver();
@@ -83,7 +79,7 @@ test("reads a span's attributes and resource", async () => {
 });
 
 test("lists services and their operations", async () => {
-  setSystemTime(at(60_000));
+  using _clock = fakeClock(at(60_000));
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
   await using mcp = await startTestMcp(receiver);

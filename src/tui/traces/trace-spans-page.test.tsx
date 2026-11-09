@@ -1,10 +1,10 @@
-import { afterEach, expect, mock, setSystemTime, spyOn, test } from "bun:test";
+import { afterEach, expect, mock, spyOn, test } from "bun:test";
 
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
 import spanDetails from "#telemetry/traces/sql/span-details.sql" with { type: "text" };
 import { renderPage } from "#testing/app.tsx";
-import { at } from "#testing/clock.ts";
+import { at, fakeClock } from "#testing/clock.ts";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -36,7 +36,6 @@ import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
 afterEach(() => {
-  setSystemTime();
   mock.restore();
 });
 
@@ -316,10 +315,9 @@ test("goes back to the list with the opened trace still selected", async () => {
 });
 
 test("leaves the opened trace alone while the list's scroll gesture continues", async () => {
+  using clock = fakeClock(at(10_000));
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
-  const scrollStart = at(10_000);
-  setSystemTime(scrollStart);
   const listLine = (await app.waitForFrame((frame) => frame.includes("Traces over time")))
     .split("\n")
     .findIndex((line) => collapseWhitespace(line) === STATUS_ROW);
@@ -334,7 +332,7 @@ test("leaves the opened trace alone while the list's scroll gesture continues", 
   await app.mockMouse.scroll(2, spanLine, "down");
   expect(await app.waitForSelection(PLACE_ORDER)).toContain(PLACE_ORDER);
 
-  setSystemTime(new Date(scrollStart.getTime() + GESTURE_PAUSE_MS + 1));
+  clock.advance(GESTURE_PAUSE_MS + 1);
   await app.mockMouse.scroll(2, spanLine, "down");
   expect(await app.waitForSelection("charge")).toContain("charge");
 });

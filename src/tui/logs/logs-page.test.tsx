@@ -1,7 +1,7 @@
-import { expect, setSystemTime, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import { renderPage, search, selectRow } from "#testing/app.tsx";
-import { at } from "#testing/clock.ts";
+import { at, fakeClock } from "#testing/clock.ts";
 import {
   CART_EVENT_ROW,
   checkoutTrace,
@@ -382,40 +382,33 @@ test("scrolls the log panel down and back up", async () => {
 });
 
 test("scrolls the log panel only once the list's scroll gesture pauses", async () => {
-  const scrollStart = at(10_000);
-  setSystemTime(scrollStart);
-  try {
-    await using receiver = await startTestReceiver();
-    const body = [
-      "java.lang.OutOfMemoryError: Java heap space",
-      ...Array.from({ length: 40 }, (_, index) => `at AdService.java:${index + 200}`),
-    ].join("\n");
-    await receiver.sendHttp(
-      "/v1/logs",
-      logsRequest({ service: "ad", logs: [{ time: at(0), body }] }),
-    );
-    await using app = await renderPage(receiver, "logs");
-    const lines = (
-      await app.waitForFrame(
-        (frame) => frame.includes("Logs over time") && detailsLines(frame).includes("Body"),
-      )
-    ).split("\n");
-    const listLine = lines.findIndex((line) => line.includes("● ad"));
-    const panelLine = lines.findIndex((line) => line.includes("at AdService.java:200"));
-    const panelColumn = lines[panelLine]!.indexOf("at AdService.java:200");
+  using clock = fakeClock(at(10_000));
+  await using receiver = await startTestReceiver();
+  const body = [
+    "java.lang.OutOfMemoryError: Java heap space",
+    ...Array.from({ length: 40 }, (_, index) => `at AdService.java:${index + 200}`),
+  ].join("\n");
+  await receiver.sendHttp(
+    "/v1/logs",
+    logsRequest({ service: "ad", logs: [{ time: at(0), body }] }),
+  );
+  await using app = await renderPage(receiver, "logs");
+  const lines = (
+    await app.waitForFrame(
+      (frame) => frame.includes("Logs over time") && detailsLines(frame).includes("Body"),
+    )
+  ).split("\n");
+  const listLine = lines.findIndex((line) => line.includes("● ad"));
+  const panelLine = lines.findIndex((line) => line.includes("at AdService.java:200"));
+  const panelColumn = lines[panelLine]!.indexOf("at AdService.java:200");
 
-    await app.mockMouse.scroll(2, listLine, "down");
-    await app.mockMouse.scroll(panelColumn, panelLine, "down");
-    expect(detailsLines(await app.waitForFrame((frame) => frame.includes("Body")))).toContain(
-      "Body",
-    );
+  await app.mockMouse.scroll(2, listLine, "down");
+  await app.mockMouse.scroll(panelColumn, panelLine, "down");
+  expect(detailsLines(await app.waitForFrame((frame) => frame.includes("Body")))).toContain("Body");
 
-    setSystemTime(new Date(scrollStart.getTime() + GESTURE_PAUSE_MS + 1));
-    await app.mockMouse.scroll(panelColumn, panelLine, "down");
-    await app.waitForFrame((frame) => !detailsLines(frame).includes("Body"));
-  } finally {
-    setSystemTime();
-  }
+  clock.advance(GESTURE_PAUSE_MS + 1);
+  await app.mockMouse.scroll(panelColumn, panelLine, "down");
+  await app.waitForFrame((frame) => !detailsLines(frame).includes("Body"));
 });
 
 test("shows an error when logs cannot be loaded", async () => {
@@ -455,20 +448,16 @@ test("colors each severity", async () => {
 });
 
 test("charts the logs over time and narrows the list to a column", async () => {
-  setSystemTime(at(50_000));
-  try {
-    await using receiver = await startTestReceiver();
-    await using app = await renderLogList(receiver);
-    let frame = await app.waitForFrame((frame) => frame.includes("Logs over time"));
-    expect(textLines(frame)).toContain("Logs over time ■ errors 10s per column");
+  using _clock = fakeClock(at(50_000));
+  await using receiver = await startTestReceiver();
+  await using app = await renderLogList(receiver);
+  let frame = await app.waitForFrame((frame) => frame.includes("Logs over time"));
+  expect(textLines(frame)).toContain("Logs over time ■ errors 10s per column");
 
-    app.mockInput.pressArrow("right");
-    frame = await app.waitForFrame((frame) => pageHeader(frame).startsWith("12:00:00–12:00:10"));
-    expect(pageHeader(frame)).toBe("12:00:00–12:00:10 7 logs");
+  app.mockInput.pressArrow("right");
+  frame = await app.waitForFrame((frame) => pageHeader(frame).startsWith("12:00:00–12:00:10"));
+  expect(pageHeader(frame)).toBe("12:00:00–12:00:10 7 logs");
 
-    app.mockInput.pressEscape();
-    await app.waitForFrame((frame) => pageHeader(frame) === "7 logs");
-  } finally {
-    setSystemTime();
-  }
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => pageHeader(frame) === "7 logs");
 });

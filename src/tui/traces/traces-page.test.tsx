@@ -1,4 +1,4 @@
-import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
+import { afterEach, expect, mock, test } from "bun:test";
 
 import { renderPage, search, type TestApp } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
@@ -28,7 +28,6 @@ import {
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
 
 afterEach(() => {
-  setSystemTime();
   mock.restore();
 });
 
