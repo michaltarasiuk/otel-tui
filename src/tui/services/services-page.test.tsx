@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 import { renderPage } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
-import { detailsLines, keyHints, pageHeader, textLines } from "#testing/screen.ts";
+import { detailsLines, keyHints, onDetails, pageHeader, textLines } from "#testing/screen.ts";
 import { otlpTraces, PLACE_ORDER } from "#testing/traces.ts";
 
 const CART_ROW = "● cart 0.2/min 0.0% 80.0ms 80.0ms 80.0ms 1";
@@ -101,7 +101,7 @@ test("opens an operation's traces, slowest first, at the operation's span", asyn
   expect(textLines(frame)).toContain("Time Service Name Spans Errors ▼ Duration");
 
   app.mockInput.pressEnter();
-  frame = await app.waitForFrame((frame) => frame.includes("escape back"));
+  frame = await app.waitForFrame(onDetails);
   expect(await app.waitForSelection("orders process")).toContain("orders process");
 
   app.mockInput.pressEscape();

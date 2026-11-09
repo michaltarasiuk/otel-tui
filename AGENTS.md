@@ -29,7 +29,7 @@
 ## Tests
 
 - Test through the rendered app: press keys, read the screen. Read regions with `#testing/screen.ts` (`pageHeader`, `tableRows`, `detailsLines`, `keyHints`), never by line index.
-- Open pages with `renderPage` and pick rows with `selectRow`. Inject failures through `renderApp({ connection })`.
+- Open pages with `renderPage`, pick rows with `selectRow`, type queries with `search`, and wait for rows with `app.waitForRows`. Wait for focus with `onList` and `onDetails`. Inject failures through `renderApp({ connection })`.
 - Wait for a concrete frame, never for time.
 
 ## Commits

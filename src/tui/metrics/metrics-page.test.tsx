@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
-import { renderPage } from "#testing/app.tsx";
+import { renderPage, search } from "#testing/app.tsx";
 import { atSecond } from "#testing/clock.ts";
 import {
   BODY_SIZE_ROW,
@@ -14,7 +14,7 @@ import {
 } from "#testing/metrics.ts";
 import { metricsRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { detailsLines, pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import { detailsLines, onList, pageHeader, tableRows, textLines } from "#testing/screen.ts";
 
 beforeEach(() => {
   setSystemTime(atSecond(60));
@@ -49,7 +49,7 @@ test("sorts by series count, last update, and name", async () => {
 
   async function pressSortKey(shift: boolean, header: string, rows: string[]) {
     app.mockInput.pressKey("o", { shift });
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+    const frame = await app.waitForRows(rows);
     expect(textLines(frame)).toContain(header);
   }
 
@@ -77,32 +77,26 @@ test("searches names, descriptions, and attributes", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
-  async function search(text: string, rows: string[]) {
-    app.mockInput.pressKey("/");
-    await app.waitForFrame((frame) => frame.includes("name, description, service or key=value"));
-    await app.mockInput.typeText(text);
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+  async function expectSearch(text: string, rows: string[]) {
+    await search(app, text);
+    const frame = await app.waitForRows(rows);
     expect(frame).toContain(`${rows.length} of 6 metrics`);
     app.mockInput.pressEscape();
     await app.waitForFrame((frame) => tableRows(frame).length === 6);
   }
 
-  await search("body", [BODY_SIZE_ROW]);
-  await search("evaluation request counter", [FLAG_REQUESTS_ROW]);
-  await search("failedReadinessProbe", [FLAG_REQUESTS_ROW]);
+  await expectSearch("body", [BODY_SIZE_ROW]);
+  await expectSearch("evaluation request counter", [FLAG_REQUESTS_ROW]);
+  await expectSearch("failedReadinessProbe", [FLAG_REQUESTS_ROW]);
 });
 
 test("filters metrics by an attribute", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("name, description, service or key=value"));
-  await app.mockInput.typeText("feature_flag.key=cartFailure");
+  await search(app, "feature_flag.key=cartFailure");
 
-  const frame = await app.waitForFrame((frame) =>
-    Bun.deepEquals(tableRows(frame), [FLAG_REQUESTS_ROW]),
-  );
+  const frame = await app.waitForRows([FLAG_REQUESTS_ROW]);
   expect(frame).toContain("1 of 6 metrics");
 });
 
@@ -110,12 +104,10 @@ test("keeps an applied search while browsing", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("name, description, service or key=value"));
-  await app.mockInput.typeText("http");
+  await search(app, "http");
   await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
 
   app.mockInput.pressArrow("down");
 

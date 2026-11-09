@@ -1,6 +1,6 @@
 import { expect, setSystemTime, test } from "bun:test";
 
-import { renderPage } from "#testing/app.tsx";
+import { renderPage, search, selectRow } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
 import {
   CART_EVENT_ROW,
@@ -22,6 +22,8 @@ import {
   detailsLines,
   keyHints,
   lineSpans,
+  onDetails,
+  onList,
   pageHeader,
   spanColors,
   tableRows,
@@ -77,11 +79,7 @@ test("pretty-prints a JSON body", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  const jsonRowIndex = NEWEST_FIRST.indexOf(JSON_ROW);
-  for (const row of NEWEST_FIRST.slice(1, jsonRowIndex + 1)) {
-    app.mockInput.pressArrow("down");
-    await app.waitForSelection(row);
-  }
+  await selectRow(app, NEWEST_FIRST, JSON_ROW);
   const frame = await app.waitForFrame((frame) =>
     frame.includes('"http.response.status_code": 200'),
   );
@@ -104,7 +102,7 @@ test("raises and lowers the minimum severity", async () => {
 
   async function pressSeverityKey(shift: boolean, label: string, rows: string[]) {
     app.mockInput.pressKey("s", { shift });
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+    const frame = await app.waitForRows(rows);
     expect(pageHeader(frame)).toBe(`${label} ${rows.length} of 7 logs`);
   }
 
@@ -143,31 +141,27 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  async function search(text: string, rows: string[]) {
-    app.mockInput.pressKey("/");
-    await app.waitForFrame((frame) => frame.includes("body, service, trace ID or key=value"));
-    await app.mockInput.typeText(text);
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+  async function expectSearch(text: string, rows: string[]) {
+    await search(app, text);
+    const frame = await app.waitForRows(rows);
     expect(frame).toContain(`${rows.length} of 7 logs`);
     app.mockInput.pressEscape();
     await app.waitForFrame((frame) => tableRows(frame).length === 7);
   }
 
-  await search("OutOfMemoryError", [FATAL_ROW]);
-  await search("user_currency", [ORDER_ROW]);
-  await search("payment", [ERROR_ROW, WARN_ROW]);
-  await search(checkoutTraceId.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
+  await expectSearch("OutOfMemoryError", [FATAL_ROW]);
+  await expectSearch("user_currency", [ORDER_ROW]);
+  await expectSearch("payment", [ERROR_ROW, WARN_ROW]);
+  await expectSearch(checkoutTraceId.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
 });
 
 test("filters logs by an attribute", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("body, service, trace ID or key=value"));
-  await app.mockInput.typeText("demo.user_context.loyalty_level=gold");
+  await search(app, "demo.user_context.loyalty_level=gold");
 
-  const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), [WARN_ROW]));
+  const frame = await app.waitForRows([WARN_ROW]);
   expect(frame).toContain("1 of 7 logs");
 });
 
@@ -175,12 +169,10 @@ test("keeps an applied search while browsing", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("body, service, trace ID or key=value"));
-  await app.mockInput.typeText("payment");
+  await search(app, "payment");
   await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
 
   app.mockInput.pressArrow("down");
 
@@ -307,13 +299,13 @@ test("selects the log's span in a trace that is already open", async () => {
   expect(await app.waitForSelection(PLACE_ORDER)).toBe(`● checkout ${PLACE_ORDER} 2.50s`);
 
   app.mockInput.pressTab({ shift: true });
-  await app.waitForFrame((frame) => !frame.includes("escape back"));
+  await app.waitForFrame((frame) => !onDetails(frame));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
   app.mockInput.pressKey("e");
   await app.waitForSelection(FATAL_ROW);
   app.mockInput.pressKey("e");

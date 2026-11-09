@@ -35,6 +35,14 @@ export function keyHints(frame: string) {
   return textLines(frame).at(-1) ?? "";
 }
 
+export function onList(frame: string) {
+  return frame.includes("/ search");
+}
+
+export function onDetails(frame: string) {
+  return frame.includes("escape back");
+}
+
 export function lineSpans({ lines }: CapturedFrame, text: string) {
   const line = lines.find(({ spans }) =>
     spans

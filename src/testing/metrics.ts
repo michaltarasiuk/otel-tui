@@ -2,7 +2,7 @@ import { renderPage, selectRow } from "./app.tsx";
 import { atSecond } from "./clock.ts";
 import { metricsRequest, TEMPORALITY } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
-import { tableRows } from "./screen.ts";
+import { onDetails, tableRows } from "./screen.ts";
 
 export const DETAILS_SIZE = { width: 120, height: 45 };
 
@@ -180,6 +180,6 @@ export async function openMetric(receiver: TestReceiver, row: string) {
   const app = await renderMetricList(receiver, { size: DETAILS_SIZE });
   await selectRow(app, BY_NAME, row);
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("escape back"));
+  await app.waitForFrame(onDetails);
   return app;
 }

@@ -2,7 +2,7 @@ import { type AppOptions, renderPage, selectRow } from "./app.tsx";
 import { at } from "./clock.ts";
 import { SPAN_KIND, STATUS_CODE, tracesRequest } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
-import { tableRows } from "./screen.ts";
+import { onDetails, tableRows } from "./screen.ts";
 
 export const cartTraceId = "1".repeat(32);
 export const checkoutTraceId = "2".repeat(32);
@@ -163,6 +163,6 @@ export async function openTrace(receiver: TestReceiver, row: string, options?: A
   const app = await renderTraceList(receiver, options);
   await selectRow(app, NEWEST_FIRST, row);
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("escape back"));
+  await app.waitForFrame(onDetails);
   return app;
 }

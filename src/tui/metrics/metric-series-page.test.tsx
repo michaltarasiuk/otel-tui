@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
-import { renderPage } from "#testing/app.tsx";
+import { renderPage, selectRow } from "#testing/app.tsx";
 import { atSecond } from "#testing/clock.ts";
 import {
   BODY_SIZE_ROW,
@@ -255,11 +255,7 @@ test("opens a delta histogram that exports no buckets", async () => {
 test("scrolls the series panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
-  const durationRowIndex = BY_NAME.indexOf(DURATION_ROW);
-  for (const row of BY_NAME.slice(1, durationRowIndex + 1)) {
-    app.mockInput.pressArrow("down");
-    await app.waitForSelection(row);
-  }
+  await selectRow(app, BY_NAME, DURATION_ROW);
   app.mockInput.pressEnter();
   await app.waitForFrame(
     (frame) => detailsLines(frame).includes("Exemplars") && CHART_DOTS.test(frame),

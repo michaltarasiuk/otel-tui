@@ -2,7 +2,7 @@ import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
-import { renderPage } from "#testing/app.tsx";
+import { renderPage, search } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
@@ -100,7 +100,7 @@ async function renderHistogram(
 type HistogramApp = Awaited<ReturnType<typeof renderHistogram>>;
 
 async function showsOnly(app: HistogramApp, row: string, range: string, totalCount = 3) {
-  const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), [row]));
+  const frame = await app.waitForRows([row]);
   expect(pageHeader(frame)).toBe(`${range} 1 of ${totalCount} traces`);
   return frame;
 }
@@ -144,9 +144,7 @@ test("narrows the histogram with the search and the errors filter", async () => 
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText("cart");
+  await search(app, "cart");
   let frame = await app.waitForFrame((frame) => !frame.includes("■ errors"));
   expect(textLines(frame).slice(2, 4)).toEqual(["Traces over time 10s per column", bar]);
 
@@ -238,9 +236,7 @@ test("keeps the selected bucket when the search leaves it without traces", async
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText("cart");
+  await search(app, "cart");
 
   const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
   expect(pageHeader(frame)).toBe("/cart 12:00:40–12:00:50 0 of 3 traces");

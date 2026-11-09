@@ -8,7 +8,7 @@ import { QUERY_CLIENT_CONFIG, QueryProvider, waitForInFlightQueries } from "#tui
 
 import type { TestReceiver } from "./receiver.ts";
 import { render } from "./render.tsx";
-import { pageHeader } from "./screen.ts";
+import { keyHints, onList, pageHeader, tableRows } from "./screen.ts";
 
 const DEFAULT_SIZE = { width: 120, height: 30 };
 
@@ -47,8 +47,13 @@ export async function renderApp(
     size,
   );
 
+  function waitForRows(rows: string[]) {
+    return screen.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+  }
+
   return {
     ...screen,
+    waitForRows,
     async [Symbol.asyncDispose]() {
       await screen[Symbol.asyncDispose]();
       focusManager.setFocused(undefined);
@@ -71,7 +76,7 @@ export async function renderPage(receiver: TestReceiver, tab: Tab, options?: App
     await app.waitForFrame(onPage(next));
   }
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
   return app;
 }
 
@@ -80,4 +85,10 @@ export async function selectRow(app: TestApp, rows: string[], row: string) {
     app.mockInput.pressArrow("down");
     await app.waitForSelection(next);
   }
+}
+
+export async function search(app: TestApp, text: string) {
+  app.mockInput.pressKey("/");
+  await app.waitForFrame((frame) => keyHints(frame).includes("return apply"));
+  await app.mockInput.typeText(text);
 }

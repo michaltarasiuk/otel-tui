@@ -7,10 +7,10 @@ import logList from "#telemetry/logs/sql/log-list.sql" with { type: "text" };
 import metricList from "#telemetry/metrics/sql/metric-list.sql" with { type: "text" };
 import serviceList from "#telemetry/services/sql/service-list.sql" with { type: "text" };
 import traceList from "#telemetry/traces/sql/trace-list.sql" with { type: "text" };
-import { renderApp, type TestApp } from "#testing/app.tsx";
+import { renderApp, search, type TestApp } from "#testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { keyHints, pageHeader, selectedBackground } from "#testing/screen.ts";
+import { keyHints, onDetails, onList, pageHeader, selectedBackground } from "#testing/screen.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
 import { THEME } from "./theme/theme.ts";
@@ -99,13 +99,13 @@ test("moves focus between the tab bar and the view with tab and shift+tab", asyn
   );
 
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
   expect(tabStyles(await app.captureSpans())).toMatchObject({
     Services: { highlighted: false, fg: "text" },
   });
 
   app.mockInput.pressTab({ shift: true });
-  await app.waitForFrame((frame) => !frame.includes("/ search"));
+  await app.waitForFrame((frame) => !onList(frame));
   expect(tabStyles(await app.captureSpans())).toMatchObject({
     Services: { highlighted: true, fg: "text" },
   });
@@ -121,7 +121,7 @@ test("keeps showing the current tab while the view has focus", async () => {
   await app.waitForFrame((frame) => frame.includes("Waiting for logs..."));
 
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
 
   expect(tabStyles(await app.captureSpans())).toEqual({
     Services: { highlighted: false, fg: "muted" },
@@ -203,7 +203,7 @@ test("hints the view's described keys, the selected row's actions first", async 
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
-  const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
+  const frame = await app.waitForFrame(onList);
 
   expect(keyHints(frame)).toBe(
     "return open y copy id / search right range s status o sort shift+o reverse p pause tab next region ? help",
@@ -233,7 +233,7 @@ test("hints the jump to the next error only when a trace has errors", async () =
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
-  const frame = await app.waitForFrame((frame) => frame.includes("/ search"));
+  const frame = await app.waitForFrame(onList);
 
   expect(keyHints(frame)).toStartWith("return open y copy id e next error / search");
 });
@@ -323,13 +323,13 @@ test("forgets where a trace was opened from after switching tabs", async () => {
   await app.waitForFrame((frame) => frame.includes("1 span"));
 
   app.mockInput.pressTab({ shift: true });
-  await app.waitForFrame((frame) => !frame.includes("escape back"));
+  await app.waitForFrame((frame) => !onDetails(frame));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("left");
   await app.waitForFrame((frame) => frame.includes("1 span"));
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("escape back"));
+  await app.waitForFrame(onDetails);
   app.mockInput.pressEscape();
 
   await app.waitForFrame((frame) => frame.includes("1 trace"));
@@ -375,7 +375,7 @@ test("lists every key of the focused page in a help overlay", async () => {
   await using app = await renderApp(receiver);
   await openTracesTab(app);
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
 
   app.mockInput.pressKey("?");
 
@@ -401,11 +401,8 @@ test("types ? into the search instead of opening help", async () => {
   await using app = await renderApp(receiver);
   await openTracesTab(app);
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-
-  await app.mockInput.typeText("?");
+  await app.waitForFrame(onList);
+  await search(app, "?");
 
   const frame = await app.waitForFrame((frame) => frame.includes("/?"));
   expect(frame).not.toContain("Keys");

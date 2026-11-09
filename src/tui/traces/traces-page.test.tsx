@@ -1,6 +1,6 @@
 import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 
-import { renderPage, type TestApp } from "#testing/app.tsx";
+import { renderPage, search, type TestApp } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
@@ -8,6 +8,7 @@ import {
   color,
   keyHints,
   lineSpans,
+  onList,
   pageHeader,
   selectedBackground,
   spanColors,
@@ -56,23 +57,19 @@ test("searches trace names, services, and IDs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText("cart");
+  await search(app, "cart");
   let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
   expect(tableRows(frame)).toEqual([CART_ROW]);
 
   app.mockInput.pressEnter();
-  frame = await app.waitForFrame((frame) => frame.includes("/ search"));
+  frame = await app.waitForFrame(onList);
   expect(pageHeader(frame)).toBe("/cart 1 of 3 traces");
 
   app.mockInput.pressEscape();
   frame = await app.waitForFrame((frame) => tableRows(frame).length === 3);
   expect(pageHeader(frame)).toBe("3 traces");
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText(statusTraceId.slice(0, 8));
+  await search(app, statusTraceId.slice(0, 8));
   frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
   expect(tableRows(frame)).toEqual([STATUS_ROW]);
 });
@@ -81,9 +78,7 @@ test("filters traces by a span or resource attribute", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText("db.system=redis");
+  await search(app, "db.system=redis");
   let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
   expect(tableRows(frame)).toEqual([CART_ROW]);
 
@@ -96,9 +91,7 @@ test("matches search text literally", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
 
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText("_");
+  await search(app, "_");
 
   const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
   expect(frame).toContain("0 of 3 traces");
@@ -124,7 +117,7 @@ test("sorts by span count, error count, duration, and time", async () => {
 
   async function nextSort(header: string, rows: string[]) {
     app.mockInput.pressKey("o");
-    const frame = await app.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+    const frame = await app.waitForRows(rows);
     expect(textLines(frame)).toContain(header);
   }
 
@@ -134,9 +127,7 @@ test("sorts by span count, error count, duration, and time", async () => {
   await nextSort("Time ▼ Service Name Spans Errors Duration", NEWEST_FIRST);
 
   app.mockInput.pressKey("o", { shift: true });
-  const frame = await app.waitForFrame((frame) =>
-    Bun.deepEquals(tableRows(frame), [CART_ROW, CHECKOUT_ROW, STATUS_ROW]),
-  );
+  const frame = await app.waitForRows([CART_ROW, CHECKOUT_ROW, STATUS_ROW]);
   expect(textLines(frame)).toContain("Time ▲ Service Name Spans Errors Duration");
 });
 
@@ -159,16 +150,12 @@ test("keeps the search and sort when switching tabs", async () => {
   await using app = await renderTraceList(receiver);
   app.mockInput.pressKey("o");
   await app.waitForFrame((frame) => frame.includes("▼ Spans"));
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText("cart");
+  await search(app, "cart");
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("/ search"));
+  await app.waitForFrame(onList);
 
   app.mockInput.pressTab({ shift: true });
-  await app.waitForFrame(
-    (frame) => frame.includes("tab next region") && !frame.includes("/ search"),
-  );
+  await app.waitForFrame((frame) => frame.includes("tab next region") && !onList(frame));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("left");
@@ -253,12 +240,10 @@ test("highlights the selected row only while its region has focus", async () => 
   expect(spanColors(spans, "GET /status").bg).not.toEqual(selectedBackground.toInts());
 });
 
-async function searchTraces(app: TestApp, search: string) {
-  app.mockInput.pressKey("/");
-  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
-  await app.mockInput.typeText(search);
+async function searchTraces(app: TestApp, text: string) {
+  await search(app, text);
   app.mockInput.pressEnter();
-  return app.waitForFrame((frame) => pageHeader(frame).startsWith(`/${search} `));
+  return app.waitForFrame((frame) => pageHeader(frame).startsWith(`/${text} `));
 }
 
 async function clearSearch(app: TestApp) {
