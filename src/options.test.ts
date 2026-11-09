@@ -2,7 +2,13 @@ import { expect, test } from "bun:test";
 
 import { OptionsError, parseOptions } from "./options.ts";
 
-const DEFAULTS = { httpPort: 4318, grpcPort: 4317, retentionMinutes: 60, memoryLimitMb: 1024 };
+const DEFAULTS = {
+  host: "127.0.0.1",
+  httpPort: 4318,
+  grpcPort: 4317,
+  retentionMinutes: 60,
+  memoryLimitMb: 1024,
+};
 
 test("uses the defaults without flags or environment", () => {
   expect(parseOptions([], {})).toEqual({ kind: "run", options: DEFAULTS });
@@ -18,6 +24,20 @@ test("prefers flags over the environment", () => {
   expect(
     parseOptions(["--http-port", "9000", "--memory-limit=256"], { OTEL_TUI_HTTP_PORT: "14318" }),
   ).toEqual({ kind: "run", options: { ...DEFAULTS, httpPort: 9000, memoryLimitMb: 256 } });
+});
+
+test("listens on the given host", () => {
+  expect(parseOptions(["--host", "0.0.0.0"], {})).toEqual({
+    kind: "run",
+    options: { ...DEFAULTS, host: "0.0.0.0" },
+  });
+  expect(parseOptions([], { OTEL_TUI_HOST: "localhost" })).toEqual({
+    kind: "run",
+    options: { ...DEFAULTS, host: "localhost" },
+  });
+  expect(() => parseOptions(["--host", "not a host"], {})).toThrow(
+    "--host (OTEL_TUI_HOST) must be an IPv4 address or a hostname",
+  );
 });
 
 test("asks for help or the version", () => {

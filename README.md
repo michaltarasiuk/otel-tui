@@ -109,18 +109,23 @@ bun run start
 ```
 
 Point your OTLP exporter at `http://localhost:4318` for OTLP/HTTP or
-`http://localhost:4317` for OTLP/gRPC. Auth is off, so it only suits local use.
+`http://localhost:4317` for OTLP/gRPC. Auth is off, so otel-tui listens only on
+`127.0.0.1` unless you pass `--host`. To receive telemetry from containers, as
+on Linux Docker, use `--host 0.0.0.0` and point the exporter at
+`host.docker.internal` or the host's address, but only on a network you trust:
+anyone who can reach the port can send data.
 
 Telemetry is kept in memory for the retention period. When it nears the memory
 limit, the oldest telemetry is dropped first. A burst that outpaces this spills
 to a temporary directory for a few seconds, which is removed on exit.
 
-| Flag             | Variable                     | Default | Meaning                      |
-| ---------------- | ---------------------------- | ------- | ---------------------------- |
-| `--http-port`    | `OTEL_TUI_HTTP_PORT`         | `4318`  | Port for OTLP/HTTP           |
-| `--grpc-port`    | `OTEL_TUI_GRPC_PORT`         | `4317`  | Port for OTLP/gRPC           |
-| `--retention`    | `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept   |
-| `--memory-limit` | `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`  | Memory for telemetry, in MiB |
+| Flag             | Variable                     | Default     | Meaning                      |
+| ---------------- | ---------------------------- | ----------- | ---------------------------- |
+| `--host`         | `OTEL_TUI_HOST`              | `127.0.0.1` | Address to listen on         |
+| `--http-port`    | `OTEL_TUI_HTTP_PORT`         | `4318`      | Port for OTLP/HTTP           |
+| `--grpc-port`    | `OTEL_TUI_GRPC_PORT`         | `4317`      | Port for OTLP/gRPC           |
+| `--retention`    | `OTEL_TUI_RETENTION_MINUTES` | `60`        | How long telemetry is kept   |
+| `--memory-limit` | `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`      | Memory for telemetry, in MiB |
 
 A flag wins over its variable. `otel-tui --help` lists them, and
 `otel-tui --version` prints the version.

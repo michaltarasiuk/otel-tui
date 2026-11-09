@@ -23,8 +23,6 @@ const TABLE_TIME_COLUMNS = {
   otlp_metrics_exp_histogram: "time_unix_nano",
 };
 
-const HOST = "127.0.0.1";
-
 export const PRUNE_INTERVAL_MS = 5 * SECOND_MS;
 
 const TRIM_WHEN_MEMORY_ABOVE = 0.8;
@@ -36,6 +34,7 @@ export interface ReceiverUrls {
 }
 
 interface ReceiverOptions {
+  host: string;
   httpPort: number;
   grpcPort: number;
   retentionMs: number;
@@ -43,6 +42,7 @@ interface ReceiverOptions {
 }
 
 export async function startReceiver({
+  host,
   httpPort,
   grpcPort,
   retentionMs,
@@ -64,12 +64,13 @@ export async function startReceiver({
       [$httpUri, $grpcUri],
       transport := ['http', 'grpc'],
       disable_auth := true,
+      allow_other_hostname := true,
       seal_max_age_ms := $sealMaxAgeMs,
       max_buffered_bytes := $maxBufferedBytes
     )`,
     {
-      httpUri: `otlp:${HOST}:${httpPort}`,
-      grpcUri: `otlp:${HOST}:${grpcPort}`,
+      httpUri: `otlp:${host}:${httpPort}`,
+      grpcUri: `otlp:${host}:${grpcPort}`,
       sealMaxAgeMs: 500,
       maxBufferedBytes: 32 * 1024 * 1024,
     },

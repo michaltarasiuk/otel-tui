@@ -1,8 +1,10 @@
 import { startReceiver } from "#receiver/receiver.ts";
 
+const HOST = "127.0.0.1";
+
 function freePort() {
   using listener = Bun.listen({
-    hostname: "127.0.0.1",
+    hostname: HOST,
     port: 0,
     socket: { data() {} },
   });
@@ -19,6 +21,7 @@ export async function startTestReceiver({
   memoryLimitBytes = 1024 * 1024 * 1024,
 }: TestReceiverOptions = {}) {
   const receiver = await startReceiver({
+    host: HOST,
     httpPort: freePort(),
     grpcPort: freePort(),
     retentionMs,

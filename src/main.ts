@@ -29,6 +29,7 @@ if (parsed.kind === "help") {
   const { options } = parsed;
 
   await using receiver = await startReceiver({
+    host: options.host,
     httpPort: options.httpPort,
     grpcPort: options.grpcPort,
     retentionMs: options.retentionMinutes * MINUTE_MS,
