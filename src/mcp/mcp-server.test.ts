@@ -1,12 +1,8 @@
 import { afterEach, expect, setSystemTime, test } from "bun:test";
 
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
-
-import { freePort } from "#testing/free-port.ts";
+import { startTestMcp } from "#testing/mcp.ts";
 import { logsRequest, metricsRequest, SEVERITY_NUMBER, TEMPORALITY } from "#testing/otlp.ts";
-import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
+import { startTestReceiver } from "#testing/receiver.ts";
 import {
   at,
   cartTraceId,
@@ -24,37 +20,9 @@ afterEach(() => {
   setSystemTime();
 });
 
-async function serve(receiver: TestReceiver) {
-  const server = startMcpServer({
-    connection: await receiver.connect(),
-    port: freePort(),
-    version: "0.0.0",
-  });
-  const client = new Client({ name: "test", version: "0.0.0" });
-  await client.connect(new StreamableHTTPClientTransport(new URL(server.url)));
-  return {
-    server,
-    client,
-    async callText(name: string, args: Record<string, unknown> = {}) {
-      const { content } = CallToolResultSchema.parse(
-        await client.callTool({ name, arguments: args }),
-      );
-      const [first] = content;
-      return first?.type === "text" ? first.text : "";
-    },
-    async callJson(name: string, args: Record<string, unknown> = {}): Promise<unknown> {
-      return JSON.parse(await this.callText(name, args));
-    },
-    async [Symbol.asyncDispose]() {
-      await client.close();
-      await server[Symbol.asyncDispose]();
-    },
-  };
-}
-
 test("lists read-only tools for each view", async () => {
   await using receiver = await startTestReceiver();
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const { tools } = await mcp.client.listTools();
 
@@ -74,7 +42,7 @@ test("lists read-only tools for each view", async () => {
 test("lists traces with the same search as the app", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   expect(await mcp.callJson("list_traces")).toEqual([
     expect.objectContaining({ trace_id: statusTraceId }),
@@ -89,7 +57,7 @@ test("lists traces with the same search as the app", async () => {
 test("outlines a trace's spans with the critical path and errors", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const outline = await mcp.callText("get_trace", { trace_id: checkoutTraceId });
 
@@ -104,7 +72,7 @@ test("outlines a trace's spans with the critical path and errors", async () => {
 test("reads a span's attributes and resource", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const span = await mcp.callJson("get_span", { trace_id: cartTraceId, span_id: "1a".repeat(8) });
 
@@ -118,7 +86,7 @@ test("lists services and their operations", async () => {
   setSystemTime(at(60_000));
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const services = await mcp.callJson("list_services");
   const operations = await mcp.callJson("list_operations", { service: "checkout" });
@@ -139,7 +107,7 @@ test("lists logs at or above a severity", async () => {
       ],
     }),
   );
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const logs = await mcp.callJson("list_logs", { min_severity: "WARN" });
 
@@ -165,7 +133,7 @@ test("reads a metric's series", async () => {
       ],
     }),
   );
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const metrics = await mcp.callJson("get_metric", { name: "v8js.memory.heap.used" });
 
@@ -199,7 +167,7 @@ test("reads a counter's rate and total like the app", async () => {
       ],
     }),
   );
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
 
   const metrics = await mcp.callJson("get_metric", { name: "http.server.requests" });
 
@@ -213,19 +181,19 @@ test("reads a counter's rate and total like the app", async () => {
 
 test("refuses requests from other hosts and origins", async () => {
   await using receiver = await startTestReceiver();
-  await using mcp = await serve(receiver);
+  await using mcp = await startTestMcp(receiver);
   const ping = { jsonrpc: "2.0", id: 1, method: "ping" };
   const headers = {
     "content-type": "application/json",
     accept: "application/json, text/event-stream",
   };
 
-  const foreignOrigin = await fetch(mcp.server.url, {
+  const foreignOrigin = await fetch(mcp.url, {
     method: "POST",
     headers: { ...headers, origin: "http://evil.example" },
     body: JSON.stringify(ping),
   });
-  const foreignHost = await fetch(mcp.server.url, {
+  const foreignHost = await fetch(mcp.url, {
     method: "POST",
     headers: { ...headers, host: "evil.example" },
     body: JSON.stringify(ping),
@@ -237,8 +205,8 @@ test("refuses requests from other hosts and origins", async () => {
 
 test("names the port when it can't serve on it", async () => {
   await using receiver = await startTestReceiver();
-  await using mcp = await serve(receiver);
-  const { port } = new URL(mcp.server.url);
+  await using mcp = await startTestMcp(receiver);
+  const { port } = new URL(mcp.url);
 
   const connection = await receiver.connect();
 

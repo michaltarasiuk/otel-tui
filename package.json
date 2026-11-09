@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "imports": {
+    "#mcp/*": "./src/mcp/*",
     "#receiver/*": "./src/receiver/*",
     "#telemetry/*": "./src/telemetry/*",
     "#testing/*": "./src/testing/*",
