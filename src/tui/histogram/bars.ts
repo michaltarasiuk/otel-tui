@@ -9,7 +9,7 @@ export interface HistogramRange {
 }
 
 export interface HistogramColumn extends HistogramRange {
-  traceCount: number;
+  count: number;
   errorCount: number;
 }
 
@@ -68,10 +68,10 @@ function barCell(row: number, totalEighths: number, errorEighths: number): BarCe
 }
 
 export function barRows(columns: HistogramColumn[], height: number) {
-  const maxCount = Math.max(...columns.map(({ traceCount }) => traceCount));
+  const maxCount = Math.max(...columns.map(({ count }) => count));
   const capacity = height * EIGHTHS_PER_CELL;
   const bars = columns.map((column) => {
-    const totalEighths = eighthsOf(column.traceCount, maxCount, capacity);
+    const totalEighths = eighthsOf(column.count, maxCount, capacity);
     const errorEighths = Math.min(totalEighths, eighthsOf(column.errorCount, maxCount, capacity));
     return { column, totalEighths, errorEighths };
   });

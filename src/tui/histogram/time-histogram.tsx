@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
-import { barRows, type HistogramColumn, type HistogramRange, overlaps } from "./histogram.ts";
-import { hiddenTraces, TIME_SCALE_LABEL, timeAxis, timeColumns } from "./time-histogram.ts";
+import { barRows, type HistogramColumn, type HistogramRange, overlaps } from "./bars.ts";
+import { hiddenColumns, TIME_SCALE_LABEL, timeAxis, timeColumns } from "./time-columns.ts";
 
 const HISTOGRAM_PADDING_X = 1;
 export const HISTOGRAM_COLUMN_WIDTH = 2;
@@ -27,13 +27,14 @@ function columnBackground(column: HistogramColumn, selected: HistogramRange | un
     : THEME.background;
 }
 
-interface TracesHistogramProps {
+interface TimeHistogramProps {
+  title: string;
   occupied: HistogramColumn[];
   newestBucketMs: number;
   selected: HistogramRange | undefined;
 }
 
-export function TracesHistogram({ occupied, newestBucketMs, selected }: TracesHistogramProps) {
+export function TimeHistogram({ title, occupied, newestBucketMs, selected }: TimeHistogramProps) {
   const [width, setWidth] = useState(0);
 
   const histogramRef = useRef<BoxRenderable>(null);
@@ -43,7 +44,7 @@ export function TracesHistogram({ occupied, newestBucketMs, selected }: TracesHi
     Math.floor((width - 2 * HISTOGRAM_PADDING_X) / HISTOGRAM_COLUMN_WIDTH),
   );
   const columns = timeColumns(occupied, newestBucketMs, columnCount, selected);
-  const hidden = hiddenTraces(occupied, columns);
+  const hidden = hiddenColumns(occupied, columns);
   const hasErrors = columns.some((column) => column.errorCount > 0);
 
   function renderChart() {
@@ -54,7 +55,7 @@ export function TracesHistogram({ occupied, newestBucketMs, selected }: TracesHi
       <>
         <box flexDirection="row" gap={COLUMN_GAP}>
           <text fg={THEME.textMuted} attributes={TextAttributes.BOLD} flexShrink={0}>
-            Traces over time
+            {title}
           </text>
           {hasErrors && (
             <text fg={THEME.textError} flexShrink={0}>

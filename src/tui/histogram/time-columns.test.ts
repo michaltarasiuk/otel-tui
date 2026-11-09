@@ -1,26 +1,26 @@
 import { expect, test } from "bun:test";
 
-import type { HistogramColumn } from "./histogram.ts";
+import type { HistogramColumn } from "./bars.ts";
 import {
   bucketStart,
-  hiddenTraces,
+  hiddenColumns,
   TIME_BUCKET_MS,
   TIME_SCALE_LABEL,
   TimeBucket,
   timeAxis,
   timeColumns,
   timeRangeLabel,
-} from "./time-histogram.ts";
+} from "./time-columns.ts";
 
 const SECOND = 1000;
 
 const noon = Date.parse("2026-10-28T12:00:00.000Z");
 
-function column(startMs: number, traceCount = 0, errorCount = 0) {
+function column(startMs: number, count = 0, errorCount = 0) {
   return {
     from: startMs,
     to: startMs + TIME_BUCKET_MS,
-    traceCount,
+    count,
     errorCount,
   } satisfies HistogramColumn;
 }
@@ -41,12 +41,12 @@ test("starts a bucket at the last multiple of its width", () => {
 });
 
 test("reads a bucket row as a column one bucket wide", () => {
-  const row = { bucket_start_ms: noon, trace_count: 2, error_count: 1 };
+  const row = { bucket_start_ms: noon, count: 2, error_count: 1 };
 
   expect(TimeBucket.parse(row)).toEqual({
     from: noon,
     to: noon + TIME_BUCKET_MS,
-    traceCount: 2,
+    count: 2,
     errorCount: 1,
   });
 });
@@ -70,7 +70,7 @@ test("leaves out buckets before the first column", () => {
 
   const columns = timeColumns(occupied, noon + 30 * SECOND, 3, undefined);
 
-  expect(columns.map(({ traceCount }) => traceCount)).toEqual([0, 0, 1]);
+  expect(columns.map(({ count }) => count)).toEqual([0, 0, 1]);
 });
 
 test("centers the columns on the selected bucket, up to the newest bucket", () => {
@@ -94,19 +94,19 @@ test("has no columns when there is no room for one", () => {
 test("reports traces before and after the columns", () => {
   const columns = emptyColumns(noon, 3);
 
-  expect(hiddenTraces([column(noon - 10 * SECOND, 1)], columns)).toEqual({
+  expect(hiddenColumns([column(noon - 10 * SECOND, 1)], columns)).toEqual({
     earlier: true,
     later: false,
   });
-  expect(hiddenTraces([column(noon + 30 * SECOND, 1)], columns)).toEqual({
+  expect(hiddenColumns([column(noon + 30 * SECOND, 1)], columns)).toEqual({
     earlier: false,
     later: true,
   });
-  expect(hiddenTraces([column(noon + 10 * SECOND, 1)], columns)).toEqual({
+  expect(hiddenColumns([column(noon + 10 * SECOND, 1)], columns)).toEqual({
     earlier: false,
     later: false,
   });
-  expect(hiddenTraces([], [])).toEqual({ earlier: false, later: false });
+  expect(hiddenColumns([], [])).toEqual({ earlier: false, later: false });
 });
 
 test("labels a range with the times it starts and ends, to the second under a minute", () => {

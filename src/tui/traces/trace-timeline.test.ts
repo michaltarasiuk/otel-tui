@@ -2,10 +2,10 @@ import { expect, test } from "bun:test";
 
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
+import type { HistogramColumn } from "#tui/histogram/bars.ts";
+import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "#tui/histogram/time-columns.ts";
 
-import type { HistogramColumn } from "./histogram.ts";
 import traceTimeline from "./sql/trace-timeline.sql" with { type: "text" };
-import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
 
 const MIDDLE_OF_BUCKET_MS = TIME_BUCKET_MS / 2;
 const newestBucketMs = bucketStart(Date.now());
@@ -42,8 +42,8 @@ async function loadTimeline(agesMs: number[]) {
   return TimeBucket.array().parse(reader.getRowObjectsJS());
 }
 
-function traceCount(columns: HistogramColumn[]) {
-  return columns.reduce((total, column) => total + column.traceCount, 0);
+function totalCount(columns: HistogramColumn[]) {
+  return columns.reduce((total, column) => total + column.count, 0);
 }
 
 test("keeps every trace, however far back it goes", async () => {
@@ -51,7 +51,7 @@ test("keeps every trace, however far back it goes", async () => {
 
   const columns = await loadTimeline(ages);
 
-  expect(traceCount(columns)).toBe(300);
+  expect(totalCount(columns)).toBe(300);
 });
 
 test("groups traces into buckets of a fixed width, oldest first", async () => {
@@ -59,7 +59,7 @@ test("groups traces into buckets of a fixed width, oldest first", async () => {
 
   const columns = await loadTimeline(ages);
 
-  expect(columns.map((column) => column.traceCount)).toEqual([3, 2]);
+  expect(columns.map((column) => column.count)).toEqual([3, 2]);
   expect(columns.every((column) => column.from % TIME_BUCKET_MS === 0)).toBe(true);
   expect(columns.map((column) => column.from)).toEqual(
     columns.map((column) => column.from).toSorted((a, b) => a - b),
@@ -71,6 +71,6 @@ test("leaves out traces dated after now", async () => {
 
   const columns = await loadTimeline(ages);
 
-  expect(traceCount(columns)).toBe(4);
+  expect(totalCount(columns)).toBe(4);
   expect(Math.max(...columns.map((column) => column.from))).toBeLessThanOrEqual(newestBucketMs);
 });

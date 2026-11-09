@@ -1,15 +1,15 @@
 import { expect, test } from "bun:test";
 
-import { type BarCell, barRows, overlaps, stepSelection } from "./histogram.ts";
+import { type BarCell, barRows, overlaps, stepSelection } from "./bars.ts";
 
 function range(from: number, to: number) {
   return { from, to };
 }
 
-function bar(traceCount: number, errorCount: number, maxCount: number, height: number) {
+function bar(count: number, errorCount: number, maxCount: number, height: number) {
   const columns = [
-    { from: 0, to: 1, traceCount, errorCount },
-    { from: 1, to: 2, traceCount: maxCount, errorCount: 0 },
+    { from: 0, to: 1, count, errorCount },
+    { from: 1, to: 2, count: maxCount, errorCount: 0 },
   ];
   return barRows(columns, height).map(([row]) => row?.cell);
 }
@@ -61,7 +61,7 @@ test("selects nothing when no range is occupied", () => {
 });
 
 test("selects only the range, not the counts of the column it came from", () => {
-  const column = { from: 0, to: 1, traceCount: 7, errorCount: 2 };
+  const column = { from: 0, to: 1, count: 7, errorCount: 2 };
 
   expect(stepSelection([column], undefined, 1)).toEqual({ from: 0, to: 1 });
 });

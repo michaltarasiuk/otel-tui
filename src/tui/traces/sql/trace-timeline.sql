@@ -12,7 +12,7 @@ WITH traces AS (
 )
 SELECT
   (floor(start_ms / $bucketMs) * $bucketMs)::DOUBLE AS bucket_start_ms,
-  count(*)::INTEGER AS trace_count,
+  count(*)::INTEGER AS count,
   count(*) FILTER (WHERE has_error)::INTEGER AS error_count
 FROM traces
 WHERE start_ms < $endMs

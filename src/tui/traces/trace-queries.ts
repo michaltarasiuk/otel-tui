@@ -1,18 +1,18 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
+import type { HistogramRange } from "#tui/histogram/bars.ts";
+import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "#tui/histogram/time-columns.ts";
 import { useConnection } from "#tui/query/connection.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
 import { searchParams } from "#tui/query/search.ts";
 
-import type { HistogramRange } from "./histogram.ts";
 import { Span, SpanContent } from "./span.ts";
 import spanDetails from "./sql/span-details.sql" with { type: "text" };
 import traceCount from "./sql/trace-count.sql" with { type: "text" };
 import traceList from "./sql/trace-list.sql" with { type: "text" };
 import traceSpans from "./sql/trace-spans.sql" with { type: "text" };
 import traceTimeline from "./sql/trace-timeline.sql" with { type: "text" };
-import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "./time-histogram.ts";
 import { Trace, type TraceSort } from "./trace.ts";
 
 interface TraceFilter {

@@ -6,10 +6,10 @@ import { renderPage } from "#testing/app.tsx";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import { HISTOGRAM_COLUMN_WIDTH } from "#tui/histogram/time-histogram.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 
 import { at, PLACE_ORDER } from "./test-traces.ts";
-import { HISTOGRAM_COLUMN_WIDTH } from "./traces-histogram.tsx";
 
 afterEach(() => {
   setSystemTime();

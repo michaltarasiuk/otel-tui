@@ -3,7 +3,7 @@ import { z } from "zod";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
 
-import type { HistogramColumn, HistogramRange } from "./histogram.ts";
+import type { HistogramColumn, HistogramRange } from "./bars.ts";
 
 const LABEL_GAP = 2;
 const LABEL_WIDTHS = {
@@ -37,7 +37,7 @@ const TICK_INTERVALS_MS = [
 export const TimeBucket = z
   .object({
     bucket_start_ms: z.number(),
-    trace_count: z.number(),
+    count: z.number(),
     error_count: z.number(),
   })
   .transform(
@@ -45,7 +45,7 @@ export const TimeBucket = z
       ({
         from: row.bucket_start_ms,
         to: row.bucket_start_ms + TIME_BUCKET_MS,
-        traceCount: row.trace_count,
+        count: row.count,
         errorCount: row.error_count,
       }) satisfies HistogramColumn,
   );
@@ -74,12 +74,12 @@ export function timeColumns(
     const from = start + offset * TIME_BUCKET_MS;
     return (
       occupiedByStart.get(from) ??
-      ({ from, to: from + TIME_BUCKET_MS, traceCount: 0, errorCount: 0 } satisfies HistogramColumn)
+      ({ from, to: from + TIME_BUCKET_MS, count: 0, errorCount: 0 } satisfies HistogramColumn)
     );
   });
 }
 
-export function hiddenTraces(occupied: HistogramColumn[], columns: HistogramColumn[]) {
+export function hiddenColumns(occupied: HistogramColumn[], columns: HistogramColumn[]) {
   const first = columns.at(0);
   const last = columns.at(-1);
   if (first === undefined || last === undefined) {
