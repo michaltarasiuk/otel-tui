@@ -144,6 +144,9 @@ export function usePages() {
     replace: (destination: Destination) => {
       setHistory((history) => replace(history, change(destination)));
     },
+    reset: () => {
+      setHistory((history) => switchTab(START_HISTORY, history.location.tab));
+    },
     back: () => {
       setHistory((history) => (history.previous.length > 0 ? pop(history) : close(history)));
     },

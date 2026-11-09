@@ -76,6 +76,7 @@ table to a column, as on Traces.
 Click a tab to switch to it, or a row to select it and move the focus
 there; the wheel scrolls lists. `?` lists every key the focused page takes, including the ones the footer
 leaves out. `p` pauses live updates so rows stop moving while you read them,
+`ctrl+l` deletes all telemetry and starts the current tab over,
 and `y` copies the selected trace ID, span ID (`shift+y` the trace ID), log
 body, or metric name. Searches also take `key=value` terms that match a span,
 log, or metric attribute or a resource attribute exactly, as in

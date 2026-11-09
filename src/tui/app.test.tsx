@@ -338,6 +338,38 @@ test("forgets where a trace was opened from after switching tabs", async () => {
   });
 });
 
+test("clears the telemetry with ctrl+l and starts the current tab over", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "checkout",
+      spans: [
+        {
+          traceId: "3".repeat(32),
+          spanId: "3a".repeat(8),
+          name: "oteldemo.CheckoutService/PlaceOrder",
+          start: new Date(0),
+          end: new Date(10),
+        },
+      ],
+    }),
+  );
+  await using app = await renderApp(receiver);
+  await openTracesTab(app);
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => frame.includes("1 span"));
+
+  app.mockInput.pressKey("l", { ctrl: true });
+
+  await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
+  expect(tabStyles(await app.captureSpans())).toMatchObject({
+    Traces: { highlighted: false, fg: "text" },
+  });
+});
+
 test("lists every key of the focused page in a help overlay", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
@@ -348,7 +380,13 @@ test("lists every key of the focused page in a help overlay", async () => {
   app.mockInput.pressKey("?");
 
   const frame = await app.waitForFrame((frame) => frame.includes("Keys"));
-  for (const line of ["/ search", "s status", "shift+o reverse", "shift+tab previous region"]) {
+  for (const line of [
+    "/ search",
+    "s status",
+    "shift+o reverse",
+    "shift+tab previous region",
+    "ctrl+l clear telemetry",
+  ]) {
     expect(collapseWhitespace(frame)).toContain(line);
   }
 

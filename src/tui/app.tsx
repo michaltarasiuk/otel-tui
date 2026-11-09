@@ -1,4 +1,5 @@
 import { useKeymap } from "@opentui/keymap/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import type { ReceiverUrls } from "#receiver/receiver.ts";
@@ -22,9 +23,10 @@ import { TopBar, Window } from "./window.tsx";
 
 interface AppProps {
   receiverUrls: ReceiverUrls;
+  onClear: () => Promise<void>;
 }
 
-export function App({ receiverUrls }: AppProps) {
+export function App({ receiverUrls, onClear }: AppProps) {
   const { region, focus, focusStep } = useFocusedRegion();
   const {
     page,
@@ -37,11 +39,26 @@ export function App({ receiverUrls }: AppProps) {
     selectTab,
     open,
     replace,
+    reset,
     back,
   } = usePages();
+  const queryClient = useQueryClient();
+  const [clears, setClears] = useState(0);
   const keymap = useKeymap();
   const editing = useEditing();
   const [help, setHelp] = useState<HelpEntry[]>();
+
+  async function clear() {
+    try {
+      await onClear();
+    } catch (error) {
+      console.error("Clearing telemetry failed", error);
+      return;
+    }
+    reset();
+    setClears((clears) => clears + 1);
+    await queryClient.resetQueries();
+  }
 
   return (
     <AppKeys
@@ -60,6 +77,7 @@ export function App({ receiverUrls }: AppProps) {
               help
             </Key>
           )}
+          <Key name="ctrl+l" description="clear telemetry" onPress={() => clear()} />
         </>
       }
     >
@@ -71,7 +89,11 @@ export function App({ receiverUrls }: AppProps) {
             </FocusScope>
             <ReceiverStatus receiverUrls={receiverUrls} />
           </TopBar>
-          <FocusScope focused={region === "content"} onFocusRequest={() => focus("content")}>
+          <FocusScope
+            key={clears}
+            focused={region === "content"}
+            onFocusRequest={() => focus("content")}
+          >
             <Screen when={page === "services"}>
               <ServicesPage onOpenTraces={(service) => open({ name: "traces", service })} />
             </Screen>

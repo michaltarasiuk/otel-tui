@@ -41,7 +41,7 @@ export async function renderApp(
           return true;
         }}
       >
-        <App receiverUrls={receiver.urls} />
+        <App receiverUrls={receiver.urls} onClear={() => receiver.clear()} />
       </ClipboardContext>
     </QueryProvider>,
     size,

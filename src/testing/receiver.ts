@@ -49,6 +49,7 @@ export async function startTestReceiver({
   return {
     urls: receiver.urls,
     connect: () => receiver.connect(),
+    clear: () => receiver.clear(),
     sendHttp,
     [Symbol.asyncDispose]: () => receiver[Symbol.asyncDispose](),
   };

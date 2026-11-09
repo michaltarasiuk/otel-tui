@@ -59,6 +59,7 @@ if (parsed.kind === "help") {
   const tui = await startTui({
     connection,
     receiverUrls: receiver.urls,
+    onClear: () => receiver.clear(),
   });
 
   await tui.closed;

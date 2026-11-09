@@ -143,6 +143,13 @@ export async function startReceiver({
     }
   }
 
+  async function deleteAllTelemetry() {
+    for (const table of Object.keys(TABLE_TIME_COLUMNS)) {
+      await connection.run(`DELETE FROM ${table}`);
+    }
+    await releaseDeletedRows();
+  }
+
   async function retentionCutoff() {
     const reader = await connection.runAndReadAll(
       "SELECT (now() AT TIME ZONE 'UTC') - to_milliseconds($retentionMs)",
@@ -212,6 +219,11 @@ export async function startReceiver({
   }, PRUNE_INTERVAL_MS);
   pruneInterval.unref();
 
+  async function clear() {
+    await finishDeleting();
+    await startDeleting(() => deleteAllTelemetry());
+  }
+
   async function close() {
     clearInterval(pruneInterval);
     await finishDeleting();
@@ -228,6 +240,7 @@ export async function startReceiver({
   return {
     urls,
     connect,
+    clear,
     [Symbol.asyncDispose]: close,
   };
 }

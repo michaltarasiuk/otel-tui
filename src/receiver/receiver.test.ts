@@ -336,6 +336,16 @@ test("reports a failed prune and keeps running", async () => {
   expect(consoleError).toHaveBeenCalledWith("Failed to prune telemetry", expect.any(Error));
 });
 
+test("deletes all telemetry when cleared", async () => {
+  await using receiver = await startTestReceiver();
+  const connection = await receiver.connect();
+  await sendOneOfEach(receiver, new Date());
+
+  await receiver.clear();
+
+  expect(await rowCounts(connection)).toEqual(eachTableWith(0));
+});
+
 test("closes its connections and stops listening when disposed", async () => {
   const receiver = await startTestReceiver();
   const connection = await receiver.connect();
