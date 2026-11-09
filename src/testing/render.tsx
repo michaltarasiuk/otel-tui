@@ -50,6 +50,7 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
   async function waitUntil<T>(
     capture: () => T | undefined | Promise<T | undefined>,
     matches: (captured: T) => boolean,
+    expected: string,
   ) {
     const deadline = performance.now() + WAIT_TIMEOUT_MS;
 
@@ -63,19 +64,26 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       await Bun.sleep(WAIT_POLL_INTERVAL_MS);
     }
     throw new Error(
-      `No frame matched within ${WAIT_TIMEOUT_MS}ms. ` +
+      `Waited ${WAIT_TIMEOUT_MS}ms for ${expected}. ` +
         `The last frame was:\n${setup.captureCharFrame()}`,
     );
   }
 
   function waitForFrame(predicate: (frame: string) => boolean) {
-    return waitUntil(() => setup.captureCharFrame(), predicate);
+    return waitUntil(
+      () => setup.captureCharFrame(),
+      predicate,
+      `a frame matching ${describePredicate(predicate)}`,
+    );
   }
 
   async function waitForSelection(text: string, { line }: SelectionOptions = {}) {
     const selected = await waitUntil(
       async () => firstSelectedLine(await captureSpans()),
       (selected) => selected.text.includes(text) && (line === undefined || selected.line === line),
+      line === undefined
+        ? `a selected row containing "${text}"`
+        : `a selected row containing "${text}" on line ${line}`,
     );
     return selected.text;
   }
@@ -98,6 +106,10 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
       }
     },
   };
+}
+
+function describePredicate(predicate: (frame: string) => boolean) {
+  return predicate.name === "" ? predicate.toString() : predicate.name;
 }
 
 function runPendingEffects() {
