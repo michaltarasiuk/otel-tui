@@ -1,9 +1,5 @@
-import {
-  type Distribution,
-  hasNegativeCounts,
-  subtractDistributions,
-} from "#telemetry/metrics/distribution.ts";
-import type { DistributionPoint, NumberPoint } from "#telemetry/metrics/series.ts";
+import { type Distribution, hasNegativeCounts, subtractDistributions } from "./distribution.ts";
+import type { DistributionPoint, NumberPoint } from "./series.ts";
 
 export interface Interval<T> {
   start: number;

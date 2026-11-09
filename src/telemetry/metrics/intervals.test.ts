@@ -1,9 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { type Distribution, explicitBuckets } from "#telemetry/metrics/distribution.ts";
-import type { DistributionPoint, NumberPoint } from "#telemetry/metrics/series.ts";
-
+import { type Distribution, explicitBuckets } from "./distribution.ts";
 import { counterIntervals, distributionIntervals, perSecond } from "./intervals.ts";
+import type { DistributionPoint, NumberPoint } from "./series.ts";
 
 function atSecond(seconds: number) {
   return seconds * 1000;

@@ -1,6 +1,7 @@
 import { RGBA } from "@opentui/core";
 import { Suspense } from "react";
 
+import { counterIntervals, distributionIntervals } from "#telemetry/metrics/intervals.ts";
 import { isDelta, type Metric } from "#telemetry/metrics/metric.ts";
 import type { NumberPoint, Series, SeriesPoints } from "#telemetry/metrics/series.ts";
 import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
@@ -10,7 +11,6 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 import { MINUTE_MS } from "#utils/time-units.ts";
 
-import { counterIntervals, distributionIntervals } from "./intervals.ts";
 import { LineChart } from "./line-chart.tsx";
 import { useSeriesPoints } from "./metric-queries.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";

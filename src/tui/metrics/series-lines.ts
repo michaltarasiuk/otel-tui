@@ -1,6 +1,5 @@
 import { addDistributions, type Distribution, quantile } from "#telemetry/metrics/distribution.ts";
-
-import type { Interval } from "./intervals.ts";
+import type { Interval } from "#telemetry/metrics/intervals.ts";
 
 const MISSED_EXPORTS_BEFORE_GAP = 3;
 
