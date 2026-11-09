@@ -190,20 +190,31 @@ export async function startReceiver({
     }
   }
 
-  let pruning: Promise<void> | undefined;
-  const pruneInterval = setInterval(() => {
-    if (pruning !== undefined) {
-      return;
-    }
-    pruning = pruneTelemetry().finally(() => {
-      pruning = undefined;
+  let deleting: Promise<void> | undefined;
+
+  function startDeleting(task: () => Promise<void>) {
+    deleting = task().finally(() => {
+      deleting = undefined;
     });
+    return deleting;
+  }
+
+  async function finishDeleting() {
+    while (deleting !== undefined) {
+      await Promise.allSettled([deleting]);
+    }
+  }
+
+  const pruneInterval = setInterval(() => {
+    if (deleting === undefined) {
+      void startDeleting(() => pruneTelemetry());
+    }
   }, PRUNE_INTERVAL_MS);
   pruneInterval.unref();
 
   async function close() {
     clearInterval(pruneInterval);
-    await pruning;
+    await finishDeleting();
 
     await connection.run("SELECT * FROM otlp_stop()");
 
