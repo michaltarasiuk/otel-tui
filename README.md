@@ -110,12 +110,15 @@ Telemetry is kept in memory for the retention period. When it nears the memory
 limit, the oldest telemetry is dropped first. A burst that outpaces this spills
 to a temporary directory for a few seconds, which is removed on exit.
 
-| Variable                     | Default | Meaning                      |
-| ---------------------------- | ------- | ---------------------------- |
-| `OTEL_TUI_HTTP_PORT`         | `4318`  | Port for OTLP/HTTP           |
-| `OTEL_TUI_GRPC_PORT`         | `4317`  | Port for OTLP/gRPC           |
-| `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept   |
-| `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`  | Memory for telemetry, in MiB |
+| Flag             | Variable                     | Default | Meaning                      |
+| ---------------- | ---------------------------- | ------- | ---------------------------- |
+| `--http-port`    | `OTEL_TUI_HTTP_PORT`         | `4318`  | Port for OTLP/HTTP           |
+| `--grpc-port`    | `OTEL_TUI_GRPC_PORT`         | `4317`  | Port for OTLP/gRPC           |
+| `--retention`    | `OTEL_TUI_RETENTION_MINUTES` | `60`    | How long telemetry is kept   |
+| `--memory-limit` | `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`  | Memory for telemetry, in MiB |
+
+A flag wins over its variable. `otel-tui --help` lists them, and
+`otel-tui --version` prints the version.
 
 ## Development
 

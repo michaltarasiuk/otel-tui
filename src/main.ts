@@ -1,20 +1,45 @@
 import { MINUTE_MS } from "#utils/time-units.ts";
 
-import { env } from "./env.ts";
+import { HELP, OptionsError, parseOptions, VERSION } from "./options.ts";
 import { startReceiver } from "./receiver/receiver.ts";
 import { startTui } from "./tui/tui.tsx";
 
-await using receiver = await startReceiver({
-  httpPort: env.OTEL_TUI_HTTP_PORT,
-  grpcPort: env.OTEL_TUI_GRPC_PORT,
-  retentionMs: env.OTEL_TUI_RETENTION_MINUTES * MINUTE_MS,
-  memoryLimitBytes: env.OTEL_TUI_MEMORY_LIMIT_MB * 1024 * 1024,
-});
-const connection = await receiver.connect();
+const USAGE_ERROR_EXIT_CODE = 2;
 
-const tui = await startTui({
-  connection,
-  receiverUrls: receiver.urls,
-});
+function command() {
+  try {
+    return parseOptions(Bun.argv.slice(2), process.env);
+  } catch (error) {
+    if (error instanceof OptionsError) {
+      const lines = error.message.split("\n").map((line) => `otel-tui: ${line}`);
+      console.error(`${lines.join("\n")}\n\n${HELP}`);
+      process.exit(USAGE_ERROR_EXIT_CODE);
+    }
+    throw error;
+  }
+}
 
-await tui.closed;
+const parsed = command();
+
+if (parsed.kind === "help") {
+  console.log(HELP);
+} else if (parsed.kind === "version") {
+  console.log(VERSION);
+} else {
+  const { options } = parsed;
+
+  await using receiver = await startReceiver({
+    httpPort: options.httpPort,
+    grpcPort: options.grpcPort,
+    retentionMs: options.retentionMinutes * MINUTE_MS,
+    memoryLimitBytes: options.memoryLimitMb * 1024 * 1024,
+  });
+  const connection = await receiver.connect();
+
+  const tui = await startTui({
+    connection,
+    receiverUrls: receiver.urls,
+  });
+
+  await tui.closed;
+}
