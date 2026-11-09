@@ -5,7 +5,8 @@ SELECT
   arg_min(name, start_time_unix_nano) FILTER (WHERE parent_span_id IS NULL) AS name,
   count(*)::INTEGER AS span_count,
   count(*) FILTER (WHERE status_code = 2)::INTEGER AS error_count,
-  (max(epoch_ns(start_time_unix_nano) + duration_time_unix_nano) - epoch_ns(start_time)) / 1e6 AS duration_ms
+  (max(epoch_ns(start_time_unix_nano) + duration_time_unix_nano) - epoch_ns(start_time)) / 1e6 AS duration_ms,
+  arg_max(span_id, duration_time_unix_nano) FILTER (WHERE service_name = $serviceName AND name = $operationName AND kind IN (2, 5)) AS operation_span_id
 FROM otlp_traces
 GROUP BY trace_id
 HAVING bool_or(parent_span_id IS NULL)
@@ -15,6 +16,7 @@ HAVING bool_or(parent_span_id IS NULL)
   AND (trace_id ILIKE $pattern ESCAPE '\' OR bool_or(name ILIKE $pattern ESCAPE '\' OR service_name ILIKE $pattern ESCAPE '\'))
   AND bool_or(matches_filters($attributes, json_object('duration', duration_time_unix_nano / 1e6), span_attributes, resource_attributes))
   AND ($serviceName IS NULL OR bool_or(service_name = $serviceName))
+  AND ($operationName IS NULL OR bool_or(service_name = $serviceName AND name = $operationName AND kind IN (2, 5)))
 ORDER BY
   CASE $sortBy
     WHEN 'start_time' THEN epoch_us(start_time)

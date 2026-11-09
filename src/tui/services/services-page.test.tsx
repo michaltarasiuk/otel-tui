@@ -76,14 +76,51 @@ test("shows the selected service's operations", async () => {
 
   app.mockInput.pressArrow("down");
 
-  const frame = await app.waitForFrame((frame) =>
-    detailsLines(frame).includes("Operation Rate Errors p95"),
-  );
+  const frame = await app.waitForFrame((frame) => detailsLines(frame).length === 3);
   expect(detailsLines(frame)).toEqual([
     "● checkout server and consumer spans",
-    "Operation Rate Errors p95",
-    `${PLACE_ORDER} 0.2/min 100.0% 450.0ms`,
+    "Operation Rate Errors p50 p95 p99 Spans",
+    `${PLACE_ORDER} 0.2/min 100.0% 450.0ms 450.0ms 450.0ms 1`,
   ]);
+});
+
+test("opens an operation's traces, slowest first, at the operation's span", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderServices(receiver);
+  app.mockInput.pressArrow("down");
+  app.mockInput.pressArrow("down");
+  await app.waitForSelection("fraud-detection");
+
+  app.mockInput.pressTab();
+  await app.waitForSelection("orders process");
+  app.mockInput.pressEnter();
+
+  let frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith("1 of 3 traces"));
+  expect(pageHeader(frame)).toBe("● fraud-detection orders process 1 of 3 traces");
+  expect(textLines(frame)).toContain("Time Service Name Spans Errors ▼ Duration");
+
+  app.mockInput.pressEnter();
+  frame = await app.waitForFrame((frame) => frame.includes("escape back"));
+  expect(await app.waitForSelection("orders process")).toContain("orders process");
+
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => pageHeader(frame).endsWith("1 of 3 traces"));
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+});
+
+test("moves between services and operations with tab", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderServices(receiver);
+  await app.waitForSelection("cart");
+
+  app.mockInput.pressTab();
+  let frame = await app.waitForFrame((frame) => !keyHints(frame).includes("o sort"));
+  expect(keyHints(frame)).toContain("return traces");
+
+  app.mockInput.pressTab({ shift: true });
+  frame = await app.waitForFrame((frame) => keyHints(frame).includes("o sort"));
+  expect(keyHints(frame)).toContain("return traces");
 });
 
 test("opens the selected service's traces and comes back", async () => {

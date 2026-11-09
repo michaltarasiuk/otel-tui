@@ -32,6 +32,7 @@ export function App({ receiverUrls, onClear }: AppProps) {
     page,
     tab,
     tracesService,
+    tracesOperation,
     trace,
     metric,
     logsTrace,
@@ -95,13 +96,17 @@ export function App({ receiverUrls, onClear }: AppProps) {
             onFocusRequest={() => focus("content")}
           >
             <Screen when={page === "services"}>
-              <ServicesPage onOpenTraces={(service) => open({ name: "traces", service })} />
+              <ServicesPage
+                onOpenTraces={(service, operation) => open({ name: "traces", service, operation })}
+              />
             </Screen>
             <Screen when={page === "traces"}>
               <TracesPage
+                key={tracesOperation}
                 service={tracesService}
+                operation={tracesOperation}
                 onServiceChange={(service) => replace({ name: "traces", service })}
-                onOpen={(traceId) => open({ name: "trace", traceId })}
+                onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
                 onBack={canGoBack ? () => back() : undefined}
               />
             </Screen>

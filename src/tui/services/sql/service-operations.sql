@@ -3,7 +3,9 @@ SELECT
   count(*)::INTEGER AS span_count,
   count(*) / ($windowMs / 1000) AS rate,
   count(*) FILTER (WHERE status_code = 2) / count(*) AS error_ratio,
-  quantile_cont(duration_time_unix_nano / 1e6, 0.95) AS p95_ms
+  quantile_cont(duration_time_unix_nano / 1e6, 0.5) AS p50_ms,
+  quantile_cont(duration_time_unix_nano / 1e6, 0.95) AS p95_ms,
+  quantile_cont(duration_time_unix_nano / 1e6, 0.99) AS p99_ms
 FROM otlp_traces
 WHERE kind IN (2, 5)
   AND service_name = $serviceName

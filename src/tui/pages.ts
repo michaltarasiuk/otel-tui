@@ -12,6 +12,7 @@ interface TraceLocation {
 interface Location {
   tab: Tab;
   tracesService: string | undefined;
+  tracesOperation: string | undefined;
   trace: TraceLocation | undefined;
   metric: Metric | undefined;
   logsTrace: TraceLocation | undefined;
@@ -25,7 +26,7 @@ interface History {
 type PageName = "services" | "traces" | "trace" | "metrics" | "metric" | "logs";
 
 type Destination =
-  | { name: "traces"; service: string | undefined }
+  | { name: "traces"; service: string | undefined; operation?: string | undefined }
   | { name: "trace"; traceId: string; spanId?: string | undefined }
   | { name: "metric"; metric: Metric }
   | { name: "logs"; traceId: string | undefined; spanId?: string | undefined };
@@ -34,6 +35,7 @@ const START_HISTORY: History = {
   location: {
     tab: "services",
     tracesService: undefined,
+    tracesOperation: undefined,
     trace: undefined,
     metric: undefined,
     logsTrace: undefined,
@@ -57,7 +59,12 @@ function pageAt({ tab, trace, metric }: Location): PageName {
 function change(destination: Destination): Partial<Location> {
   switch (destination.name) {
     case "traces":
-      return { tab: "traces", tracesService: destination.service, trace: undefined };
+      return {
+        tab: "traces",
+        tracesService: destination.service,
+        tracesOperation: destination.operation,
+        trace: undefined,
+      };
     case "trace":
       return {
         tab: "traces",
@@ -131,6 +138,7 @@ export function usePages() {
     page: pageAt(history.location),
     tab: history.location.tab,
     tracesService: history.location.tracesService,
+    tracesOperation: history.location.tracesOperation,
     trace: history.location.trace,
     metric: history.location.metric,
     logsTrace: history.location.logsTrace,

@@ -36,22 +36,34 @@ const NEWEST_FIRST: TraceSort = {
   descending: true,
 };
 
+const SLOWEST_FIRST: TraceSort = {
+  column: "duration_ms",
+  descending: true,
+};
+
 function hasErrors(trace: Trace) {
   return trace.error_count > 0;
 }
 
 interface TracesPageProps {
   service: string | undefined;
+  operation: string | undefined;
   onServiceChange: (service: string | undefined) => void;
-  onOpen: (traceId: string) => void;
+  onOpen: (traceId: string, spanId: string | undefined) => void;
   onBack: (() => void) | undefined;
 }
 
-export function TracesPage({ service, onServiceChange, onOpen, onBack }: TracesPageProps) {
+export function TracesPage({
+  service,
+  operation,
+  onServiceChange,
+  onOpen,
+  onBack,
+}: TracesPageProps) {
   const search = useSearch();
   const [errorsOnly, setErrorsOnly] = useState(false);
   const [timeRange, setTimeRange] = useState<HistogramRange>();
-  const [sort, setSort] = useState(NEWEST_FIRST);
+  const [sort, setSort] = useState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
   const [height, setHeight] = useState(0);
 
   const pageRef = useRef<BoxRenderable>(null);
@@ -60,10 +72,16 @@ export function TracesPage({ service, onServiceChange, onOpen, onBack }: TracesP
     search: search.text,
     errorsOnly,
     serviceName: service,
+    operationName: operation,
     timeRange,
     sort,
   });
-  const traceTimeline = useTraceTimeline({ search: search.text, errorsOnly, serviceName: service });
+  const traceTimeline = useTraceTimeline({
+    search: search.text,
+    errorsOnly,
+    serviceName: service,
+    operationName: operation,
+  });
   const traceTotalCount = useTraceTotalCount();
 
   const { data: traces = [] } = traceList;
@@ -90,6 +108,7 @@ export function TracesPage({ service, onServiceChange, onOpen, onBack }: TracesP
             <ServiceName name={service} />
           </Chip>
         )}
+        {operation !== undefined && <Chip>{operation}</Chip>}
         {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
         {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
         <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
@@ -120,7 +139,10 @@ export function TracesPage({ service, onServiceChange, onOpen, onBack }: TracesP
         <FocusScope focused={browsing}>
           {selected !== undefined && (
             <>
-              <Key name="return" onPress={() => onOpen(selected.trace_id)}>
+              <Key
+                name="return"
+                onPress={() => onOpen(selected.trace_id, selected.operation_span_id ?? undefined)}
+              >
                 open
               </Key>
               <CopyKey name="y" text={selected.trace_id}>

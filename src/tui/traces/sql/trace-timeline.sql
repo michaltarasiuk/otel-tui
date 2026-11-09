@@ -9,6 +9,7 @@ WITH traces AS (
     AND (trace_id ILIKE $pattern ESCAPE '\' OR bool_or(name ILIKE $pattern ESCAPE '\' OR service_name ILIKE $pattern ESCAPE '\'))
     AND bool_or(matches_filters($attributes, json_object('duration', duration_time_unix_nano / 1e6), span_attributes, resource_attributes))
     AND ($serviceName IS NULL OR bool_or(service_name = $serviceName))
+    AND ($operationName IS NULL OR bool_or(service_name = $serviceName AND name = $operationName AND kind IN (2, 5)))
 )
 SELECT
   (floor(start_ms / $bucketMs) * $bucketMs)::DOUBLE AS bucket_start_ms,

@@ -24,6 +24,8 @@ export const Operation = z.object({
   span_count: z.number(),
   rate: z.number(),
   error_ratio: z.number(),
+  p50_ms: z.number(),
   p95_ms: z.number(),
+  p99_ms: z.number(),
 });
 export type Operation = z.infer<typeof Operation>;

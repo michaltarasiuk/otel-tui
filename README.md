@@ -13,7 +13,9 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 The app opens here. Each service's rate, error rate, and p50, p95, and p99
 latency over the last 5 minutes come from its server and consumer spans, with
 the selected service's operations below. `return` opens the service's traces,
-`o` sorts by rate, errors, or p95, and `/` searches service names.
+`o` sorts by rate, errors, or p95, and `/` searches service names. `tab` moves
+into the operations, where `return` opens the traces with that operation,
+slowest first. A trace opened from there starts at the operation's span.
 
 ### Traces
 

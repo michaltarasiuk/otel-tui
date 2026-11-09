@@ -10,6 +10,7 @@ export const Trace = z.object({
   span_count: z.number(),
   error_count: z.number(),
   duration_ms: z.number(),
+  operation_span_id: z.string().nullable(),
 });
 export type Trace = z.infer<typeof Trace>;
 
