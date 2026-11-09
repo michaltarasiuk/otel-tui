@@ -44,9 +44,10 @@ function formatReceived({ total_rows, last_received_age_ms }: ReceiverCounters) 
 
 interface ReceiverStatusProps {
   receiverUrls: ReceiverUrls;
+  mcpUrl: string | undefined;
 }
 
-export function ReceiverStatus({ receiverUrls }: ReceiverStatusProps) {
+export function ReceiverStatus({ receiverUrls, mcpUrl }: ReceiverStatusProps) {
   const { data: counters } = useReceiverCounters(receiverUrls.http);
   const paused = usePaused();
 
@@ -55,6 +56,7 @@ export function ReceiverStatus({ receiverUrls }: ReceiverStatusProps) {
       {paused && <span fg={THEME.textWarning}>paused · </span>}
       {counters != null && `${formatReceived(counters)} · `}
       OTLP/HTTP {new URL(receiverUrls.http).host} · OTLP/gRPC {new URL(receiverUrls.grpc).host}
+      {mcpUrl !== undefined && ` · MCP ${new URL(mcpUrl).host}`}
     </text>
   );
 }

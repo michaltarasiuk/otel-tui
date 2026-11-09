@@ -1,7 +1,10 @@
+import dedent from "dedent";
+
 import { MINUTE_MS } from "#utils/time-units.ts";
 
+import { startMcpServer } from "./mcp/mcp-server.ts";
 import { HELP, type Options, OptionsError, parseOptions, VERSION } from "./options.ts";
-import { startReceiver } from "./receiver/receiver.ts";
+import { type Receiver, startReceiver } from "./receiver/receiver.ts";
 import { StartupError } from "./startup-error.ts";
 import { startTui } from "./tui/tui.tsx";
 
@@ -45,6 +48,27 @@ async function receive(options: Options) {
   }
 }
 
+async function serveMcp(receiver: Receiver, port: number) {
+  const connection = await receiver.connect();
+  try {
+    return startMcpServer({ connection, port, version: VERSION });
+  } catch (error) {
+    if (error instanceof StartupError) {
+      console.error(prefixLines(error.message));
+      await receiver[Symbol.asyncDispose]();
+      process.exit(START_ERROR_EXIT_CODE);
+    }
+    throw error;
+  }
+}
+
+function stopSignal() {
+  return new Promise<void>((resolve) => {
+    process.once("SIGINT", () => resolve());
+    process.once("SIGTERM", () => resolve());
+  });
+}
+
 const parsed = command();
 
 if (parsed.kind === "help") {
@@ -55,13 +79,22 @@ if (parsed.kind === "help") {
   const { options } = parsed;
 
   await using receiver = await receive(options);
-  const connection = await receiver.connect();
+  await using mcp = options.mcp ? await serveMcp(receiver, options.mcpPort) : undefined;
 
-  const tui = await startTui({
-    connection,
-    receiverUrls: receiver.urls,
-    onClear: () => receiver.clear(),
-  });
-
-  await tui.closed;
+  if (options.headless) {
+    console.log(dedent`
+      otel-tui ${VERSION} is receiving OTLP/HTTP on ${receiver.urls.http} and OTLP/gRPC on ${receiver.urls.grpc}
+      ${mcp === undefined ? "MCP is off; --mcp serves it" : `MCP: ${mcp.url}`}
+      Press ctrl+c to stop.
+    `);
+    await stopSignal();
+  } else {
+    const tui = await startTui({
+      connection: await receiver.connect(),
+      receiverUrls: receiver.urls,
+      mcpUrl: mcp?.url,
+      onClear: () => receiver.clear(),
+    });
+    await tui.closed;
+  }
 }

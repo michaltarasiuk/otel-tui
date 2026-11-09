@@ -23,10 +23,11 @@ import { TopBar, Window } from "./window.tsx";
 
 interface AppProps {
   receiverUrls: ReceiverUrls;
+  mcpUrl?: string | undefined;
   onClear: () => Promise<void>;
 }
 
-export function App({ receiverUrls, onClear }: AppProps) {
+export function App({ receiverUrls, mcpUrl, onClear }: AppProps) {
   const { region, focus, focusStep } = useFocusedRegion();
   const {
     page,
@@ -88,7 +89,7 @@ export function App({ receiverUrls, onClear }: AppProps) {
             <FocusScope focused={region === "tabs"} onFocusRequest={() => focus("tabs")}>
               <Tabs current={tab} onSelect={(tab) => selectTab(tab)} />
             </FocusScope>
-            <ReceiverStatus receiverUrls={receiverUrls} />
+            <ReceiverStatus receiverUrls={receiverUrls} mcpUrl={mcpUrl} />
           </TopBar>
           <FocusScope
             key={clears}

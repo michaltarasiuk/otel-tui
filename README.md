@@ -89,6 +89,28 @@ numbers, as in `http.response.status_code>=500`. On Traces, `duration` compares
 each span's duration, in `ns`, `us`, `ms`, `s`, `m`, or `h` (`ms` when you
 leave the unit out), as in `duration>500ms http.route=/api/cart`.
 
+## MCP
+
+`otel-tui --mcp` also serves [MCP](https://modelcontextprotocol.io) on
+`http://127.0.0.1:4320/mcp`, so a coding agent can read the telemetry you
+browse. Add it to Claude Code with:
+
+```shell
+claude mcp add --transport http otel-tui http://127.0.0.1:4320/mcp
+```
+
+The tools follow the views: `list_services` and `list_operations`,
+`list_traces`, `get_trace` and `get_span`, `list_metrics` and `get_metric`, and
+`list_logs`. They only read, and their searches take the same terms as the
+app's. `get_trace` outlines the span tree with the critical path, and keeps the
+critical path and the spans with errors when a trace is large.
+
+The MCP server listens only on 127.0.0.1, whatever `--host` says, and refuses
+requests whose `Host` or `Origin` header names another site. It has no
+authentication, so any program on your machine can read your telemetry through
+it. `--headless` runs otel-tui without the terminal UI, for an agent that runs
+it in the background; `ctrl+c` stops it.
+
 ## Usage
 
 Install with [Homebrew](https://brew.sh) on macOS or Linux:
@@ -129,11 +151,14 @@ to a temporary directory for a few seconds, which is removed on exit.
 
 | Flag             | Variable                     | Default     | Meaning                      |
 | ---------------- | ---------------------------- | ----------- | ---------------------------- |
-| `--host`         | `OTEL_TUI_HOST`              | `127.0.0.1` | Address to listen on         |
+| `--host`         | `OTEL_TUI_HOST`              | `127.0.0.1` | Address OTLP listens on      |
 | `--http-port`    | `OTEL_TUI_HTTP_PORT`         | `4318`      | Port for OTLP/HTTP           |
 | `--grpc-port`    | `OTEL_TUI_GRPC_PORT`         | `4317`      | Port for OTLP/gRPC           |
 | `--retention`    | `OTEL_TUI_RETENTION_MINUTES` | `60`        | How long telemetry is kept   |
 | `--memory-limit` | `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`      | Memory for telemetry, in MiB |
+| `--mcp`          | `OTEL_TUI_MCP`               | off         | Serve MCP                    |
+| `--mcp-port`     | `OTEL_TUI_MCP_PORT`          | `4320`      | Port for MCP                 |
+| `--headless`     | `OTEL_TUI_HEADLESS`          | off         | Run without the terminal UI  |
 
 A flag wins over its variable. `otel-tui --help` lists them, and
 `otel-tui --version` prints the version.

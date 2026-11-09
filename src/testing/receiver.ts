@@ -1,15 +1,8 @@
 import { startReceiver } from "#receiver/receiver.ts";
 
-const HOST = "127.0.0.1";
+import { freePort } from "./free-port.ts";
 
-function freePort() {
-  using listener = Bun.listen({
-    hostname: HOST,
-    port: 0,
-    socket: { data() {} },
-  });
-  return listener.port;
-}
+const HOST = "127.0.0.1";
 
 interface TestReceiverOptions {
   retentionMs?: number;

@@ -8,6 +8,9 @@ const DEFAULTS = {
   grpcPort: 4317,
   retentionMinutes: 60,
   memoryLimitMb: 1024,
+  mcp: false,
+  mcpPort: 4320,
+  headless: false,
 };
 
 test("uses the defaults without flags or environment", () => {
@@ -37,6 +40,20 @@ test("listens on the given host", () => {
   });
   expect(() => parseOptions(["--host", "not a host"], {})).toThrow(
     "--host (OTEL_TUI_HOST) must be an IPv4 address or a hostname",
+  );
+});
+
+test("serves MCP and runs headless when asked", () => {
+  expect(parseOptions(["--mcp", "--mcp-port", "9000", "--headless"], {})).toEqual({
+    kind: "run",
+    options: { ...DEFAULTS, mcp: true, mcpPort: 9000, headless: true },
+  });
+  expect(parseOptions([], { OTEL_TUI_MCP: "true", OTEL_TUI_HEADLESS: "1" })).toEqual({
+    kind: "run",
+    options: { ...DEFAULTS, mcp: true, headless: true },
+  });
+  expect(() => parseOptions([], { OTEL_TUI_MCP: "maybe" })).toThrow(
+    "--mcp (OTEL_TUI_MCP) must be true or false",
   );
 });
 

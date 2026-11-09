@@ -72,10 +72,11 @@ export function QueryProvider({ queryClient, connection, children }: QueryProvid
 interface TuiOptions {
   connection: DuckDBConnection;
   receiverUrls: ReceiverUrls;
+  mcpUrl: string | undefined;
   onClear: () => Promise<void>;
 }
 
-export async function startTui({ connection, receiverUrls, onClear }: TuiOptions) {
+export async function startTui({ connection, receiverUrls, mcpUrl, onClear }: TuiOptions) {
   const renderer = await createCliRenderer(RENDERER_CONFIG);
 
   const keymap = createDefaultOpenTuiKeymap(renderer);
@@ -116,7 +117,7 @@ export async function startTui({ connection, receiverUrls, onClear }: TuiOptions
       <KeymapProvider keymap={keymap}>
         <QueryProvider queryClient={queryClient} connection={connection}>
           <ClipboardContext value={(text) => copy(text)}>
-            <App receiverUrls={receiverUrls} onClear={onClear} />
+            <App receiverUrls={receiverUrls} mcpUrl={mcpUrl} onClear={onClear} />
           </ClipboardContext>
         </QueryProvider>
       </KeymapProvider>
