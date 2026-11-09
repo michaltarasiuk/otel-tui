@@ -10,6 +10,14 @@ const CHART_TITLE = /^\w+ over time /;
 
 export const CHART_DOTS = /[⠁-⣿]/;
 export const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
+const textForeground = RGBA.fromHex(THEME.text);
+
+const TAB_NAMES = ["Services", "Traces", "Metrics", "Logs"];
+
+interface TabStyle {
+  highlighted: boolean;
+  fg: "text" | "muted";
+}
 
 export function textLines(frame: string) {
   return frame
@@ -50,6 +58,16 @@ export function detailsLines(frame: string) {
   return border === -1 ? [] : lines.slice(border + 1, -1);
 }
 
+export function spanRows(frame: string) {
+  const lines = frame.split("\n");
+  const header = lines.findIndex((line) => line.includes("Service") && line.includes("Duration"));
+  const panel = lines.findIndex((line) => line.startsWith(DETAILS_BORDER));
+  if (header === -1 || panel === -1) {
+    return [];
+  }
+  return lines.slice(header + 1, panel).filter((line) => line.trim() !== "");
+}
+
 export function keyHints(frame: string) {
   return textLines(frame).at(-1) ?? "";
 }
@@ -79,4 +97,19 @@ export function spanColors(spans: CapturedSpan[], text: string) {
 
 export function color(hex: string) {
   return RGBA.fromHex(hex).toInts();
+}
+
+export function tabStyles({ lines: [tabBar] }: CapturedFrame) {
+  const styles: Record<string, TabStyle> = {};
+  for (const span of tabBar?.spans ?? []) {
+    const name = span.text.trim();
+    if (!TAB_NAMES.includes(name)) {
+      continue;
+    }
+    styles[name] = {
+      highlighted: span.bg.equals(selectedBackground),
+      fg: span.fg.equals(textForeground) ? "text" : "muted",
+    };
+  }
+  return styles;
 }

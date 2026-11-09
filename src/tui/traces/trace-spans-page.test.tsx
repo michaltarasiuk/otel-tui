@@ -16,6 +16,7 @@ import {
   listLines,
   pageHeader,
   spanColors,
+  spanRows,
   tableRows,
   textLines,
 } from "#testing/screen.ts";
@@ -36,16 +37,6 @@ import {
 import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
-
-function spanRows(frame: string) {
-  const lines = frame.split("\n");
-  const header = lines.findIndex((line) => line.includes("Service") && line.includes("Duration"));
-  const panel = lines.findIndex((line) => line.startsWith("─"));
-  if (header === -1 || panel === -1) {
-    return [];
-  }
-  return lines.slice(header + 1, panel).filter((line) => line.trim() !== "");
-}
 
 function barExtent({ lines }: CapturedFrame, name: string, color: string) {
   const background = RGBA.fromHex(color);

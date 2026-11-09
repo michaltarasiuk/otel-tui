@@ -68,13 +68,17 @@ function onPage(tab: Tab) {
   return (frame: string) => PAGE_COUNTS[tab].test(pageHeader(frame));
 }
 
-export async function renderPage(receiver: TestReceiver, tab: Tab, options?: AppOptions) {
-  const app = await renderApp(receiver, options);
+export async function openTab(app: TestApp, tab: Tab) {
   await app.waitForFrame(onPage("services"));
   for (const next of TAB_ORDER.slice(1, TAB_ORDER.indexOf(tab) + 1)) {
     app.mockInput.pressArrow("right");
     await app.waitForFrame(onPage(next));
   }
+}
+
+export async function renderPage(receiver: TestReceiver, tab: Tab, options?: AppOptions) {
+  const app = await renderApp(receiver, options);
+  await openTab(app, tab);
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
   return app;

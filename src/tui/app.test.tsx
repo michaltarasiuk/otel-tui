@@ -1,55 +1,22 @@
 import { expect, type Mock, spyOn, test } from "bun:test";
 
 import { DuckDBConnection } from "@duckdb/node-api";
-import { type CapturedFrame, RGBA } from "@opentui/core";
 
 import logList from "#telemetry/logs/sql/log-list.sql" with { type: "text" };
 import metricList from "#telemetry/metrics/sql/metric-list.sql" with { type: "text" };
 import serviceList from "#telemetry/services/sql/service-list.sql" with { type: "text" };
 import traceList from "#telemetry/traces/sql/trace-list.sql" with { type: "text" };
-import { renderApp, search, type TestApp } from "#testing/app.tsx";
+import { openTab, renderApp, search } from "#testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { keyHints, onDetails, onList, pageHeader, selectedBackground } from "#testing/screen.ts";
+import { keyHints, onDetails, onList, pageHeader, tabStyles } from "#testing/screen.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
-
-import { THEME } from "./theme/theme.ts";
-
-const TAB_NAMES = ["Services", "Traces", "Metrics", "Logs"];
-
-const textForeground = RGBA.fromHex(THEME.text);
-
-interface TabStyle {
-  highlighted: boolean;
-  fg: "text" | "muted";
-}
-
-function tabStyles({ lines: [tabBar] }: CapturedFrame) {
-  const styles: Record<string, TabStyle> = {};
-  for (const span of tabBar?.spans ?? []) {
-    const name = span.text.trim();
-    if (!TAB_NAMES.includes(name)) {
-      continue;
-    }
-    styles[name] = {
-      highlighted: span.bg.equals(selectedBackground),
-      fg: span.fg.equals(textForeground) ? "text" : "muted",
-    };
-  }
-  return styles;
-}
 
 function queriesRun(runAndReadAll: Mock<DuckDBConnection["runAndReadAll"]>) {
   return runAndReadAll.mock.calls.map(([sql]) => sql);
 }
 
 const WAITING_FOR_SERVICES = "Waiting for server or consumer spans...";
-
-async function openTracesTab(app: TestApp) {
-  await app.waitForFrame((frame) => / services?$/.test(pageHeader(frame)));
-  app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => / traces?$/.test(pageHeader(frame)));
-}
 
 test("starts on the services tab with the tab bar focused", async () => {
   await using receiver = await startTestReceiver();
@@ -110,7 +77,7 @@ test("moves focus between the tab bar and the view with tab and shift+tab", asyn
 test("keeps showing the current tab while the view has focus", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await openTracesTab(app);
+  await openTab(app, "traces");
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
   app.mockInput.pressArrow("right");
@@ -195,7 +162,7 @@ test("hints the view's described keys, the selected row's actions first", async 
     }),
   );
   await using app = await renderApp(receiver, { size: { width: 160, height: 10 } });
-  await openTracesTab(app);
+  await openTab(app, "traces");
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
@@ -225,7 +192,7 @@ test("hints the jump to the next error only when a trace has errors", async () =
     }),
   );
   await using app = await renderApp(receiver, { size: { width: 160, height: 10 } });
-  await openTracesTab(app);
+  await openTab(app, "traces");
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
 
   app.mockInput.pressTab();
@@ -261,7 +228,7 @@ test("follows to the traces tab when a log opens its trace", async () => {
     }),
   );
   await using app = await renderApp(receiver);
-  await openTracesTab(app);
+  await openTab(app, "traces");
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
@@ -307,7 +274,7 @@ test("forgets where a trace was opened from after switching tabs", async () => {
     }),
   );
   await using app = await renderApp(receiver);
-  await openTracesTab(app);
+  await openTab(app, "traces");
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
   app.mockInput.pressArrow("right");
   await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
@@ -352,7 +319,7 @@ test("clears the telemetry with ctrl+l and starts the current tab over", async (
     }),
   );
   await using app = await renderApp(receiver);
-  await openTracesTab(app);
+  await openTab(app, "traces");
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
   app.mockInput.pressEnter();
@@ -369,7 +336,7 @@ test("clears the telemetry with ctrl+l and starts the current tab over", async (
 test("lists every key of the focused page in a help overlay", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await openTracesTab(app);
+  await openTab(app, "traces");
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
 
@@ -395,7 +362,7 @@ test("lists every key of the focused page in a help overlay", async () => {
 test("types ? into the search instead of opening help", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await openTracesTab(app);
+  await openTab(app, "traces");
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
   await search(app, "?");
