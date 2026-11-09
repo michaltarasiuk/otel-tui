@@ -16,10 +16,6 @@ import {
   tableRows,
   textLines,
 } from "#testing/screen.ts";
-import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
-import { serviceColor, THEME } from "#tui/theme/theme.ts";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
-
 import {
   at,
   CART_ROW,
@@ -34,7 +30,10 @@ import {
   PLACE_ORDER,
   renderTraceList,
   STATUS_ROW,
-} from "./test-traces.ts";
+} from "#testing/traces.ts";
+import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
+import { serviceColor, THEME } from "#tui/theme/theme.ts";
+import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
 afterEach(() => {
   setSystemTime();

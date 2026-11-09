@@ -11,7 +11,7 @@ import {
   otlpTraces,
   PLACE_ORDER,
   statusTraceId,
-} from "#tui/traces/test-traces.ts";
+} from "#testing/traces.ts";
 
 import { StartupError } from "../startup-error.ts";
 import { startMcpServer } from "./mcp-server.ts";

@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
 import { renderPage } from "#testing/app.tsx";
-import { metricsRequest, TEMPORALITY } from "#testing/otlp.ts";
-import { startTestReceiver } from "#testing/receiver.ts";
-import { CHART_DOTS, detailsLines, keyHints, tableRows, textLines } from "#testing/screen.ts";
-import { otlpTraces } from "#tui/traces/test-traces.ts";
-
 import {
   atSecond,
   BODY_SIZE_ROW,
@@ -18,7 +13,11 @@ import {
   openMetric,
   renderMetricList,
   THREADS_ROW,
-} from "./test-metrics.ts";
+} from "#testing/metrics.ts";
+import { metricsRequest, TEMPORALITY } from "#testing/otlp.ts";
+import { startTestReceiver } from "#testing/receiver.ts";
+import { CHART_DOTS, detailsLines, keyHints, tableRows, textLines } from "#testing/screen.ts";
+import { otlpTraces } from "#testing/traces.ts";
 
 beforeEach(() => {
   setSystemTime(atSecond(60));

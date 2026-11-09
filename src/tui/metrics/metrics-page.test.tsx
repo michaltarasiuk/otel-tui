@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
 import { renderPage } from "#testing/app.tsx";
-import { metricsRequest } from "#testing/otlp.ts";
-import { startTestReceiver } from "#testing/receiver.ts";
-import { detailsLines, pageHeader, tableRows, textLines } from "#testing/screen.ts";
-
 import {
   atSecond,
   BODY_SIZE_ROW,
@@ -15,7 +11,10 @@ import {
   ITEMS_SHIPPED_ROW,
   renderMetricList,
   THREADS_ROW,
-} from "./test-metrics.ts";
+} from "#testing/metrics.ts";
+import { metricsRequest } from "#testing/otlp.ts";
+import { startTestReceiver } from "#testing/receiver.ts";
+import { detailsLines, pageHeader, tableRows, textLines } from "#testing/screen.ts";
 
 beforeEach(() => {
   setSystemTime(atSecond(60));

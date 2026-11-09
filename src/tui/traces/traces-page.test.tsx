@@ -13,8 +13,6 @@ import {
   tableRows,
   textLines,
 } from "#testing/screen.ts";
-import { serviceColor, THEME } from "#tui/theme/theme.ts";
-
 import {
   at,
   CART_ROW,
@@ -25,7 +23,8 @@ import {
   renderTraceList,
   STATUS_ROW,
   statusTraceId,
-} from "./test-traces.ts";
+} from "#testing/traces.ts";
+import { serviceColor, THEME } from "#tui/theme/theme.ts";
 
 afterEach(() => {
   setSystemTime();

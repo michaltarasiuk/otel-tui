@@ -1,7 +1,7 @@
-import { renderPage, selectRow } from "#testing/app.tsx";
-import { metricsRequest, TEMPORALITY } from "#testing/otlp.ts";
-import type { TestReceiver } from "#testing/receiver.ts";
-import { tableRows } from "#testing/screen.ts";
+import { renderPage, selectRow } from "./app.tsx";
+import { metricsRequest, TEMPORALITY } from "./otlp.ts";
+import type { TestReceiver } from "./receiver.ts";
+import { tableRows } from "./screen.ts";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
