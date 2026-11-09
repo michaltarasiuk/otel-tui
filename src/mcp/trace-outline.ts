@@ -43,7 +43,8 @@ export function traceOutline(traceId: string, spans: Span[], maxSpans: number) {
   const errorCount = spans.filter((span) => span.is_error).length;
 
   const lines = [
-    `trace ${traceId}: ${spans.length} spans, ${formatDuration(durationMs)}, ${errorCount} with errors`,
+    `trace ${traceId}: ${spans.length} spans, ${formatDuration(durationMs)}, ` +
+      `${errorCount} with errors`,
     "* marks the critical path. Each line: name [service, kind] duration at +offset span_id",
     ...shown.map((span) => spanLine(span, path.has(span.span_id))),
   ];

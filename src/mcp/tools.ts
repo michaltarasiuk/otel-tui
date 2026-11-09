@@ -3,14 +3,17 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import type { Attributes } from "#telemetry/attributes.ts";
+import type { Log } from "#telemetry/logs/log.ts";
 import { listLogs } from "#telemetry/logs/read-logs.ts";
 import { quantile } from "#telemetry/metrics/distribution.ts";
 import { counterIntervals, perSecond } from "#telemetry/metrics/intervals.ts";
-import { isDelta, type Metric } from "#telemetry/metrics/metric.ts";
+import { isDelta, type Metric, type MetricSort } from "#telemetry/metrics/metric.ts";
 import { listMetrics, readMetricSeries } from "#telemetry/metrics/read-metrics.ts";
 import type { NumberPoint, Series } from "#telemetry/metrics/series.ts";
 import { listOperations, listServices } from "#telemetry/services/read-services.ts";
 import { listTraces, readSpanContent, readTraceSpans } from "#telemetry/traces/read-traces.ts";
+import type { SpanContent } from "#telemetry/traces/span.ts";
+import type { Trace } from "#telemetry/traces/trace.ts";
 
 import { traceOutline } from "./trace-outline.ts";
 
@@ -21,7 +24,12 @@ const MAX_TRACE_SPANS = 200;
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
 const SEARCH_HELP =
-  "Words match names, services, and IDs. key=value, key!=value, and key>number (also >=, <, <=) match span, log, metric, or resource attributes. On traces, duration>500ms compares span durations.";
+  "Words match names, services, and IDs. " +
+  "key=value, key!=value, and key>number (also >=, <, <=) match span, log, metric, " +
+  "or resource attributes. " +
+  "On traces, duration>500ms compares span durations.";
+
+const BY_NAME: MetricSort = { column: "name", descending: false };
 
 const Limit = z.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT);
 
@@ -39,6 +47,53 @@ function attributeObject(attributes: Attributes) {
 
 function isoTime(timeMs: number | null) {
   return timeMs === null ? null : new Date(timeMs).toISOString();
+}
+
+function descending<T>(column: T) {
+  return { column, descending: true };
+}
+
+function isMetricNamed(metric: Metric, name: string, service: string | undefined) {
+  return metric.name === name && (service === undefined || metric.service_name === service);
+}
+
+function traceSummary(trace: Trace) {
+  return { ...trace, start_time: isoTime(trace.start_time) };
+}
+
+function spanSummary(content: SpanContent) {
+  return {
+    scope: { name: content.scope_name, version: content.scope_version },
+    attributes: attributeObject(content.attributes),
+    resource: attributeObject(content.resource_attributes),
+    events: content.events.map((event) => ({
+      name: event.name,
+      offset_ms: event.offset_ms,
+      attributes: attributeObject(event.attributes),
+    })),
+    links: content.links.map((link) => ({
+      trace_id: link.trace_id,
+      span_id: link.span_id,
+      stored: link.has_trace,
+      attributes: attributeObject(link.attributes),
+    })),
+  };
+}
+
+function metricSummary(metric: Metric) {
+  return { ...metric, last_time: isoTime(metric.last_time) };
+}
+
+function logSummary(log: Log) {
+  return {
+    time: isoTime(log.time),
+    severity: log.severity ?? log.severity_text,
+    service: log.service_name,
+    body: log.body,
+    trace_id: log.trace_id,
+    span_id: log.span_id,
+    attributes: attributeObject(log.attributes),
+  };
 }
 
 function latestRate(metric: Metric, points: NumberPoint[]) {
@@ -79,17 +134,18 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     {
       title: "List services",
       description:
-        "Services seen in the last 5 minutes, with request rate per second, error ratio, and p50, p95, and p99 latency in milliseconds, from their server and consumer spans.",
+        "Services seen in the last 5 minutes, with request rate per second, error ratio, " +
+        "and p50, p95, and p99 latency in milliseconds, from their server and consumer spans.",
       inputSchema: {
         search: z.string().default("").describe("Part of a service name"),
         sort: z.enum(["rate", "error_ratio", "p95_ms"]).default("rate"),
       },
       annotations: READ_ONLY,
     },
-    async ({ search, sort }) =>
-      jsonResult(
-        await listServices(connection, { search, sort: { column: sort, descending: true } }),
-      ),
+    async ({ search, sort }) => {
+      const services = await listServices(connection, { search, sort: descending(sort) });
+      return jsonResult(services);
+    },
   );
 
   server.registerTool(
@@ -97,7 +153,8 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     {
       title: "List a service's operations",
       description:
-        "A service's operations (server and consumer span names) in the last 5 minutes, with rate per second, error ratio, and p50, p95, and p99 latency in milliseconds.",
+        "A service's operations (server and consumer span names) in the last 5 minutes, " +
+        "with rate per second, error ratio, and p50, p95, and p99 latency in milliseconds.",
       inputSchema: { service: z.string().describe("Service name, as list_services returns it") },
       annotations: READ_ONLY,
     },
@@ -131,13 +188,10 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
         serviceName: service,
         operationName: operation,
         timeRange: undefined,
-        sort: { column: sort, descending: true },
+        sort: descending(sort),
       });
-      return jsonResult(
-        traces
-          .slice(0, limit)
-          .map((trace) => ({ ...trace, start_time: isoTime(trace.start_time) })),
-      );
+      const shown = traces.slice(0, limit).map((trace) => traceSummary(trace));
+      return jsonResult(shown);
     },
   );
 
@@ -146,7 +200,10 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     {
       title: "Get a trace",
       description:
-        "A trace's span tree: each span's name, service, kind, duration, offset from the trace start, ID, and error status, with the critical path marked. Large traces keep the critical path and the spans with errors. Use get_span for a span's attributes, events, and links.",
+        "A trace's span tree: each span's name, service, kind, duration, " +
+        "offset from the trace start, ID, and error status, with the critical path marked. " +
+        "Large traces keep the critical path and the spans with errors. " +
+        "Use get_span for a span's attributes, events, and links.",
       inputSchema: { trace_id: z.string() },
       annotations: READ_ONLY,
     },
@@ -172,22 +229,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       if (content === null) {
         return textResult(`No span ${span_id} stored in trace ${trace_id}`);
       }
-      return jsonResult({
-        scope: { name: content.scope_name, version: content.scope_version },
-        attributes: attributeObject(content.attributes),
-        resource: attributeObject(content.resource_attributes),
-        events: content.events.map((event) => ({
-          name: event.name,
-          offset_ms: event.offset_ms,
-          attributes: attributeObject(event.attributes),
-        })),
-        links: content.links.map((link) => ({
-          trace_id: link.trace_id,
-          span_id: link.span_id,
-          stored: link.has_trace,
-          attributes: attributeObject(link.attributes),
-        })),
-      });
+      return jsonResult(spanSummary(content));
     },
   );
 
@@ -195,20 +237,16 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     "list_metrics",
     {
       title: "List metrics",
-      description: `Metrics with their type, unit, service, description, series count, and last update. ${SEARCH_HELP}`,
+      description:
+        "Metrics with their type, unit, service, description, series count, and last update. " +
+        SEARCH_HELP,
       inputSchema: { search: z.string().default(""), limit: Limit },
       annotations: READ_ONLY,
     },
     async ({ search, limit }) => {
-      const metrics = await listMetrics(connection, {
-        search,
-        sort: { column: "name", descending: false },
-      });
-      return jsonResult(
-        metrics
-          .slice(0, limit)
-          .map((metric) => ({ ...metric, last_time: isoTime(metric.last_time) })),
-      );
+      const metrics = await listMetrics(connection, { search, sort: BY_NAME });
+      const shown = metrics.slice(0, limit).map((metric) => metricSummary(metric));
+      return jsonResult(shown);
     },
   );
 
@@ -217,7 +255,10 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     {
       title: "Get a metric",
       description:
-        "A metric's series with their attributes. Counters give their latest rate per second and their total, gauges and up-down counters their last value, min, and max, and histograms their count, sum, min, max, and p50, p95, and p99.",
+        "A metric's series with their attributes. " +
+        "Counters give their latest rate per second and their total, " +
+        "gauges and up-down counters their last value, min, and max, " +
+        "and histograms their count, sum, min, max, and p50, p95, and p99.",
       inputSchema: {
         name: z.string().describe("Exact metric name"),
         service: z.string().optional(),
@@ -225,30 +266,25 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ name, service }) => {
-      const metrics = (
-        await listMetrics(connection, { search: name, sort: { column: "name", descending: false } })
-      ).filter(
-        (metric) =>
-          metric.name === name && (service === undefined || metric.service_name === service),
-      );
+      const candidates = await listMetrics(connection, { search: name, sort: BY_NAME });
+      const metrics = candidates.filter((metric) => isMetricNamed(metric, name, service));
       if (metrics.length === 0) {
-        return textResult(
-          `No metric named ${name}${service === undefined ? "" : ` from ${service}`}`,
-        );
+        const from = service === undefined ? "" : ` from ${service}`;
+        return textResult(`No metric named ${name}${from}`);
       }
-      return jsonResult(
-        await Promise.all(
-          metrics.map(async (metric) => ({
+      const summaries = await Promise.all(
+        metrics.map(async (metric) => {
+          const series = await readMetricSeries(connection, metric);
+          return {
             name: metric.name,
             type: metric.type,
             unit: metric.unit,
             service: metric.service_name,
-            series: (await readMetricSeries(connection, metric)).map((series) =>
-              seriesSummary(metric, series),
-            ),
-          })),
-        ),
+            series: series.map((one) => seriesSummary(metric, one)),
+          };
+        }),
       );
+      return jsonResult(summaries);
     },
   );
 
@@ -256,7 +292,9 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     "list_logs",
     {
       title: "List logs",
-      description: `Logs, newest first, with severity, service, body, attributes, and trace and span IDs. ${SEARCH_HELP}`,
+      description:
+        "Logs, newest first, with severity, service, body, attributes, and trace and span IDs. " +
+        SEARCH_HELP,
       inputSchema: {
         search: z.string().default(""),
         min_severity: z.enum(["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"]).optional(),
@@ -274,19 +312,8 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
         spanId: span_id,
         timeRange: undefined,
       });
-      return jsonResult(
-        logs
-          .slice(0, limit)
-          .map((log) => ({
-            time: isoTime(log.time),
-            severity: log.severity ?? log.severity_text,
-            service: log.service_name,
-            body: log.body,
-            trace_id: log.trace_id,
-            span_id: log.span_id,
-            attributes: attributeObject(log.attributes),
-          })),
-      );
+      const shown = logs.slice(0, limit).map((log) => logSummary(log));
+      return jsonResult(shown);
     },
   );
 }
