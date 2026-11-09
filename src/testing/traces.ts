@@ -10,6 +10,9 @@ export const statusTraceId = "3".repeat(32);
 export const rootlessTraceId = "4".repeat(32);
 export const missingParentId = "5".repeat(16);
 
+export const placeOrderSpanId = "2a".repeat(8);
+export const chargeSpanId = "2b".repeat(8);
+
 export const PLACE_ORDER = "oteldemo.CheckoutService/PlaceOrder";
 export const GET_CART = "POST /oteldemo.CartService/GetCart";
 
@@ -89,7 +92,7 @@ export const otlpTraces = tracesRequest(
     spans: [
       {
         traceId: checkoutTraceId,
-        spanId: "2a".repeat(8),
+        spanId: placeOrderSpanId,
         name: PLACE_ORDER,
         kind: SPAN_KIND.server,
         start: at(1000),
@@ -110,8 +113,8 @@ export const otlpTraces = tracesRequest(
     spans: [
       {
         traceId: checkoutTraceId,
-        spanId: "2b".repeat(8),
-        parentSpanId: "2a".repeat(8),
+        spanId: chargeSpanId,
+        parentSpanId: placeOrderSpanId,
         name: "charge",
         kind: SPAN_KIND.client,
         start: at(1100),

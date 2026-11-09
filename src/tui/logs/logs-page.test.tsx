@@ -1,9 +1,22 @@
 import { expect, setSystemTime, test } from "bun:test";
 
-import { type AppOptions, renderPage } from "#testing/app.tsx";
+import { renderPage } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
+import {
+  CART_EVENT_ROW,
+  checkoutTrace,
+  ERROR_ROW,
+  FATAL_ROW,
+  JSON_ROW,
+  NEWEST_FIRST,
+  NOTICE_ROW,
+  ORDER_ROW,
+  otlpLogs,
+  renderLogList,
+  WARN_ROW,
+} from "#testing/logs.ts";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
-import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
+import { startTestReceiver } from "#testing/receiver.ts";
 import {
   color,
   detailsLines,
@@ -14,144 +27,9 @@ import {
   tableRows,
   textLines,
 } from "#testing/screen.ts";
+import { checkoutTraceId, PLACE_ORDER, placeOrderSpanId } from "#testing/traces.ts";
 import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { THEME } from "#tui/theme/theme.ts";
-
-const checkoutTraceId = "2".repeat(32);
-const placeOrderSpanId = "2a".repeat(8);
-const chargeSpanId = "2b".repeat(8);
-
-const PLACE_ORDER = "oteldemo.CheckoutService/PlaceOrder";
-
-const otlpLogs = logsRequest(
-  {
-    service: "checkout",
-    attributes: { "host.name": "colima" },
-    scope: { name: "checkout" },
-    logs: [
-      {
-        time: at(0),
-        severityNumber: SEVERITY_NUMBER.info,
-        body: "[PlaceOrder]",
-        traceId: checkoutTraceId,
-        spanId: placeOrderSpanId,
-        attributes: { user_currency: "USD" },
-      },
-    ],
-  },
-  {
-    service: "payment",
-    logs: [
-      {
-        time: at(1000),
-        severityNumber: SEVERITY_NUMBER.warn,
-        severityText: "warn",
-        body: "Payment request failed. Invalid token.",
-        traceId: checkoutTraceId,
-        spanId: chargeSpanId,
-        attributes: { "demo.user_context.loyalty_level": "gold" },
-      },
-      {
-        time: at(2000),
-        severityNumber: SEVERITY_NUMBER.error,
-        body: "Credit card info is invalid.",
-        traceId: checkoutTraceId,
-        spanId: chargeSpanId,
-      },
-    ],
-  },
-  {
-    service: "frontend",
-    logs: [
-      {
-        time: at(3000),
-        severityNumber: SEVERITY_NUMBER.debug,
-        body: '{"url.path":"/api/cart","http.response.status_code":200}',
-      },
-    ],
-  },
-  {
-    service: "cart",
-    logs: [
-      {
-        time: at(5000),
-        severityNumber: SEVERITY_NUMBER.info,
-        eventName: "cart.get",
-        body: "GetCartAsync called\n  with userId={userId}",
-      },
-    ],
-  },
-  {
-    service: "product-catalog",
-    logs: [
-      { observedTime: at(6000), severityText: "notice", body: "Database connection established" },
-    ],
-  },
-  {
-    service: "ad",
-    logs: [
-      {
-        time: at(4000),
-        severityNumber: SEVERITY_NUMBER.fatal,
-        body: "java.lang.OutOfMemoryError: Java heap space",
-      },
-    ],
-  },
-);
-
-const checkoutTrace = tracesRequest(
-  {
-    service: "checkout",
-    spans: [
-      {
-        traceId: checkoutTraceId,
-        spanId: placeOrderSpanId,
-        name: PLACE_ORDER,
-        start: at(0),
-        end: at(2500),
-      },
-    ],
-  },
-  {
-    service: "payment",
-    spans: [
-      {
-        traceId: checkoutTraceId,
-        spanId: chargeSpanId,
-        parentSpanId: placeOrderSpanId,
-        name: "charge",
-        start: at(500),
-        end: at(2000),
-      },
-    ],
-  },
-);
-
-const NOTICE_ROW = "12:00:06.000 notice ● product-catalog Database connection established";
-const CART_EVENT_ROW = "12:00:05.000 INFO ● cart cart.get GetCartAsync called with userId={userId}";
-const FATAL_ROW = "12:00:04.000 FATAL ● ad java.lang.OutOfMemoryError: Java heap space";
-const JSON_ROW =
-  '12:00:03.000 DEBUG ● frontend {"url.path":"/api/cart","http.response.status_code":200}';
-const ERROR_ROW = "12:00:02.000 ERROR ● payment Credit card info is invalid.";
-const WARN_ROW = "12:00:01.000 WARN ● payment Payment request failed. Invalid token.";
-const ORDER_ROW = "12:00:00.000 INFO ● checkout [PlaceOrder]";
-
-const NEWEST_FIRST = [
-  NOTICE_ROW,
-  CART_EVENT_ROW,
-  FATAL_ROW,
-  JSON_ROW,
-  ERROR_ROW,
-  WARN_ROW,
-  ORDER_ROW,
-];
-
-async function renderLogList(receiver: TestReceiver, options?: AppOptions) {
-  await receiver.sendHttp("/v1/logs", otlpLogs);
-  const app = await renderPage(receiver, "logs", options);
-  await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
-  return app;
-}
 
 test("waits for logs before any arrive", async () => {
   await using receiver = await startTestReceiver();
