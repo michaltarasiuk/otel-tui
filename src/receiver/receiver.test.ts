@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
+import { LOOPBACK_HOST } from "#utils/loopback.ts";
 
 import { StartupError } from "../startup-error.ts";
 import { PRUNE_INTERVAL_MS, startReceiver } from "./receiver.ts";
@@ -356,7 +357,7 @@ test("names the ports when it can't listen on them", async () => {
   const { port: grpcPort } = new URL(receiver.urls.grpc);
 
   const error = await startReceiver({
-    host: "127.0.0.1",
+    host: LOOPBACK_HOST,
     httpPort: Number(httpPort),
     grpcPort: Number(grpcPort),
     retentionMs: RETENTION_MS,
@@ -366,7 +367,9 @@ test("names the ports when it can't listen on them", async () => {
   expect(error).toBeInstanceOf(StartupError);
   expect(error).toHaveProperty(
     "message",
-    expect.stringContaining(`couldn't listen on 127.0.0.1:${httpPort} and 127.0.0.1:${grpcPort}`),
+    expect.stringContaining(
+      `couldn't listen on ${LOOPBACK_HOST}:${httpPort} and ${LOOPBACK_HOST}:${grpcPort}`,
+    ),
   );
   await receiver[Symbol.asyncDispose]();
 });

@@ -3,6 +3,8 @@ import { parseArgs } from "node:util";
 import dedent from "dedent";
 import { z } from "zod";
 
+import { LOOPBACK_HOST } from "#utils/loopback.ts";
+
 import packageJson from "../package.json" with { type: "json" };
 
 function port(name: string) {
@@ -26,7 +28,7 @@ function toggle(name: string) {
 }
 
 const Options = z.object({
-  host: host("--host (OTEL_TUI_HOST)").default("127.0.0.1"),
+  host: host("--host (OTEL_TUI_HOST)").default(LOOPBACK_HOST),
   httpPort: port("--http-port (OTEL_TUI_HTTP_PORT)").default(4318),
   grpcPort: port("--grpc-port (OTEL_TUI_GRPC_PORT)").default(4317),
   retentionMinutes: positive("--retention (OTEL_TUI_RETENTION_MINUTES)").default(60),
@@ -45,12 +47,12 @@ export const HELP = dedent`
   A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
   Options:
-    --host <address>        Address OTLP listens on (default 127.0.0.1, env OTEL_TUI_HOST)
+    --host <address>        Address OTLP listens on (default ${LOOPBACK_HOST}, env OTEL_TUI_HOST)
     --http-port <port>      Port for OTLP/HTTP (default 4318, env OTEL_TUI_HTTP_PORT)
     --grpc-port <port>      Port for OTLP/gRPC (default 4317, env OTEL_TUI_GRPC_PORT)
     --retention <minutes>   How long telemetry is kept (default 60, env OTEL_TUI_RETENTION_MINUTES)
     --memory-limit <MiB>    Memory for telemetry (default 1024, env OTEL_TUI_MEMORY_LIMIT_MB)
-    --mcp                   Serve MCP tools that read telemetry on 127.0.0.1 (env OTEL_TUI_MCP)
+    --mcp                   Serve MCP tools that read telemetry on ${LOOPBACK_HOST} (env OTEL_TUI_MCP)
     --mcp-port <port>       Port for MCP (default 4320, env OTEL_TUI_MCP_PORT)
     --headless              Run without the terminal UI (env OTEL_TUI_HEADLESS)
     -h, --help              Show this help

@@ -1,8 +1,7 @@
 import { startReceiver } from "#receiver/receiver.ts";
+import { LOOPBACK_HOST } from "#utils/loopback.ts";
 
 import { freePort } from "./free-port.ts";
-
-const HOST = "127.0.0.1";
 
 interface TestReceiverOptions {
   retentionMs?: number;
@@ -14,7 +13,7 @@ export async function startTestReceiver({
   memoryLimitBytes = 1024 * 1024 * 1024,
 }: TestReceiverOptions = {}) {
   const receiver = await startReceiver({
-    host: HOST,
+    host: LOOPBACK_HOST,
     httpPort: freePort(),
     grpcPort: freePort(),
     retentionMs,

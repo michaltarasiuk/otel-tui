@@ -1,4 +1,6 @@
+import { LOOPBACK_HOST } from "#utils/loopback.ts";
+
 export function freePort() {
-  using listener = Bun.listen({ hostname: "127.0.0.1", port: 0, socket: { data() {} } });
+  using listener = Bun.listen({ hostname: LOOPBACK_HOST, port: 0, socket: { data() {} } });
   return listener.port;
 }

@@ -3,10 +3,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import dedent from "dedent";
 
+import { LOOPBACK_HOST } from "#utils/loopback.ts";
+
 import { StartupError } from "../startup-error.ts";
 import { registerTools } from "./tools.ts";
-
-const HOST = "127.0.0.1";
 
 interface McpServerOptions {
   connection: DuckDBConnection;
@@ -15,7 +15,7 @@ interface McpServerOptions {
 }
 
 export function startMcpServer({ connection, port, version }: McpServerOptions) {
-  const allowedHosts = [`${HOST}:${port}`, `localhost:${port}`];
+  const allowedHosts = [`${LOOPBACK_HOST}:${port}`, `localhost:${port}`];
 
   async function respond(request: Request) {
     const server = new McpServer({ name: "otel-tui", version });
@@ -36,19 +36,19 @@ export function startMcpServer({ connection, port, version }: McpServerOptions) 
 
   try {
     const httpServer = Bun.serve({
-      hostname: HOST,
+      hostname: LOOPBACK_HOST,
       port,
       routes: { "/mcp": (request) => respond(request) },
       fetch: () => new Response("Not found", { status: 404 }),
     });
     return {
-      url: `http://${HOST}:${port}/mcp`,
+      url: `http://${LOOPBACK_HOST}:${port}/mcp`,
       [Symbol.asyncDispose]: () => httpServer.stop(true),
     };
   } catch (error) {
     throw new StartupError(
       dedent`
-        couldn't serve MCP on ${HOST}:${port}; pick another port with --mcp-port
+        couldn't serve MCP on ${LOOPBACK_HOST}:${port}; pick another port with --mcp-port
         ${error instanceof Error ? error.message : String(error)}
       `,
       { cause: error },
