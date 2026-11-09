@@ -69,7 +69,7 @@ test("sorts by series count, last update, and name", async () => {
   await pressSortKey(true, "Time Service Name ▼ Type Unit Series", BY_NAME.toReversed());
 });
 
-test("searches names, descriptions, and attributes", async () => {
+test("searches names, descriptions, attribute values, and key=value pairs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
@@ -84,16 +84,7 @@ test("searches names, descriptions, and attributes", async () => {
   await expectSearch("body", [BODY_SIZE_ROW]);
   await expectSearch("evaluation request counter", [FLAG_REQUESTS_ROW]);
   await expectSearch("failedReadinessProbe", [FLAG_REQUESTS_ROW]);
-});
-
-test("filters metrics by an attribute", async () => {
-  await using receiver = await startTestReceiver();
-  await using app = await renderMetricList(receiver);
-
-  await search(app, "feature_flag.key=cartFailure");
-
-  const frame = await app.waitForRows([FLAG_REQUESTS_ROW]);
-  expect(frame).toContain("1 of 6 metrics");
+  await expectSearch("feature_flag.key=cartFailure", [FLAG_REQUESTS_ROW]);
 });
 
 test("keeps an applied search while browsing", async () => {

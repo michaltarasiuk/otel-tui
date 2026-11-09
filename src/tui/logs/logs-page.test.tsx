@@ -138,7 +138,7 @@ test("wraps the severity filter around to show every log again", async () => {
   expect(pageHeader(frame)).toBe("7 logs");
 });
 
-test("searches bodies, attributes, services, and trace IDs", async () => {
+test("searches bodies, attribute keys, services, trace IDs, and key=value pairs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
@@ -154,16 +154,7 @@ test("searches bodies, attributes, services, and trace IDs", async () => {
   await expectSearch("user_currency", [ORDER_ROW]);
   await expectSearch("payment", [ERROR_ROW, WARN_ROW]);
   await expectSearch(checkoutTraceId.slice(0, 8), [ERROR_ROW, WARN_ROW, ORDER_ROW]);
-});
-
-test("filters logs by an attribute", async () => {
-  await using receiver = await startTestReceiver();
-  await using app = await renderLogList(receiver);
-
-  await search(app, "demo.user_context.loyalty_level=gold");
-
-  const frame = await app.waitForRows([WARN_ROW]);
-  expect(frame).toContain("1 of 7 logs");
+  await expectSearch("demo.user_context.loyalty_level=gold", [WARN_ROW]);
 });
 
 test("keeps an applied search while browsing", async () => {
