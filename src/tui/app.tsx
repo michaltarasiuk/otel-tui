@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
-import { FocusScope } from "./components/focus.tsx";
+import { FocusScope, KeysScope } from "./components/focus.tsx";
 import { AppKeys, Key, StepKeys } from "./components/key-hints.tsx";
 import { Screen } from "./components/screen.tsx";
 import { activeHelp, Help, type HelpEntry } from "./help.tsx";
@@ -46,27 +46,25 @@ export function App({ receiverUrls }: AppProps) {
   return (
     <AppKeys
       value={
-        help === undefined && (
-          <>
-            <StepKeys
-              forward="tab"
-              backwardDescription="previous region"
-              backward="shift+tab"
-              onStep={(step) => focusStep(step)}
-            >
-              next region
-            </StepKeys>
-            {!editing && (
-              <Key name="?" onPress={() => setHelp(activeHelp(keymap))}>
-                help
-              </Key>
-            )}
-          </>
-        )
+        <>
+          <StepKeys
+            forward="tab"
+            backwardDescription="previous region"
+            backward="shift+tab"
+            onStep={(step) => focusStep(step)}
+          >
+            next region
+          </StepKeys>
+          {!editing && (
+            <Key name="?" onPress={() => setHelp(activeHelp(keymap))}>
+              help
+            </Key>
+          )}
+        </>
       }
     >
       <Window>
-        <FocusScope focused={help === undefined}>
+        <KeysScope enabled={help === undefined}>
           <TopBar>
             <FocusScope focused={region === "tabs"} onFocusRequest={() => focus("tabs")}>
               <Tabs current={tab} onSelect={(tab) => selectTab(tab)} />
@@ -120,7 +118,7 @@ export function App({ receiverUrls }: AppProps) {
               />
             </Screen>
           </FocusScope>
-        </FocusScope>
+        </KeysScope>
         {help !== undefined && <Help entries={help} onClose={() => setHelp(undefined)} />}
       </Window>
     </AppKeys>

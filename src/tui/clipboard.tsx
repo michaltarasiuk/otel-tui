@@ -45,10 +45,11 @@ function useCopy() {
 interface CopyKeyProps {
   name: string;
   text: string;
+  description?: string;
   children?: string;
 }
 
-export function CopyKey({ name, text, children }: CopyKeyProps) {
+export function CopyKey({ name, text, description, children }: CopyKeyProps) {
   const [notice, copy] = useCopy();
 
   if (text === "") {
@@ -56,7 +57,7 @@ export function CopyKey({ name, text, children }: CopyKeyProps) {
   }
 
   return (
-    <Key name={name} onPress={() => copy(text)}>
+    <Key name={name} description={description} onPress={() => copy(text)}>
       {children === undefined ? undefined : (notice ?? children)}
     </Key>
   );

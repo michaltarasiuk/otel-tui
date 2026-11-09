@@ -4,7 +4,7 @@ import { createContext, use, useEffectEvent, useId } from "react";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
-import { FocusRoot, useFocused } from "./focus.tsx";
+import { FocusRoot, useFocused, useKeysEnabled } from "./focus.tsx";
 
 export const AppKeys = createContext<React.ReactNode>(null);
 
@@ -31,7 +31,8 @@ interface KeyProps {
 
 export function Key({ name, priority = 0, description, onPress, children }: KeyProps) {
   const desc = description ?? children;
-  const active = useFocused();
+  const focused = useFocused();
+  const active = focused && useKeysEnabled();
   const bound = onPress !== undefined;
 
   const command = useId();
@@ -55,7 +56,7 @@ export function Key({ name, priority = 0, description, onPress, children }: KeyP
     [active, bound, command, desc, name, priority],
   );
 
-  if (!active || children === undefined) {
+  if (!focused || children === undefined) {
     return null;
   }
 

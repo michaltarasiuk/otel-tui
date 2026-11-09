@@ -1,7 +1,7 @@
 import { MouseButton, type TabSelectOption, type TabSelectRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
 
-import { useFocused, useFocusRequest } from "./components/focus.tsx";
+import { useFocused, useFocusRequest, useKeysEnabled } from "./components/focus.tsx";
 import type { Tab } from "./pages.ts";
 import { THEME } from "./theme/theme.ts";
 
@@ -25,6 +25,7 @@ interface TabsProps {
 
 export function Tabs({ current, onSelect }: TabsProps) {
   const focused = useFocused();
+  const keysEnabled = useKeysEnabled();
   const requestFocus = useFocusRequest();
 
   const tabsRef = useRef<TabSelectRenderable>(null);
@@ -36,7 +37,7 @@ export function Tabs({ current, onSelect }: TabsProps) {
   return (
     <tab-select
       ref={tabsRef}
-      focused={focused}
+      focused={focused && keysEnabled}
       options={TABS}
       tabWidth={TAB_WIDTH}
       width={TABS.length * TAB_WIDTH}

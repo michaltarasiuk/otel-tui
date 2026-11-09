@@ -5,7 +5,7 @@ import { type SetStateAction, useEffectEvent, useRef, useState } from "react";
 import { THEME } from "#tui/theme/theme.ts";
 import { clamp } from "#utils/clamp.ts";
 
-import { useFocused, useFocusRequest } from "./focus.tsx";
+import { useFocused, useFocusRequest, useKeysEnabled } from "./focus.tsx";
 import { SelectedContext } from "./table.tsx";
 
 interface RowsProps<T> {
@@ -26,6 +26,7 @@ export function Rows<T>({
   children,
 }: RowsProps<T>) {
   const focused = useFocused();
+  const keysEnabled = useKeysEnabled();
   const requestFocus = useFocusRequest();
 
   const [visibleRowCount, setVisibleRowCount] = useState(0);
@@ -52,7 +53,7 @@ export function Rows<T>({
 
   useBindings(
     () => ({
-      enabled: focused,
+      enabled: focused && keysEnabled,
       commands: [
         { name: "rows.next", desc: "next row", run: () => moveBy(1) },
         { name: "rows.previous", desc: "previous row", run: () => moveBy(-1) },
@@ -72,12 +73,12 @@ export function Rows<T>({
         { key: "end", cmd: "rows.last" },
       ],
     }),
-    [focused],
+    [focused, keysEnabled],
   );
 
   useBindings(
     () => ({
-      enabled: focused && halfPageKeys,
+      enabled: focused && keysEnabled && halfPageKeys,
       commands: [
         { name: "rows.next-half-page", desc: "half page down", run: () => moveHalfPage(1) },
         { name: "rows.previous-half-page", desc: "half page up", run: () => moveHalfPage(-1) },
@@ -87,7 +88,7 @@ export function Rows<T>({
         { key: "ctrl+u", cmd: "rows.previous-half-page" },
       ],
     }),
-    [focused, halfPageKeys],
+    [focused, keysEnabled, halfPageKeys],
   );
 
   return (

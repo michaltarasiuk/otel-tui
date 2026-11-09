@@ -351,7 +351,6 @@ test("lists every key of the focused page in a help overlay", async () => {
   for (const line of ["/ search", "s status", "shift+o reverse", "shift+tab previous region"]) {
     expect(collapseWhitespace(frame)).toContain(line);
   }
-  expect(keyHints(frame)).not.toContain("/ search");
 
   app.mockInput.pressEscape();
   await app.waitForFrame(

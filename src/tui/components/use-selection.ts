@@ -24,5 +24,9 @@ export function useSelection<T>(
     });
   }
 
-  return [indexOf(selectedKey), select] as const;
+  function selectKey(key: string) {
+    setSelectedKey(key);
+  }
+
+  return [indexOf(selectedKey), select, selectKey] as const;
 }

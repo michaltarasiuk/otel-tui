@@ -465,12 +465,12 @@ test("copies the selected span's ID and the trace's ID", async () => {
   await using receiver = await startTestReceiver();
   const copied: string[] = [];
   await using app = await openTrace(receiver, CART_ROW, { copied });
-  await app.waitForFrame((frame) => keyHints(frame).includes("y copy span id"));
+  await app.waitForFrame((frame) => keyHints(frame).includes("y copy id"));
 
   app.mockInput.pressKey("y");
   await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
   app.mockInput.pressKey("y", { shift: true });
-  await app.waitForFrame((frame) => keyHints(frame).includes("shift+y copied"));
+  await app.waitForFrame(() => copied.length === 2);
 
   expect(copied).toEqual(["1a".repeat(8), cartTraceId]);
 });
@@ -485,5 +485,35 @@ test("colors the names of spans with errors", async () => {
   expect(spanColors(lineSpans(frame, "charge"), "charge").fg).toEqual(color(THEME.textError));
   expect(spanColors(lineSpans(frame, "orders process"), "orders process").fg).toEqual(
     color(THEME.text),
+  );
+});
+
+test("folds and unfolds the selected span's children", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CART_ROW);
+  await app.waitForFrame((frame) => spanRows(frame).length === 3);
+
+  app.mockInput.pressKey(" ");
+  let frame = await app.waitForFrame((frame) => spanRows(frame).length === 1);
+  expect(collapseWhitespace(spanRows(frame)[0] ?? "")).toBe("● frontend GET /api/cart +2 120.0ms");
+  expect(keyHints(frame)).toContain("space unfold");
+
+  app.mockInput.pressKey(" ");
+  frame = await app.waitForFrame((frame) => spanRows(frame).length === 3);
+  expect(keyHints(frame)).toContain("space fold");
+});
+
+test("dims the spans off the critical path", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForFrame((frame) => frame.includes("orders process"));
+
+  app.mockInput.pressKey("c");
+  await app.waitForFrame((frame) => keyHints(frame).includes("c all spans"));
+
+  const frame = await app.captureSpans();
+  expect(spanColors(lineSpans(frame, "charge"), "charge").fg).toEqual(color(THEME.textError));
+  expect(spanColors(lineSpans(frame, "orders process"), "orders process").fg).toEqual(
+    color(THEME.textMuted),
   );
 });

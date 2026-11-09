@@ -42,3 +42,18 @@ interface FocusRootProps {
 export function FocusRoot({ children }: FocusRootProps) {
   return <FocusContext value>{children}</FocusContext>;
 }
+
+const KeysContext = createContext(true);
+
+interface KeysScopeProps {
+  enabled: boolean;
+  children: React.ReactNode;
+}
+
+export function KeysScope({ enabled, children }: KeysScopeProps) {
+  return <KeysContext value={useKeysEnabled() && enabled}>{children}</KeysContext>;
+}
+
+export function useKeysEnabled() {
+  return use(KeysContext);
+}

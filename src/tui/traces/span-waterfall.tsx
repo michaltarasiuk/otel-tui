@@ -2,7 +2,7 @@ import type { SetStateAction } from "react";
 
 import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
-import { Cell, Column, Row, TableHeader } from "#tui/components/table.tsx";
+import { Cell, Column, Row, Secondary, TableHeader } from "#tui/components/table.tsx";
 import { COLUMN_SERVICE_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
@@ -25,6 +25,8 @@ interface SpanWaterfallProps {
   selectedIndex: number;
   onSelect: (action: SetStateAction<number>) => void;
   traceDurationMs: number;
+  hiddenCounts: ReadonlyMap<string, number>;
+  criticalPath: ReadonlySet<string> | undefined;
 }
 
 export function SpanWaterfall({
@@ -32,7 +34,16 @@ export function SpanWaterfall({
   selectedIndex,
   onSelect,
   traceDurationMs,
+  hiddenCounts,
+  criticalPath,
 }: SpanWaterfallProps) {
+  function nameColor(span: Span) {
+    if (criticalPath !== undefined && !criticalPath.has(span.span_id)) {
+      return THEME.textMuted;
+    }
+    return span.is_error ? THEME.textError : THEME.text;
+  }
+
   return (
     <>
       <TableHeader>
@@ -49,25 +60,30 @@ export function SpanWaterfall({
         selectedIndex={selectedIndex}
         onSelect={(action) => onSelect(action)}
       >
-        {(span) => (
-          <Row>
-            <Cell width={COLUMN_SERVICE_WIDTH} muted>
-              {span.service_name !== null && <ServiceName name={span.service_name} />}
-            </Cell>
-            <Cell grow={COLUMN_NAME_GROW} color={span.is_error ? THEME.textError : THEME.text}>
-              {indent(span.depth)}
-              {span.name}
-            </Cell>
-            <Cell width={COLUMN_DURATION_WIDTH} align="right">
-              {formatDuration(span.duration_ms)}
-            </Cell>
-            <WaterfallBar
-              grow={COLUMN_TIMELINE_GROW}
-              span={span}
-              traceDurationMs={traceDurationMs}
-            />
-          </Row>
-        )}
+        {(span) => {
+          const hidden = hiddenCounts.get(span.span_id);
+          return (
+            <Row>
+              <Cell width={COLUMN_SERVICE_WIDTH} muted>
+                {span.service_name !== null && <ServiceName name={span.service_name} />}
+              </Cell>
+              <Cell grow={COLUMN_NAME_GROW} color={nameColor(span)}>
+                {indent(span.depth)}
+                {span.name}
+                {hidden !== undefined && <Secondary> +{hidden}</Secondary>}
+              </Cell>
+              <Cell width={COLUMN_DURATION_WIDTH} align="right">
+                {formatDuration(span.duration_ms)}
+              </Cell>
+              <WaterfallBar
+                grow={COLUMN_TIMELINE_GROW}
+                span={span}
+                traceDurationMs={traceDurationMs}
+                dimmed={criticalPath !== undefined && !criticalPath.has(span.span_id)}
+              />
+            </Row>
+          );
+        }}
       </Rows>
     </>
   );

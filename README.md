@@ -32,7 +32,9 @@ and `ctrl+u` move half a page, and `/` searches trace IDs, span names, and
 services.
 
 `return` opens a trace as a span waterfall with each span's events,
-attributes, links, and resource. `e` there jumps to the next span with errors,
+attributes, links, and resource. `space` folds or unfolds the selected span's
+children, and `c` dims every span off the critical path, the chain of spans
+that sets how long the trace takes. `e` there jumps to the next span with errors,
 `l` opens the trace's logs, and `shift+l` only the selected span's. `tab`
 moves into the span's links, where `return` opens the linked trace, or selects
 the linked span when it is in the same trace.

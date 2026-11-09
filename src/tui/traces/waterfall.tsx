@@ -36,9 +36,10 @@ interface WaterfallBarProps {
   grow: number;
   span: Span;
   traceDurationMs: number;
+  dimmed: boolean;
 }
 
-export function WaterfallBar({ grow, span, traceDurationMs }: WaterfallBarProps) {
+export function WaterfallBar({ grow, span, traceDurationMs, dimmed }: WaterfallBarProps) {
   function toGrow(ms: number) {
     return traceDurationMs > 0 ? (ms / traceDurationMs) * TIMELINE_GROW_TOTAL : 0;
   }
@@ -50,7 +51,12 @@ export function WaterfallBar({ grow, span, traceDurationMs }: WaterfallBarProps)
   return (
     <box flexDirection="row" flexGrow={grow} flexBasis={0}>
       <box flexGrow={before} flexBasis={0} />
-      <box flexGrow={during} flexBasis={0} minWidth={1} backgroundColor={barColor(span)} />
+      <box
+        flexGrow={during}
+        flexBasis={0}
+        minWidth={1}
+        backgroundColor={dimmed ? THEME.backgroundSelected : barColor(span)}
+      />
       <box flexGrow={after} flexBasis={0} />
     </box>
   );

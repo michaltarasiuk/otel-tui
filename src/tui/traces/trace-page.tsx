@@ -1,5 +1,5 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
@@ -14,6 +14,7 @@ import { findNextIndex } from "#utils/find-next-index.ts";
 
 import { LinkList } from "./link-list.tsx";
 import { SpanDetails } from "./span-details.tsx";
+import { ancestorIds, criticalPath, descendantCount, visibleSpans } from "./span-tree.ts";
 import { SpanWaterfall } from "./span-waterfall.tsx";
 import type { Span, SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
@@ -45,9 +46,29 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
   const detailsRef = useRef<ScrollBoxRenderable>(null);
 
   const { data: spans = [] } = traceSpans;
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  const [showCriticalPath, setShowCriticalPath] = useState(false);
 
-  const [selectedIndex, select] = useSelection(spans, (span) => span.span_id, spanId);
-  const selected = spans[selectedIndex];
+  const shown = visibleSpans(spans, collapsed);
+  const [selectedIndex, select, selectKey] = useSelection(shown, (span) => span.span_id, spanId);
+  const selected = shown[selectedIndex];
+  const selectedChildren = descendantCount(spans, spans.indexOf(selected ?? spans[0]!));
+
+  const hiddenCounts = new Map(
+    spans.flatMap((span, index) =>
+      collapsed.has(span.span_id) ? [[span.span_id, descendantCount(spans, index)] as const] : [],
+    ),
+  );
+
+  function toggleCollapsed(spanId: string) {
+    setCollapsed((collapsed) => {
+      const next = new Set(collapsed);
+      if (!next.delete(spanId)) {
+        next.add(spanId);
+      }
+      return next;
+    });
+  }
 
   const [root] = spans;
   const durationMs = traceDuration(spans);
@@ -67,7 +88,9 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
 
   function openLink(link: SpanLink) {
     if (linkedSpanIndex !== -1) {
-      select(linkedSpanIndex);
+      const ancestors = new Set(ancestorIds(spans, link.span_id));
+      setCollapsed((collapsed) => new Set([...collapsed].filter((id) => !ancestors.has(id))));
+      selectKey(link.span_id);
       stepRegion(-1);
     } else {
       onOpenTrace(link.trace_id, link.span_id);
@@ -88,10 +111,12 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
           <Split>
             <FocusScope focused={region === "spans"} onFocusRequest={() => focusRegion("spans")}>
               <SpanWaterfall
-                spans={spans}
+                spans={shown}
                 selectedIndex={selectedIndex}
                 onSelect={(action) => select(action)}
                 traceDurationMs={durationMs}
+                hiddenCounts={hiddenCounts}
+                criticalPath={showCriticalPath ? criticalPath(spans) : undefined}
               />
             </FocusScope>
             <SpanDetails
@@ -122,30 +147,50 @@ export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: 
         </Key>
         <FocusScope focused={region === "spans"}>
           {selected !== undefined && (
-            <Key name="shift+l" onPress={() => onOpenLogs(selected.span_id)}>
-              span logs
-            </Key>
+            <Key
+              name="shift+l"
+              description="logs of the selected span"
+              onPress={() => onOpenLogs(selected.span_id)}
+            />
           )}
-          {spans.some((span) => span.is_error) && (
+          {shown.some((span) => span.is_error) && (
             <StepKeys
               forward="e"
               backward="shift+e"
               backwardDescription="previous error"
               onStep={(step) =>
-                select((index) => findNextIndex(spans, index, step, (span) => span.is_error))
+                select((index) => findNextIndex(shown, index, step, (span) => span.is_error))
               }
             >
               next error
             </StepKeys>
           )}
+          {selected !== undefined && selectedChildren > 0 && (
+            <Key
+              name="space"
+              description={
+                collapsed.has(selected.span_id)
+                  ? "expand the span's children"
+                  : "collapse the span's children"
+              }
+              onPress={() => toggleCollapsed(selected.span_id)}
+            >
+              {collapsed.has(selected.span_id) ? "unfold" : "fold"}
+            </Key>
+          )}
+          <Key
+            name="c"
+            description={showCriticalPath ? "show every span" : "highlight the critical path"}
+            onPress={() => setShowCriticalPath((show) => !show)}
+          >
+            {showCriticalPath ? "all spans" : "critical"}
+          </Key>
           {selected !== undefined && (
             <>
-              <CopyKey name="y" text={selected.span_id}>
-                copy span id
+              <CopyKey name="y" text={selected.span_id} description="copy the span's ID">
+                copy id
               </CopyKey>
-              <CopyKey name="shift+y" text={traceId}>
-                copy trace id
-              </CopyKey>
+              <CopyKey name="shift+y" text={traceId} description="copy the trace's ID" />
             </>
           )}
         </FocusScope>
