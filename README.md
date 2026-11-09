@@ -61,7 +61,7 @@ trace at its span; exemplars whose trace otel-tui never received are marked
 
 ### Logs
 
-![Logs view filtered to errors, with severity, service, and body columns and the selected log's body, resource, scope, and trace ID](docs/logs-view.png)
+![Logs view filtered to warnings and above, with a chart of logs over time above the severity, service, and body columns and the selected log's body, attributes, resource, and trace ID](docs/logs-view.png)
 
 The log table comes with a panel for the selected log's body, attributes,
 resource, and trace ID. `e` jumps to the next error, `return` opens the
