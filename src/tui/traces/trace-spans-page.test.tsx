@@ -1,10 +1,11 @@
-import { afterEach, expect, mock, spyOn, test } from "bun:test";
+import { expect, spyOn, test } from "bun:test";
 
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
 import spanDetails from "#telemetry/traces/sql/span-details.sql" with { type: "text" };
 import { renderPage } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
+import { silenceConsoleError } from "#testing/console.ts";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -35,10 +36,6 @@ import {
 import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
-
-afterEach(() => {
-  mock.restore();
-});
 
 function spanRows(frame: string) {
   const lines = frame.split("\n");
@@ -268,7 +265,7 @@ test("opens a trace whose spans have no kind", async () => {
 });
 
 test("loads a span's details again after they failed to load", async () => {
-  spyOn(console, "error").mockImplementation(() => {});
+  silenceConsoleError();
   await using receiver = await startTestReceiver();
   const connection = await receiver.connect();
   const runAndReadAll = connection.runAndReadAll.bind(connection);
@@ -316,7 +313,7 @@ test("goes back to the list with the opened trace still selected", async () => {
 });
 
 test("leaves the opened trace alone while the list's scroll gesture continues", async () => {
-  using clock = fakeClock(at(10_000));
+  const clock = fakeClock(at(10_000));
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
   const listLine = (await app.waitForFrame((frame) => frame.includes("Traces over time")))

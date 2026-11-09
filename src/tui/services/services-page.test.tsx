@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
+import { beforeEach, expect, test } from "bun:test";
 
 import { renderPage } from "#testing/app.tsx";
-import { at } from "#testing/clock.ts";
+import { at, fakeClock } from "#testing/clock.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { detailsLines, keyHints, onDetails, pageHeader, textLines } from "#testing/screen.ts";
 import { otlpTraces, PLACE_ORDER } from "#testing/traces.ts";
@@ -12,11 +12,7 @@ const FRAUD_ROW = "● fraud-detection 0.2/min 0.0% 40.0ms 40.0ms 40.0ms 1";
 const FRONTEND_ROW = "● frontend 0.2/min 0.0% 120.0ms 120.0ms 120.0ms 1";
 
 beforeEach(() => {
-  setSystemTime(at(60_000));
-});
-
-afterEach(() => {
-  setSystemTime();
+  fakeClock(at(60_000));
 });
 
 function serviceRows(frame: string) {

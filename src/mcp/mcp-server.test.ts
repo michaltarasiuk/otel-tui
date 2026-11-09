@@ -79,7 +79,7 @@ test("reads a span's attributes and resource", async () => {
 });
 
 test("lists services and their operations", async () => {
-  using _clock = fakeClock(at(60_000));
+  fakeClock(at(60_000));
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
   await using mcp = await startTestMcp(receiver);

@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
+import { beforeEach, expect, test } from "bun:test";
 
 import { renderPage, search } from "#testing/app.tsx";
-import { atSecond } from "#testing/clock.ts";
+import { atSecond, fakeClock } from "#testing/clock.ts";
 import {
   BODY_SIZE_ROW,
   BY_NAME,
@@ -17,11 +17,7 @@ import { startTestReceiver } from "#testing/receiver.ts";
 import { detailsLines, onList, pageHeader, tableRows, textLines } from "#testing/screen.ts";
 
 beforeEach(() => {
-  setSystemTime(atSecond(60));
-});
-
-afterEach(() => {
-  setSystemTime();
+  fakeClock(atSecond(60));
 });
 
 test("waits for metrics before any arrive", async () => {

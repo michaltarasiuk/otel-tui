@@ -1,4 +1,4 @@
-import { afterEach, expect, type Mock, mock, spyOn, test } from "bun:test";
+import { expect, type Mock, spyOn, test } from "bun:test";
 
 import { DuckDBConnection } from "@duckdb/node-api";
 import { type CapturedFrame, RGBA } from "@opentui/core";
@@ -44,10 +44,6 @@ function queriesRun(runAndReadAll: Mock<DuckDBConnection["runAndReadAll"]>) {
 }
 
 const WAITING_FOR_SERVICES = "Waiting for server or consumer spans...";
-
-afterEach(() => {
-  mock.restore();
-});
 
 async function openTracesTab(app: TestApp) {
   await app.waitForFrame((frame) => / services?$/.test(pageHeader(frame)));
@@ -132,7 +128,7 @@ test("keeps showing the current tab while the view has focus", async () => {
 });
 
 test("queries only the view on screen", async () => {
-  const runAndReadAll = spyOn(DuckDBConnection.prototype, "runAndReadAll");
+  using runAndReadAll = spyOn(DuckDBConnection.prototype, "runAndReadAll");
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
 

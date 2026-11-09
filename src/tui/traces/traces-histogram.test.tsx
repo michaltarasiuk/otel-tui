@@ -1,20 +1,15 @@
-import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
 import { renderPage, search } from "#testing/app.tsx";
-import { at } from "#testing/clock.ts";
+import { at, fakeClock } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { chartLines, pageHeader, tableRows } from "#testing/screen.ts";
 import { PLACE_ORDER } from "#testing/traces.ts";
 import { HISTOGRAM_COLUMN_WIDTH } from "#tui/histogram/time-histogram.tsx";
 import { THEME } from "#tui/theme/theme.ts";
-
-afterEach(() => {
-  setSystemTime();
-  mock.restore();
-});
 
 const LIVE_TIME_MS = 50_000;
 
@@ -88,7 +83,7 @@ async function renderHistogram(
   receiver: TestReceiver,
   { size, withOldTrace }: HistogramOptions = {},
 ) {
-  setSystemTime(at(LIVE_TIME_MS));
+  fakeClock(at(LIVE_TIME_MS));
   await receiver.sendHttp("/v1/traces", timelineTraces);
   if (withOldTrace === true) {
     await receiver.sendHttp("/v1/traces", oldTrace);

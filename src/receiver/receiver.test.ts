@@ -1,10 +1,12 @@
-import { afterEach, expect, jest, mock, spyOn, test } from "bun:test";
+import { expect, jest, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { z } from "zod";
 
+import { fakeTimers } from "#testing/clock.ts";
+import { silenceConsoleError } from "#testing/console.ts";
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { LOOPBACK_HOST } from "#utils/loopback.ts";
@@ -165,11 +167,6 @@ function pruneAndWaitFor(connection: DuckDBConnection, expected: Record<string, 
   );
 }
 
-afterEach(() => {
-  jest.useRealTimers();
-  mock.restore();
-});
-
 test("listens for OTLP/HTTP and OTLP/gRPC on the IPv4 loopback address", async () => {
   await using receiver = await startTestReceiver();
 
@@ -189,7 +186,7 @@ test("stores every signal where its connections can query it", async () => {
 });
 
 test("drops telemetry older than the retention period", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
 
@@ -202,7 +199,7 @@ test("drops telemetry older than the retention period", async () => {
 });
 
 test("drops logs by their observed time when they carry no time", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
 
@@ -222,7 +219,7 @@ test("drops logs by their observed time when they carry no time", async () => {
 });
 
 test("drops logs that carry neither a time nor an observed time", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
 
@@ -235,7 +232,7 @@ test("drops logs that carry neither a time nor an observed time", async () => {
 });
 
 test("releases the memory of pruned telemetry", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
   const expired = new Date(Date.now() - 2 * RETENTION_MS);
@@ -264,7 +261,7 @@ test("releases the memory of pruned telemetry", async () => {
 });
 
 test("accepts telemetry beyond its memory limit", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   await using receiver = await startTestReceiver({ memoryLimitBytes: MEMORY_LIMIT_BYTES });
   const connection = await receiver.connect();
 
@@ -277,7 +274,7 @@ test("accepts telemetry beyond its memory limit", async () => {
 });
 
 test("drops the oldest telemetry when it nears the memory limit", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   await using receiver = await startTestReceiver({ memoryLimitBytes: MEMORY_LIMIT_BYTES });
   const connection = await receiver.connect();
 
@@ -297,7 +294,7 @@ test("drops the oldest telemetry when it nears the memory limit", async () => {
 });
 
 test("spills to a temporary directory only while it needs one", async () => {
-  jest.useFakeTimers();
+  fakeTimers();
   const receiver = await startTestReceiver({ memoryLimitBytes: MEMORY_LIMIT_BYTES });
   const directory = await spillDirectory(await receiver.connect());
 
@@ -314,8 +311,8 @@ test("spills to a temporary directory only while it needs one", async () => {
 });
 
 test("reports a failed prune and keeps running", async () => {
-  jest.useFakeTimers();
-  const consoleError = spyOn(console, "error").mockImplementation(() => {});
+  fakeTimers();
+  const consoleError = silenceConsoleError();
   await using receiver = await startTestReceiver({ retentionMs: RETENTION_MS });
   const connection = await receiver.connect();
 

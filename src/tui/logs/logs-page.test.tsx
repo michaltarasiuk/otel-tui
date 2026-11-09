@@ -383,7 +383,7 @@ test("scrolls the log panel down and back up", async () => {
 });
 
 test("scrolls the log panel only once the list's scroll gesture pauses", async () => {
-  using clock = fakeClock(at(10_000));
+  const clock = fakeClock(at(10_000));
   await using receiver = await startTestReceiver();
   const body = [
     "java.lang.OutOfMemoryError: Java heap space",
@@ -449,7 +449,7 @@ test("colors each severity", async () => {
 });
 
 test("charts the logs over time and narrows the list to a column", async () => {
-  using _clock = fakeClock(at(50_000));
+  fakeClock(at(50_000));
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
   let frame = await app.waitForFrame((frame) => frame.includes("Logs over time"));

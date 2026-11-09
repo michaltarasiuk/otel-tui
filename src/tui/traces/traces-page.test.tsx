@@ -1,4 +1,4 @@
-import { afterEach, expect, mock, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import { renderPage, search, type TestApp } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
@@ -27,10 +27,6 @@ import {
   statusTraceId,
 } from "#testing/traces.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
-
-afterEach(() => {
-  mock.restore();
-});
 
 test("waits for traces before any arrive", async () => {
   await using receiver = await startTestReceiver();

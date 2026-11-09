@@ -1,4 +1,4 @@
-import { setSystemTime } from "bun:test";
+import { jest, onTestFinished, setSystemTime } from "bun:test";
 
 import { SECOND_MS } from "#utils/time-units.ts";
 
@@ -15,14 +15,17 @@ export function atSecond(seconds: number) {
 export function fakeClock(start: Date) {
   let now = start;
   setSystemTime(now);
+  onTestFinished(() => setSystemTime());
 
   return {
     advance(ms: number) {
       now = new Date(now.getTime() + ms);
       setSystemTime(now);
     },
-    [Symbol.dispose]() {
-      setSystemTime();
-    },
   };
+}
+
+export function fakeTimers() {
+  jest.useFakeTimers();
+  onTestFinished(() => jest.useRealTimers());
 }

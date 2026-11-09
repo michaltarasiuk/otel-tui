@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
+import { beforeEach, expect, test } from "bun:test";
 
 import { renderPage, selectRow } from "#testing/app.tsx";
-import { atSecond } from "#testing/clock.ts";
+import { atSecond, fakeClock } from "#testing/clock.ts";
 import {
   BODY_SIZE_ROW,
   BY_NAME,
@@ -27,11 +27,7 @@ import {
 import { otlpTraces } from "#testing/traces.ts";
 
 beforeEach(() => {
-  setSystemTime(atSecond(60));
-});
-
-afterEach(() => {
-  setSystemTime();
+  fakeClock(atSecond(60));
 });
 
 test("opens a counter's series with their rates and totals", async () => {
