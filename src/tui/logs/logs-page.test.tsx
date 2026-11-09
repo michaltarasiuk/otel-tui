@@ -22,6 +22,7 @@ import {
   detailsLines,
   keyHints,
   lineSpans,
+  listLines,
   onDetails,
   onList,
   pageHeader,
@@ -261,7 +262,7 @@ test("opens the selected log's trace in the traces view and goes back to the log
 
   app.mockInput.pressEnter();
   let frame = await app.waitForFrame((frame) => frame.includes("1 span"));
-  expect(textLines(frame).slice(1, 3)).toEqual([
+  expect(listLines(frame).slice(0, 2)).toEqual([
     `${PLACE_ORDER} ${checkoutTraceId}`,
     "● checkout 12:00:00.000 1 span 2.50s",
   ]);

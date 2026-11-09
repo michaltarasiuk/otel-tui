@@ -6,6 +6,7 @@ import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 const DETAILS_BORDER = "─";
 const SCROLLBAR = /[▀-▟]/g;
 const TABLE_ROW = /^\d{2}:\d{2}:\d{2}\.\d{3} /;
+const CHART_TITLE = /^\w+ over time /;
 
 export const CHART_DOTS = /[⠁-⣿]/;
 export const selectedBackground = RGBA.fromHex(THEME.backgroundSelected);
@@ -17,8 +18,26 @@ export function textLines(frame: string) {
     .filter((line) => line !== "");
 }
 
+export function tabBar(frame: string) {
+  return textLines(frame)[0] ?? "";
+}
+
 export function pageHeader(frame: string) {
   return textLines(frame)[1] ?? "";
+}
+
+export function chartLines(frame: string) {
+  const lines = textLines(frame);
+  const title = lines.findIndex((line) => CHART_TITLE.test(line));
+  const firstRow = lines.findIndex((line) => TABLE_ROW.test(line));
+  const columnHeader = firstRow - 1;
+  return title === -1 || firstRow === -1 ? [] : lines.slice(title, columnHeader);
+}
+
+export function listLines(frame: string) {
+  const lines = textLines(frame);
+  const border = lines.findIndex((line) => line.startsWith(DETAILS_BORDER));
+  return border === -1 ? [] : lines.slice(1, border);
 }
 
 export function tableRows(frame: string) {

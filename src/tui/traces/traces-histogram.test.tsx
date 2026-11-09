@@ -6,7 +6,7 @@ import { renderPage, search } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
-import { pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import { chartLines, pageHeader, tableRows } from "#testing/screen.ts";
 import { PLACE_ORDER } from "#testing/traces.ts";
 import { HISTOGRAM_COLUMN_WIDTH } from "#tui/histogram/time-histogram.tsx";
 import { THEME } from "#tui/theme/theme.ts";
@@ -106,7 +106,7 @@ async function showsOnly(app: HistogramApp, row: string, range: string, totalCou
 }
 
 function axisLine(frame: string) {
-  return textLines(frame)[7];
+  return chartLines(frame).at(-1);
 }
 
 async function barSpans(app: HistogramApp) {
@@ -122,8 +122,8 @@ test("draws a histogram of traces over time above the list", async () => {
 
   const frame = await app.waitForFrame((frame) => frame.includes("12:00"));
 
-  expect(textLines(frame).slice(1, 8)).toEqual([
-    "3 traces",
+  expect(pageHeader(frame)).toBe("3 traces");
+  expect(chartLines(frame)).toEqual([
     "Traces over time ■ errors 10s per column",
     ...Array.from({ length: 4 }, () => `${bar} ${bar} ${bar}`),
     MINUTE_TICKS,
@@ -146,17 +146,20 @@ test("narrows the histogram with the search and the errors filter", async () => 
 
   await search(app, "cart");
   let frame = await app.waitForFrame((frame) => !frame.includes("■ errors"));
-  expect(textLines(frame).slice(2, 4)).toEqual(["Traces over time 10s per column", bar]);
+  expect(chartLines(frame)).toEqual([
+    "Traces over time 10s per column",
+    ...Array.from({ length: 4 }, () => bar),
+    MINUTE_TICKS,
+  ]);
 
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => frame.includes("■ errors"));
   app.mockInput.pressKey("s");
   frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
-  expect(textLines(frame).slice(2, 6)).toEqual([
+  expect(chartLines(frame)).toEqual([
     "Traces over time ■ errors 10s per column",
-    bar,
-    bar,
-    bar,
+    ...Array.from({ length: 4 }, () => bar),
+    MINUTE_TICKS,
   ]);
 });
 

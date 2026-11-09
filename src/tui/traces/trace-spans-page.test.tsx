@@ -12,6 +12,7 @@ import {
   detailsLines,
   keyHints,
   lineSpans,
+  listLines,
   pageHeader,
   spanColors,
   tableRows,
@@ -75,7 +76,7 @@ test("opens a trace as a span waterfall", async () => {
 
   const frame = await app.waitForFrame((frame) => spanRows(frame).length === 3);
 
-  expect(textLines(frame).slice(1, 4)).toEqual([
+  expect(listLines(frame).slice(0, 3)).toEqual([
     `${PLACE_ORDER} ${checkoutTraceId}`,
     "● checkout 12:00:01.000 3 spans 2 errors 500.0ms",
     "Service Name Duration 0 500.0ms",

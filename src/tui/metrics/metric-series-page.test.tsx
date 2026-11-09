@@ -16,7 +16,14 @@ import {
 } from "#testing/metrics.ts";
 import { metricsRequest, TEMPORALITY } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { CHART_DOTS, detailsLines, keyHints, tableRows, textLines } from "#testing/screen.ts";
+import {
+  CHART_DOTS,
+  detailsLines,
+  keyHints,
+  listLines,
+  tableRows,
+  textLines,
+} from "#testing/screen.ts";
 import { otlpTraces } from "#testing/traces.ts";
 
 beforeEach(() => {
@@ -35,7 +42,7 @@ test("opens a counter's series with their rates and totals", async () => {
     (frame) => CHART_DOTS.test(frame) && textLines(frame).includes("failedReadinessProbe 2/s 50"),
   );
 
-  expect(textLines(frame).slice(1, 7)).toEqual([
+  expect(listLines(frame)).toEqual([
     "feature_flag.evaluation_requests_total counter",
     "● cart unit {request} cumulative 2 series",
     "feature flag evaluation request counter",
@@ -78,7 +85,12 @@ test("adds up a delta counter's points", async () => {
 
   const frame = await app.waitForFrame((frame) => textLines(frame).includes("none 0.5/s 12"));
 
-  expect(textLines(frame).slice(3, 5)).toEqual(["Attributes Rate Total", "none 0.5/s 12"]);
+  expect(listLines(frame)).toEqual([
+    "demo.shipping.items_shipped counter",
+    "● shipping delta 1 series",
+    "Attributes Rate Total",
+    "none 0.5/s 12",
+  ]);
 });
 
 test("shows the last, lowest, and highest value of gauges and updowncounters", async () => {
@@ -88,7 +100,9 @@ test("shows the last, lowest, and highest value of gauges and updowncounters", a
   let frame = await app.waitForFrame((frame) =>
     textLines(frame).includes("none 1.5 MiB 1.0 MiB 2.0 MiB"),
   );
-  expect(textLines(frame).slice(3, 5)).toEqual([
+  expect(listLines(frame)).toEqual([
+    "v8js.memory.heap.used gauge",
+    "● frontend unit By 1 series",
     "Attributes Last Min Max",
     "none 1.5 MiB 1.0 MiB 2.0 MiB",
   ]);
@@ -113,7 +127,9 @@ test("shows a histogram's percentiles, buckets, and exemplars", async () => {
       textLines(frame).includes("none 10 42.0ms 125.0ms 145.0ms 150.0ms"),
   );
 
-  expect(textLines(frame).slice(3, 5)).toEqual([
+  expect(listLines(frame)).toEqual([
+    "http.server.request.duration histogram",
+    "● cart unit s delta 1 series",
     "Attributes Count p50 p95 p99 Max",
     "none 10 42.0ms 125.0ms 145.0ms 150.0ms",
   ]);

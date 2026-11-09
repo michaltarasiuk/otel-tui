@@ -12,6 +12,7 @@ import {
   pageHeader,
   selectedBackground,
   spanColors,
+  tabBar,
   tableRows,
   textLines,
 } from "#testing/screen.ts";
@@ -192,7 +193,7 @@ test("pauses and resumes live updates", async () => {
 
   app.mockInput.pressKey("p");
   const frame = await app.waitForFrame((frame) => keyHints(frame).includes("p resume"));
-  expect(textLines(frame)[0]).toContain("paused · ");
+  expect(tabBar(frame)).toContain("paused · ");
 
   await receiver.sendHttp(
     "/v1/traces",
