@@ -69,7 +69,7 @@ WITH series AS (
       OR description ILIKE $pattern ESCAPE '\'
       OR bool_or(metric_attributes ILIKE $pattern ESCAPE '\')
     )
-    AND bool_or(matches_attributes($attributes, metric_attributes, resource_attributes))
+    AND bool_or(matches_filters($attributes, NULL::JSON, metric_attributes, resource_attributes))
 )
 SELECT *
 FROM metrics

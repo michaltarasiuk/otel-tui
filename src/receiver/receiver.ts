@@ -7,7 +7,7 @@ import { z } from "zod";
 import { SECOND_MS } from "#utils/time-units.ts";
 
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
-import attributeFilters from "./attribute-filters.sql" with { type: "text" };
+import searchFilters from "./search-filters.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("http"), listen_url: z.url() }),
@@ -117,7 +117,7 @@ export async function startReceiver({
   try {
     await loadOtlpExtension(connection);
     await connection.run(attributeEntries);
-    await connection.run(attributeFilters);
+    await connection.run(searchFilters);
     urls = await serveOtlp(connection, { host, httpPort, grpcPort });
   } catch (error) {
     connection.closeSync();

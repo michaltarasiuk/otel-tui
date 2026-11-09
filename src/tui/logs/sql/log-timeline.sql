@@ -6,7 +6,7 @@ WITH logs AS (
   WHERE coalesce(severity_number, 0) >= $minSeverityNumber
     AND ($traceId IS NULL OR trace_id = $traceId)
     AND ($spanId IS NULL OR span_id = $spanId)
-    AND matches_attributes($attributes, log_attributes, resource_attributes)
+    AND matches_filters($attributes, NULL::JSON, log_attributes, resource_attributes)
     AND (
       body ILIKE $pattern ESCAPE '\'
       OR event_name ILIKE $pattern ESCAPE '\'
