@@ -11,10 +11,10 @@ import { formatRate } from "#utils/format-rate.ts";
 
 import type { Service, ServiceSort } from "./service.ts";
 
-const COLUMN_SPANS_WIDTH = 9;
-const COLUMN_RATE_WIDTH = 10 + COLUMN_SORT_ARROW_WIDTH;
-const COLUMN_ERRORS_WIDTH = 8 + COLUMN_SORT_ARROW_WIDTH;
-const COLUMN_DURATION_WIDTH = 9 + COLUMN_SORT_ARROW_WIDTH;
+export const COLUMN_SPANS_WIDTH = 9;
+export const COLUMN_RATE_WIDTH = 10 + COLUMN_SORT_ARROW_WIDTH;
+export const COLUMN_ERRORS_WIDTH = 8 + COLUMN_SORT_ARROW_WIDTH;
+export const COLUMN_DURATION_WIDTH = 9 + COLUMN_SORT_ARROW_WIDTH;
 
 interface ServiceTableProps {
   services: Service[];
