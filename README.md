@@ -66,7 +66,9 @@ The log table comes with a panel for the selected log's body, attributes,
 resource, and trace ID. `e` jumps to the next error, `return` opens the
 selected log's trace (`escape` there comes back to the log), `t` shows only
 the logs in that trace, `s` raises the minimum severity, and `/` searches
-bodies, attributes, services, and trace IDs. A severity histogram is planned.
+bodies, attributes, services, and trace IDs. A histogram above the table
+charts the logs over time with the errors in red, and `←` or `→` narrows the
+table to a column, as on Traces.
 
 ### Everywhere
 

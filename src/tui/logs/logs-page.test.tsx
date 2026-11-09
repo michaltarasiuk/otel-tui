@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { expect, setSystemTime, test } from "bun:test";
 
 import { type AppOptions, renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
@@ -498,8 +498,10 @@ test("scrolls the log panel down and back up", async () => {
     logsRequest({ service: "ad", logs: [{ time: at(0), body }] }),
   );
   await using app = await renderPage(receiver, "logs");
-  await app.waitForFrame((frame) =>
-    detailsLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
+  await app.waitForFrame(
+    (frame) =>
+      frame.includes("Logs over time") &&
+      detailsLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
   );
 
   app.mockInput.pressKey("d", { ctrl: true });
@@ -547,4 +549,23 @@ test("colors each severity", async () => {
     color(THEME.textWarning),
   );
   expect(spanColors(lineSpans(frame, "[PlaceOrder]"), "INFO").fg).toEqual(color(THEME.text));
+});
+
+test("charts the logs over time and narrows the list to a column", async () => {
+  setSystemTime(at(50_000));
+  try {
+    await using receiver = await startTestReceiver();
+    await using app = await renderLogList(receiver);
+    let frame = await app.waitForFrame((frame) => frame.includes("Logs over time"));
+    expect(textLines(frame)).toContain("Logs over time ■ errors 10s per column");
+
+    app.mockInput.pressArrow("right");
+    frame = await app.waitForFrame((frame) => pageHeader(frame).startsWith("12:00:00–12:00:10"));
+    expect(pageHeader(frame)).toBe("12:00:00–12:00:10 7 logs");
+
+    app.mockInput.pressEscape();
+    await app.waitForFrame((frame) => pageHeader(frame) === "7 logs");
+  } finally {
+    setSystemTime();
+  }
 });

@@ -1,4 +1,4 @@
-import type { ScrollBoxRenderable } from "@opentui/core";
+import type { BoxRenderable, ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
 import { CopyKey } from "#tui/clipboard.tsx";
@@ -11,13 +11,16 @@ import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { Split } from "#tui/components/split.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
+import { type HistogramRange, stepSelection } from "#tui/histogram/bars.ts";
+import { timeRangeLabel } from "#tui/histogram/time-columns.ts";
+import { HISTOGRAM_HEIGHT, TimeHistogram } from "#tui/histogram/time-histogram.tsx";
 import { PauseKey } from "#tui/pause.tsx";
 import { findNextIndex } from "#utils/find-next-index.ts";
 import { formatShownCount } from "#utils/format-shown-count.ts";
 import { stepItem } from "#utils/step-item.ts";
 
 import { LogDetails } from "./log-details.tsx";
-import { useLogList, useLogTotalCount } from "./log-queries.ts";
+import { useLogList, useLogTimeline, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
 import type { Log } from "./log.ts";
 import { isErrorLevel, severityColor } from "./severity.ts";
@@ -26,6 +29,14 @@ const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as
 type MinSeverity = (typeof MIN_SEVERITIES)[number];
 
 const SHORT_ID_LENGTH = 8;
+
+const PAGE_HEADER_HEIGHT = 1;
+const MIN_TABLE_AND_DETAILS_HEIGHT = 12;
+const KEY_HINTS_HEIGHT = 1;
+const MIN_HEIGHT_FOR_HISTOGRAM =
+  PAGE_HEADER_HEIGHT + HISTOGRAM_HEIGHT + MIN_TABLE_AND_DETAILS_HEIGHT + KEY_HINTS_HEIGHT;
+
+const NO_BUCKETS: HistogramRange[] = [];
 
 function isError(log: Log) {
   return isErrorLevel(log.severity);
@@ -42,9 +53,16 @@ interface LogsPageProps {
 export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }: LogsPageProps) {
   const search = useSearch();
   const [minSeverity, setMinSeverity] = useState<MinSeverity>();
+  const [timeRange, setTimeRange] = useState<HistogramRange>();
+  const [height, setHeight] = useState(0);
+  const pageRef = useRef<BoxRenderable>(null);
   const detailsRef = useRef<ScrollBoxRenderable>(null);
 
-  const logList = useLogList({ search: search.text, minSeverity, traceId, spanId });
+  const filter = { search: search.text, minSeverity, traceId, spanId };
+  const logList = useLogList({ ...filter, timeRange });
+  const logTimeline = useLogTimeline(filter);
+  const { data: timeline } = logTimeline;
+  const occupied = timeline?.occupied ?? NO_BUCKETS;
   const logTotalCount = useLogTotalCount();
 
   const { data: logs = [] } = logList;
@@ -54,14 +72,18 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   const selected = logs[selectedIndex];
   const selectedTraceId = selected?.trace_id ?? null;
 
-  const filtered = search.text !== "" || minSeverity !== undefined || traceId !== undefined;
+  const filtered =
+    search.text !== "" ||
+    minSeverity !== undefined ||
+    traceId !== undefined ||
+    timeRange !== undefined;
   const browsing = !search.isEditing;
 
   const isPending = logList.isPending || logTotalCount.isPending;
   const failed = logList.isError || logTotalCount.isError;
 
   return (
-    <box flexGrow={1}>
+    <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
       <PageHeader>
         <SearchInput search={search} placeholder="body, service, trace ID or key=value" />
         {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_ID_LENGTH)}</Chip>}
@@ -69,8 +91,17 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
         {minSeverity !== undefined && (
           <Chip color={severityColor(minSeverity)}>≥ {minSeverity}</Chip>
         )}
+        {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
         <Count>{formatShownCount(logs.length, totalCount, "log")}</Count>
       </PageHeader>
+      {timeline !== undefined && height >= MIN_HEIGHT_FOR_HISTOGRAM && (
+        <TimeHistogram
+          title="Logs over time"
+          occupied={timeline.occupied}
+          newestBucketMs={timeline.newestBucketMs}
+          selected={timeRange}
+        />
+      )}
       {failed ? (
         <Placeholder text="Failed to load logs" variant="error" />
       ) : isPending || selected === undefined ? (
@@ -127,16 +158,35 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
         </FocusScope>
         <SearchKeys search={search} />
         <FocusScope focused={browsing}>
-          {search.text === "" && onBack !== undefined && (
+          {search.text === "" && timeRange !== undefined && (
+            <Key name="escape" onPress={() => setTimeRange(undefined)}>
+              any time
+            </Key>
+          )}
+          {occupied.length > 0 && (
+            <StepKeys
+              forward="right"
+              backward="left"
+              description="later range"
+              backwardDescription="earlier range"
+              onStep={(step) => setTimeRange((range) => stepSelection(occupied, range, step))}
+            >
+              range
+            </StepKeys>
+          )}
+          {search.text === "" && timeRange === undefined && onBack !== undefined && (
             <Key name="escape" onPress={() => onBack()}>
               back
             </Key>
           )}
-          {search.text === "" && onBack === undefined && traceId !== undefined && (
-            <Key name="escape" onPress={() => onTraceChange(undefined)}>
-              all logs
-            </Key>
-          )}
+          {search.text === "" &&
+            timeRange === undefined &&
+            onBack === undefined &&
+            traceId !== undefined && (
+              <Key name="escape" onPress={() => onTraceChange(undefined)}>
+                all logs
+              </Key>
+            )}
           <StepKeys
             forward="s"
             backwardDescription="lower severity"

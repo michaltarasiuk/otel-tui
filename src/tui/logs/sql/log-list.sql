@@ -4,6 +4,8 @@ WITH recent_logs AS (
   WHERE coalesce(severity_number, 0) >= $minSeverityNumber
     AND ($traceId IS NULL OR trace_id = $traceId)
     AND ($spanId IS NULL OR span_id = $spanId)
+    AND ($minTimeMs IS NULL OR epoch_ms(coalesce(time_unix_nano, observed_time_unix_nano)) >= $minTimeMs)
+    AND ($maxTimeMs IS NULL OR epoch_ms(coalesce(time_unix_nano, observed_time_unix_nano)) < $maxTimeMs)
     AND matches_attributes($attributes, log_attributes, resource_attributes)
     AND (
       body ILIKE $pattern ESCAPE '\'
