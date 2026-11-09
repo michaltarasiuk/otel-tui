@@ -48,7 +48,10 @@ export async function renderApp(
   );
 
   function waitForRows(rows: string[]) {
-    return screen.waitForFrame((frame) => Bun.deepEquals(tableRows(frame), rows));
+    return screen.waitForFrame(
+      (frame) => Bun.deepEquals(tableRows(frame), rows),
+      `table rows ${JSON.stringify(rows, null, 2)}`,
+    );
   }
 
   return {

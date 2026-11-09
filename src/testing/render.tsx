@@ -69,12 +69,11 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     );
   }
 
-  function waitForFrame(predicate: (frame: string) => boolean) {
-    return waitUntil(
-      () => setup.captureCharFrame(),
-      predicate,
-      `a frame matching ${describePredicate(predicate)}`,
-    );
+  function waitForFrame(
+    predicate: (frame: string) => boolean,
+    expected = `a frame matching ${describePredicate(predicate)}`,
+  ) {
+    return waitUntil(() => setup.captureCharFrame(), predicate, expected);
   }
 
   async function waitForSelection(text: string, { line }: SelectionOptions = {}) {
