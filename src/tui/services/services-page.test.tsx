@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
 import { renderPage } from "#testing/app.tsx";
+import { at } from "#testing/clock.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { detailsLines, keyHints, pageHeader, textLines } from "#testing/screen.ts";
-import { at, otlpTraces, PLACE_ORDER } from "#testing/traces.ts";
+import { otlpTraces, PLACE_ORDER } from "#testing/traces.ts";
 
 const CART_ROW = "● cart 0.2/min 0.0% 80.0ms 80.0ms 80.0ms 1";
 const CHECKOUT_ROW = "● checkout 0.2/min 100.0% 450.0ms 450.0ms 450.0ms 1";

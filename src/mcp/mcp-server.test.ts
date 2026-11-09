@@ -1,10 +1,10 @@
 import { afterEach, expect, setSystemTime, test } from "bun:test";
 
+import { at } from "#testing/clock.ts";
 import { startTestMcp } from "#testing/mcp.ts";
 import { logsRequest, metricsRequest, SEVERITY_NUMBER, TEMPORALITY } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
-  at,
   cartTraceId,
   CHARGE_FAILED,
   checkoutTraceId,

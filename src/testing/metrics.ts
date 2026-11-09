@@ -1,15 +1,10 @@
 import { renderPage, selectRow } from "./app.tsx";
+import { atSecond } from "./clock.ts";
 import { metricsRequest, TEMPORALITY } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
 import { tableRows } from "./screen.ts";
 
-const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
-
 export const DETAILS_SIZE = { width: 120, height: 45 };
-
-export function atSecond(seconds: number) {
-  return new Date(baseTime + seconds * 1000);
-}
 
 export function flagRequests(flag: string, values: number[]) {
   return values.map((value, index) => ({

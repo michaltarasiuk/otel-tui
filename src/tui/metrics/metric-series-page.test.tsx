@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, setSystemTime, test } from "bun:test";
 
 import { renderPage } from "#testing/app.tsx";
+import { atSecond } from "#testing/clock.ts";
 import {
-  atSecond,
   BODY_SIZE_ROW,
   BY_NAME,
   DETAILS_SIZE,

@@ -3,10 +3,11 @@ import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 import { RGBA } from "@opentui/core";
 
 import { renderPage } from "#testing/app.tsx";
+import { at } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import { pageHeader, tableRows, textLines } from "#testing/screen.ts";
-import { at, PLACE_ORDER } from "#testing/traces.ts";
+import { PLACE_ORDER } from "#testing/traces.ts";
 import { HISTOGRAM_COLUMN_WIDTH } from "#tui/histogram/time-histogram.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 

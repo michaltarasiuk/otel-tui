@@ -4,6 +4,7 @@ import { type CapturedFrame, RGBA } from "@opentui/core";
 
 import spanDetails from "#telemetry/traces/sql/span-details.sql" with { type: "text" };
 import { renderPage } from "#testing/app.tsx";
+import { at } from "#testing/clock.ts";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -17,7 +18,6 @@ import {
   textLines,
 } from "#testing/screen.ts";
 import {
-  at,
   CART_ROW,
   cartTraceId,
   CHARGE_DECLINED,

@@ -1,9 +1,8 @@
 import { type AppOptions, renderPage, selectRow } from "./app.tsx";
+import { at } from "./clock.ts";
 import { SPAN_KIND, STATUS_CODE, tracesRequest } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
 import { tableRows } from "./screen.ts";
-
-const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
 
 export const cartTraceId = "1".repeat(32);
 export const checkoutTraceId = "2".repeat(32);
@@ -22,10 +21,6 @@ export const CHECKOUT_ROW = `12:00:01.000 ● checkout ${PLACE_ORDER} 3 2 500.0m
 export const STATUS_ROW = "12:00:02.000 ● image-provider GET /status 1 1.0ms";
 
 export const NEWEST_FIRST = [STATUS_ROW, CHECKOUT_ROW, CART_ROW];
-
-export function at(ms: number) {
-  return new Date(baseTime + ms);
-}
 
 export const otlpTraces = tracesRequest(
   {

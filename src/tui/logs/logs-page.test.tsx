@@ -1,6 +1,7 @@
 import { expect, setSystemTime, test } from "bun:test";
 
 import { type AppOptions, renderPage } from "#testing/app.tsx";
+import { at } from "#testing/clock.ts";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import {
@@ -16,17 +17,11 @@ import {
 import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
-const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
-
 const checkoutTraceId = "2".repeat(32);
 const placeOrderSpanId = "2a".repeat(8);
 const chargeSpanId = "2b".repeat(8);
 
 const PLACE_ORDER = "oteldemo.CheckoutService/PlaceOrder";
-
-function at(ms: number) {
-  return new Date(baseTime + ms);
-}
 
 const otlpLogs = logsRequest(
   {

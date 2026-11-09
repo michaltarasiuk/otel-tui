@@ -1,6 +1,7 @@
 import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 
 import { renderPage, type TestApp } from "#testing/app.tsx";
+import { at } from "#testing/clock.ts";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -14,7 +15,6 @@ import {
   textLines,
 } from "#testing/screen.ts";
 import {
-  at,
   CART_ROW,
   CHECKOUT_ROW,
   NEWEST_FIRST,
