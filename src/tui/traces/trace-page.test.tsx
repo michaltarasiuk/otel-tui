@@ -2,6 +2,7 @@ import { afterEach, expect, mock, setSystemTime, spyOn, test } from "bun:test";
 
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
+import spanDetails from "#telemetry/traces/sql/span-details.sql" with { type: "text" };
 import { renderPage } from "#testing/app.tsx";
 import { logsRequest, SEVERITY_NUMBER, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
@@ -19,7 +20,6 @@ import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
-import spanDetails from "./sql/span-details.sql" with { type: "text" };
 import {
   at,
   CART_ROW,

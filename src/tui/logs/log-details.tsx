@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { TextAttributes } from "@opentui/core";
 
+import type { Log } from "#telemetry/logs/log.ts";
 import { DetailsHeader, Id, Meta, Fact, ScopeName } from "#tui/components/details.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
@@ -10,8 +11,7 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatJson } from "#utils/format-json.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 
-import type { Log } from "./log.ts";
-import { severityColor } from "./severity.ts";
+import { severityColor } from "./severity-color.ts";
 
 interface SeverityLabelProps {
   severity: Log["severity"];

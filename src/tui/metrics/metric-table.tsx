@@ -1,5 +1,6 @@
 import type { SetStateAction } from "react";
 
+import { type Metric, type MetricSort, typeLabel } from "#telemetry/metrics/metric.ts";
 import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#tui/components/table.tsx";
@@ -9,8 +10,6 @@ import {
   COLUMN_TIME_WIDTH,
 } from "#tui/theme/columns.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
-
-import { type Metric, type MetricSort, typeLabel } from "./metric.ts";
 
 const COLUMN_TYPE_WIDTH = 13;
 const COLUMN_UNIT_WIDTH = 10;

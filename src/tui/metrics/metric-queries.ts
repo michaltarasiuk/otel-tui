@@ -1,60 +1,24 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { keepPreviousData, queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { z } from "zod";
 
+import type { Metric } from "#telemetry/metrics/metric.ts";
+import {
+  countMetrics,
+  listMetrics,
+  type MetricQuery,
+  readMetricSeries,
+  readSeriesExemplars,
+  readSeriesPoints,
+} from "#telemetry/metrics/read-metrics.ts";
 import { useConnection } from "#tui/query/connection.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
-import { searchParams } from "#tui/query/search.ts";
-
-import { Metric, type MetricSort } from "./metric.ts";
-import {
-  Exemplar,
-  ExponentialHistogramPoint,
-  ExponentialHistogramSeries,
-  HistogramPoint,
-  HistogramSeries,
-  NumberPoint,
-  NumberSeries,
-} from "./series.ts";
-import exponentialHistogramPoints from "./sql/exponential-histogram-points.sql" with { type: "text" };
-import exponentialHistogramSeries from "./sql/exponential-histogram-series.sql" with { type: "text" };
-import histogramPoints from "./sql/histogram-points.sql" with { type: "text" };
-import histogramSeries from "./sql/histogram-series.sql" with { type: "text" };
-import metricCount from "./sql/metric-count.sql" with { type: "text" };
-import metricList from "./sql/metric-list.sql" with { type: "text" };
-import numberPoints from "./sql/number-points.sql" with { type: "text" };
-import numberSeries from "./sql/number-series.sql" with { type: "text" };
-import seriesExemplars from "./sql/series-exemplars.sql" with { type: "text" };
-
-function metricIdentity(metric: Metric) {
-  return {
-    name: metric.name,
-    unit: metric.unit,
-    serviceName: metric.service_name,
-    temporality: metric.temporality,
-  };
-}
-
-interface MetricQuery {
-  search: string;
-  sort: MetricSort;
-}
 
 export function useMetricList({ search, sort }: MetricQuery) {
   const connection = useConnection();
 
   return useQuery({
     queryKey: ["metrics", { search, sort }],
-    queryFn: async () => {
-      const reader = await connection.runAndReadAll(metricList, {
-        limit: 500,
-        ...searchParams(search),
-        sortBy: sort.column,
-        direction: sort.descending ? -1 : 1,
-      });
-      const rows = reader.getRowObjectsJS();
-      return Metric.array().parse(rows);
-    },
+    queryFn: () => listMetrics(connection, { search, sort }),
     refetchInterval: POLL_INTERVAL_MS,
     placeholderData: keepPreviousData,
   });
@@ -65,10 +29,7 @@ export function useMetricTotalCount() {
 
   return useQuery({
     queryKey: ["metrics", "count"],
-    queryFn: async () => {
-      const reader = await connection.runAndReadAll(metricCount);
-      return z.number().parse(reader.value(0, 0));
-    },
+    queryFn: () => countMetrics(connection),
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
@@ -76,31 +37,7 @@ export function useMetricTotalCount() {
 function metricSeriesQuery(connection: DuckDBConnection, metric: Metric) {
   return queryOptions({
     queryKey: ["metrics", metric.metric_id, "series"],
-    queryFn: async () => {
-      const identity = metricIdentity(metric);
-      switch (metric.type) {
-        case "gauge":
-        case "counter":
-        case "updowncounter": {
-          const reader = await connection.runAndReadAll(numberSeries, {
-            ...identity,
-            type: metric.type,
-          });
-          return NumberSeries.array().parse(reader.getRowObjectsJS());
-        }
-        case "histogram": {
-          const reader = await connection.runAndReadAll(histogramSeries, identity);
-          return HistogramSeries.array().parse(reader.getRowObjectsJS());
-        }
-        case "exponential_histogram": {
-          const reader = await connection.runAndReadAll(exponentialHistogramSeries, identity);
-          return ExponentialHistogramSeries.array().parse(reader.getRowObjectsJS());
-        }
-        default:
-          metric.type satisfies never;
-          throw new Error(`Unknown metric type: ${metric.type}`);
-      }
-    },
+    queryFn: () => readMetricSeries(connection, metric),
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
@@ -118,40 +55,7 @@ export function useSeriesPoints(metric: Metric, seriesId: string) {
 
   return useSuspenseQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "points"],
-    queryFn: async () => {
-      const identity = { ...metricIdentity(metric), seriesId };
-      switch (metric.type) {
-        case "gauge":
-        case "counter":
-        case "updowncounter": {
-          const reader = await connection.runAndReadAll(numberPoints, {
-            ...identity,
-            type: metric.type,
-          });
-          return {
-            kind: "number" as const,
-            points: NumberPoint.array().parse(reader.getRowObjectsJS()),
-          };
-        }
-        case "histogram": {
-          const reader = await connection.runAndReadAll(histogramPoints, identity);
-          return {
-            kind: "distribution" as const,
-            points: HistogramPoint.array().parse(reader.getRowObjectsJS()),
-          };
-        }
-        case "exponential_histogram": {
-          const reader = await connection.runAndReadAll(exponentialHistogramPoints, identity);
-          return {
-            kind: "distribution" as const,
-            points: ExponentialHistogramPoint.array().parse(reader.getRowObjectsJS()),
-          };
-        }
-        default:
-          metric.type satisfies never;
-          throw new Error(`Unknown metric type: ${metric.type}`);
-      }
-    },
+    queryFn: () => readSeriesPoints(connection, metric, seriesId),
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
@@ -161,15 +65,8 @@ export function useSeriesExemplars(metric: Metric, seriesId: string | undefined)
 
   return useQuery({
     queryKey: ["metrics", metric.metric_id, "series", seriesId, "exemplars"],
-    queryFn: async () => {
-      const reader = await connection.runAndReadAll(seriesExemplars, {
-        ...metricIdentity(metric),
-        type: metric.type,
-        seriesId: seriesId ?? null,
-        limit: 10,
-      });
-      return Exemplar.array().parse(reader.getRowObjectsJS());
-    },
+    queryFn: () =>
+      seriesId === undefined ? [] : readSeriesExemplars(connection, metric, seriesId),
     enabled: seriesId !== undefined,
     refetchInterval: POLL_INTERVAL_MS,
   });

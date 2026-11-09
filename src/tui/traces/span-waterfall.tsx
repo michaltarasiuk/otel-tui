@@ -1,5 +1,6 @@
 import type { SetStateAction } from "react";
 
+import type { Span } from "#telemetry/traces/span.ts";
 import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#tui/components/table.tsx";
@@ -7,7 +8,6 @@ import { COLUMN_SERVICE_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 
-import type { Span } from "./span.ts";
 import { Scale, WaterfallBar } from "./waterfall.tsx";
 
 const COLUMN_NAME_GROW = 2;

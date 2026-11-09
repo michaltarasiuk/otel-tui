@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { Metric } from "./metrics/metric.ts";
+import type { Metric } from "#telemetry/metrics/metric.ts";
 
 export type Tab = "services" | "traces" | "metrics" | "logs";
 

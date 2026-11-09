@@ -1,8 +1,7 @@
+import { type Metric, temporalityLabel, typeLabel } from "#telemetry/metrics/metric.ts";
 import { Description, DetailsHeader, Id, Meta, Fact, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { formatCount } from "#utils/format-count.ts";
-
-import { type Metric, temporalityLabel, typeLabel } from "./metric.ts";
 
 interface MetricHeaderProps {
   metric: Metric;

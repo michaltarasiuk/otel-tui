@@ -1,6 +1,12 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import {
+  METRIC_SORT_COLUMNS,
+  type Metric,
+  type MetricSort,
+  type MetricSortColumn,
+} from "#telemetry/metrics/metric.ts";
 import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints } from "#tui/components/key-hints.tsx";
@@ -18,12 +24,6 @@ import { stepItem } from "#utils/step-item.ts";
 import { MetricDetails } from "./metric-details.tsx";
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
-import {
-  METRIC_SORT_COLUMNS,
-  type Metric,
-  type MetricSort,
-  type MetricSortColumn,
-} from "./metric.ts";
 
 const BY_NAME: MetricSort = {
   column: "name",

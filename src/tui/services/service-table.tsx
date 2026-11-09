@@ -1,5 +1,6 @@
 import type { SetStateAction } from "react";
 
+import type { Service, ServiceSort } from "#telemetry/services/service.ts";
 import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#tui/components/table.tsx";
@@ -8,8 +9,6 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 import { formatPercent } from "#utils/format-percent.ts";
 import { formatRate } from "#utils/format-rate.ts";
-
-import type { Service, ServiceSort } from "./service.ts";
 
 export const COLUMN_SPANS_WIDTH = 9;
 export const COLUMN_RATE_WIDTH = 10 + COLUMN_SORT_ARROW_WIDTH;

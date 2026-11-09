@@ -1,4 +1,4 @@
-import type { Attributes } from "#tui/query/attributes.ts";
+import type { Attributes } from "#telemetry/attributes.ts";
 import { compareText } from "#utils/compare-text.ts";
 
 export function attributeValues(attributeSets: Attributes[]) {

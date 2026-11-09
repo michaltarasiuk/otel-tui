@@ -1,5 +1,6 @@
 import type { SetStateAction } from "react";
 
+import type { Trace, TraceSort } from "#telemetry/traces/trace.ts";
 import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#tui/components/table.tsx";
@@ -11,8 +12,6 @@ import {
 import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
-
-import type { Trace, TraceSort } from "./trace.ts";
 
 const COLUMN_SPANS_WIDTH = 5 + COLUMN_SORT_ARROW_WIDTH;
 const COLUMN_ERRORS_WIDTH = 6 + COLUMN_SORT_ARROW_WIDTH;

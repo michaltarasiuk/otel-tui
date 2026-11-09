@@ -1,10 +1,14 @@
 import { expect, test } from "bun:test";
 
+import {
+  type Distribution,
+  explicitBuckets,
+  exponentialBuckets,
+} from "#telemetry/metrics/distribution.ts";
 import { render } from "#testing/render.tsx";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
 import { BucketBars } from "./bucket-bars.tsx";
-import { type Distribution, explicitBuckets, exponentialBuckets } from "./distribution.ts";
 
 const BAR_COLUMNS = 20;
 const LABEL_AND_COUNT_COLUMNS = 24;

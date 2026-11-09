@@ -1,6 +1,8 @@
 import { RGBA } from "@opentui/core";
 import { Suspense } from "react";
 
+import { isDelta, type Metric } from "#telemetry/metrics/metric.ts";
+import type { NumberPoint, Series, SeriesPoints } from "#telemetry/metrics/series.ts";
 import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
@@ -13,9 +15,7 @@ import { counterIntervals, distributionIntervals } from "./intervals.ts";
 import { LineChart } from "./line-chart.tsx";
 import { useSeriesPoints } from "./metric-queries.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
-import { isDelta, type Metric } from "./metric.ts";
 import { PERCENTILES } from "./series-stats.ts";
-import type { NumberPoint, Series, SeriesPoints } from "./series.ts";
 
 const CHART_HEIGHT = 8;
 const CHART_TIME_AXIS_HEIGHT = 1;

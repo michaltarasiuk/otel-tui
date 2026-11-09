@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Metric, MetricType } from "./metric.ts";
+import type { Metric, MetricType } from "#telemetry/metrics/metric.ts";
+import { HistogramSeries, NumberSeries } from "#telemetry/metrics/series.ts";
+
 import { seriesStats, statKeys, statLabel } from "./series-stats.ts";
-import { HistogramSeries, NumberSeries } from "./series.ts";
 
 const seriesIdentity = {
   series_id: "1",

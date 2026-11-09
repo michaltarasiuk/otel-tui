@@ -3,17 +3,17 @@ import { afterEach, expect, type Mock, mock, spyOn, test } from "bun:test";
 import { DuckDBConnection } from "@duckdb/node-api";
 import { type CapturedFrame, RGBA } from "@opentui/core";
 
+import logList from "#telemetry/logs/sql/log-list.sql" with { type: "text" };
+import metricList from "#telemetry/metrics/sql/metric-list.sql" with { type: "text" };
+import serviceList from "#telemetry/services/sql/service-list.sql" with { type: "text" };
+import traceList from "#telemetry/traces/sql/trace-list.sql" with { type: "text" };
 import { renderApp, type TestApp } from "#testing/app.tsx";
 import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import { keyHints, pageHeader, selectedBackground } from "#testing/screen.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
-import logList from "./logs/sql/log-list.sql" with { type: "text" };
-import metricList from "./metrics/sql/metric-list.sql" with { type: "text" };
-import serviceList from "./services/sql/service-list.sql" with { type: "text" };
 import { THEME } from "./theme/theme.ts";
-import traceList from "./traces/sql/trace-list.sql" with { type: "text" };
 
 const TAB_NAMES = ["Services", "Traces", "Metrics", "Logs"];
 

@@ -1,19 +1,19 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { Suspense } from "react";
 
+import type { Attributes } from "#telemetry/attributes.ts";
+import type { Metric } from "#telemetry/metrics/metric.ts";
+import type { Series } from "#telemetry/metrics/series.ts";
 import { Description, ScopeName } from "#tui/components/details.tsx";
 import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
-import type { Attributes } from "#tui/query/attributes.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
 import { MetricHeader } from "./metric-header.tsx";
 import { useSuspenseMetricSeries } from "./metric-queries.ts";
-import type { Metric } from "./metric.ts";
 import { attributeValues } from "./series-attributes.ts";
-import type { Series } from "./series.ts";
 
 const MAX_LISTED_VALUES = 3;
 

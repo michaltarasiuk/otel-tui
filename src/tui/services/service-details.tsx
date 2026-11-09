@@ -1,7 +1,6 @@
+import type { Service } from "#telemetry/services/service.ts";
 import { DetailsHeader, Id, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
-
-import type { Service } from "./service.ts";
 
 interface ServiceDetailsProps {
   service: Service;

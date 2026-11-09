@@ -1,12 +1,12 @@
 import type { SetStateAction } from "react";
 
+import type { Metric } from "#telemetry/metrics/metric.ts";
+import type { Series } from "#telemetry/metrics/series.ts";
 import { Rows } from "#tui/components/rows.tsx";
 import { Cell, Column, Row, TableHeader } from "#tui/components/table.tsx";
 
-import type { Metric } from "./metric.ts";
 import { type AttributeColumn, cellValue } from "./series-columns.ts";
 import { seriesStats, statKeys, statLabel } from "./series-stats.ts";
-import type { Series } from "./series.ts";
 
 const COLUMN_STAT_WIDTH = 10;
 

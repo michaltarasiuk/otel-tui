@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { Attributes } from "#tui/query/attributes.ts";
-import { Timestamp } from "#tui/query/timestamp.ts";
+import { Attributes } from "#telemetry/attributes.ts";
+import { Timestamp } from "#telemetry/timestamp.ts";
 
 const SPAN_KINDS = ["unspecified", "internal", "server", "client", "producer", "consumer"] as const;
 

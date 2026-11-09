@@ -1,6 +1,8 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import type { Metric } from "#telemetry/metrics/metric.ts";
+import type { Exemplar } from "#telemetry/metrics/series.ts";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Placeholder } from "#tui/components/placeholder.tsx";
@@ -15,11 +17,9 @@ import { MINUTE_MS } from "#utils/time-units.ts";
 import { ExemplarList } from "./exemplar-list.tsx";
 import { MetricHeader } from "./metric-header.tsx";
 import { useMetricSeries, useSeriesExemplars } from "./metric-queries.ts";
-import type { Metric } from "./metric.ts";
 import { attributeColumns, seriesLabel, sortByColumns } from "./series-columns.ts";
 import { SeriesDetails } from "./series-details.tsx";
 import { SeriesTable } from "./series-table.tsx";
-import type { Exemplar } from "./series.ts";
 
 const REGION_KEYS_PRIORITY = 1;
 

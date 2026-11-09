@@ -1,11 +1,9 @@
 import { expect, test } from "bun:test";
 
+import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "#telemetry/time-buckets.ts";
+import traceTimeline from "#telemetry/traces/sql/trace-timeline.sql" with { type: "text" };
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import type { HistogramColumn } from "#tui/histogram/bars.ts";
-import { bucketStart, TIME_BUCKET_MS, TimeBucket } from "#tui/histogram/time-columns.ts";
-
-import traceTimeline from "./sql/trace-timeline.sql" with { type: "text" };
 
 const MIDDLE_OF_BUCKET_MS = TIME_BUCKET_MS / 2;
 const newestBucketMs = bucketStart(Date.now());
@@ -43,7 +41,7 @@ async function loadTimeline(agesMs: number[]) {
   return TimeBucket.array().parse(reader.getRowObjectsJS());
 }
 
-function totalCount(columns: HistogramColumn[]) {
+function totalCount(columns: TimeBucket[]) {
   return columns.reduce((total, column) => total + column.count, 0);
 }
 

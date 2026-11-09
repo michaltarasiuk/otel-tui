@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import { TIME_BUCKET_MS } from "#telemetry/time-buckets.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
 
@@ -11,7 +10,6 @@ const LABEL_WIDTHS = {
   second: "00:00:00".length,
 };
 
-export const TIME_BUCKET_MS = 10 * SECOND_MS;
 export const TIME_SCALE_LABEL = `${TIME_BUCKET_MS / SECOND_MS}s per column`;
 
 const TICK_INTERVALS_MS = [
@@ -33,26 +31,6 @@ const TICK_INTERVALS_MS = [
   12 * HOUR_MS,
   DAY_MS,
 ];
-
-export const TimeBucket = z
-  .object({
-    bucket_start_ms: z.number(),
-    count: z.number(),
-    error_count: z.number(),
-  })
-  .transform(
-    (row) =>
-      ({
-        from: row.bucket_start_ms,
-        to: row.bucket_start_ms + TIME_BUCKET_MS,
-        count: row.count,
-        errorCount: row.error_count,
-      }) satisfies HistogramColumn,
-  );
-
-export function bucketStart(timeMs: number) {
-  return Math.floor(timeMs / TIME_BUCKET_MS) * TIME_BUCKET_MS;
-}
 
 function clockPrecision(intervalMs: number) {
   return intervalMs < MINUTE_MS ? "second" : "minute";

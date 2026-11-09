@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { SERVICE_WINDOW_MS } from "#telemetry/services/read-services.ts";
+import { SERVICE_SORT_COLUMNS, type ServiceSort } from "#telemetry/services/service.ts";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#tui/components/page-header.tsx";
@@ -15,9 +17,8 @@ import { stepItem } from "#utils/step-item.ts";
 
 import { OperationTable } from "./operation-table.tsx";
 import { ServiceDetails } from "./service-details.tsx";
-import { SERVICE_WINDOW_MS, useServiceList, useServiceOperations } from "./service-queries.ts";
+import { useServiceList, useServiceOperations } from "./service-queries.ts";
 import { ServiceTable } from "./service-table.tsx";
-import { SERVICE_SORT_COLUMNS, type ServiceSort } from "./service.ts";
 
 const REGION_KEYS_PRIORITY = 1;
 

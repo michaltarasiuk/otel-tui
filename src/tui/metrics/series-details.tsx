@@ -1,5 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 
+import type { Metric } from "#telemetry/metrics/metric.ts";
+import type { Series } from "#telemetry/metrics/series.ts";
 import { DetailsHeader, Id, Meta, ScopeName, Stat, Title } from "#tui/components/details.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
@@ -8,10 +10,8 @@ import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 
 import { BucketBars } from "./bucket-bars.tsx";
-import type { Metric } from "./metric.ts";
 import { SeriesChart } from "./series-chart.tsx";
 import { seriesStats, statKeys } from "./series-stats.ts";
-import type { Series } from "./series.ts";
 
 interface SeriesDetailsProps {
   ref: React.Ref<ScrollBoxRenderable>;

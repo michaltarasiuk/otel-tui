@@ -1,6 +1,13 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import {
+  ancestorIds,
+  criticalPath,
+  descendantCount,
+  visibleSpans,
+} from "#telemetry/traces/span-tree.ts";
+import type { Span, SpanLink } from "#telemetry/traces/span.ts";
 import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
@@ -14,9 +21,7 @@ import { findNextIndex } from "#utils/find-next-index.ts";
 
 import { LinkList } from "./link-list.tsx";
 import { SpanDetails } from "./span-details.tsx";
-import { ancestorIds, criticalPath, descendantCount, visibleSpans } from "./span-tree.ts";
 import { SpanWaterfall } from "./span-waterfall.tsx";
-import type { Span, SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
 import { useSpanContent, useTraceSpans } from "./trace-queries.ts";
 

@@ -1,8 +1,9 @@
-import { quantile } from "./distribution.ts";
+import { quantile } from "#telemetry/metrics/distribution.ts";
+import { isDelta, type Metric, type MetricType } from "#telemetry/metrics/metric.ts";
+import type { Series } from "#telemetry/metrics/series.ts";
+
 import { counterIntervals, perSecond } from "./intervals.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
-import { isDelta, type Metric, type MetricType } from "./metric.ts";
-import type { Series } from "./series.ts";
 
 type StatKey = "rate" | "total" | "last" | "min" | "max" | "count" | "p50" | "p95" | "p99";
 

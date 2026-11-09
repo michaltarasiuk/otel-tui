@@ -6,6 +6,7 @@
   "type": "module",
   "imports": {
     "#receiver/*": "./src/receiver/*",
+    "#telemetry/*": "./src/telemetry/*",
     "#testing/*": "./src/testing/*",
     "#tui/*": "./src/tui/*",
     "#utils/*": "./src/utils/*"

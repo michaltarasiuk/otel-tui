@@ -1,11 +1,10 @@
 import { MouseButton } from "@opentui/core";
 
+import type { SpanLink } from "#telemetry/traces/span.ts";
 import { useFocusRequest } from "#tui/components/focus.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { Cell, Row, SelectedContext } from "#tui/components/table.tsx";
-
-import type { SpanLink } from "./span.ts";
 
 const NESTED_INDENT = 2;
 

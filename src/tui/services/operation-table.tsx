@@ -1,5 +1,6 @@
 import type { SetStateAction } from "react";
 
+import type { Operation } from "#telemetry/services/service.ts";
 import { Description } from "#tui/components/details.tsx";
 import { Rows } from "#tui/components/rows.tsx";
 import { SPLIT_PADDING_X } from "#tui/components/split.tsx";
@@ -15,7 +16,6 @@ import {
   COLUMN_RATE_WIDTH,
   COLUMN_SPANS_WIDTH,
 } from "./service-table.tsx";
-import type { Operation } from "./service.ts";
 
 interface OperationTableProps {
   operations: Operation[];

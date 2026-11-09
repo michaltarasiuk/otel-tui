@@ -1,11 +1,10 @@
+import type { Span } from "#telemetry/traces/span.ts";
 import { DetailsHeader, Id, Meta, Fact, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatCount } from "#utils/format-count.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
-
-import type { Span } from "./span.ts";
 
 interface TraceHeaderProps {
   traceId: string;

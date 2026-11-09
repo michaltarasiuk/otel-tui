@@ -1,6 +1,7 @@
 import type { BoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import { TRACE_SORT_COLUMNS, type Trace, type TraceSort } from "#telemetry/traces/trace.ts";
 import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
@@ -21,7 +22,6 @@ import { stepItem } from "#utils/step-item.ts";
 
 import { useTraceList, useTraceTimeline, useTraceTotalCount } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
-import { TRACE_SORT_COLUMNS, type Trace, type TraceSort } from "./trace.ts";
 
 const PAGE_HEADER_HEIGHT = 1;
 const MIN_TABLE_HEIGHT = 6;

@@ -1,5 +1,6 @@
 import type { SetStateAction } from "react";
 
+import type { Log } from "#telemetry/logs/log.ts";
 import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#tui/components/table.tsx";
@@ -7,8 +8,7 @@ import { COLUMN_SERVICE_WIDTH, COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 
-import type { Log } from "./log.ts";
-import { severityColor } from "./severity.ts";
+import { severityColor } from "./severity-color.ts";
 
 const COLUMN_SEVERITY_WIDTH = 8;
 

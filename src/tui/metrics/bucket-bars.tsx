@@ -1,10 +1,15 @@
 import type { BoxRenderable, ColorInput } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import {
+  type Bucket,
+  bucketsOf,
+  limitBuckets,
+  type Distribution,
+} from "#telemetry/metrics/distribution.ts";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
-import { type Bucket, bucketsOf, limitBuckets, type Distribution } from "./distribution.ts";
 import { formatMetricValue } from "./metric-value.ts";
 
 const COLUMN_LABEL_WIDTH = 11;

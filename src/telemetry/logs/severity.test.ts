@@ -1,8 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { THEME } from "#tui/theme/theme.ts";
-
-import { isErrorLevel, lowestSeverityNumber, severityColor, severityLevel } from "./severity.ts";
+import { isErrorLevel, lowestSeverityNumber, severityLevel } from "./severity.ts";
 
 test.each([
   [1, "TRACE"],
@@ -36,12 +34,4 @@ test("counts ERROR and FATAL as errors", () => {
   expect(isErrorLevel("FATAL")).toBe(true);
   expect(isErrorLevel("WARN")).toBe(false);
   expect(isErrorLevel(null)).toBe(false);
-});
-
-test("colors severities by how urgent they are", () => {
-  expect(severityColor("DEBUG")).toBe(THEME.textMuted);
-  expect(severityColor("INFO")).toBe(THEME.text);
-  expect(severityColor("WARN")).toBe(THEME.textWarning);
-  expect(severityColor("FATAL")).toBe(THEME.textError);
-  expect(severityColor(null)).toBe(THEME.textMuted);
 });

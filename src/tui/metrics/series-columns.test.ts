@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
+import type { Series } from "#telemetry/metrics/series.ts";
+
 import {
   type AttributeColumn,
   attributeColumns,
@@ -7,7 +9,6 @@ import {
   seriesLabel,
   sortByColumns,
 } from "./series-columns.ts";
-import type { Series } from "./series.ts";
 
 function toAttributes(values: Record<string, string>) {
   return Object.entries(values).map(([key, value]) => ({ key, value }));

@@ -1,4 +1,4 @@
-import type { Attributes } from "#tui/query/attributes.ts";
+import type { Attributes } from "#telemetry/attributes.ts";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 

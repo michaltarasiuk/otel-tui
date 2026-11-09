@@ -1,5 +1,6 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 
+import type { Span, SpanContent } from "#telemetry/traces/span.ts";
 import {
   Description,
   DetailsHeader,
@@ -16,8 +17,6 @@ import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
-
-import type { Span, SpanContent } from "./span.ts";
 
 const NESTED_INDENT = 2;
 

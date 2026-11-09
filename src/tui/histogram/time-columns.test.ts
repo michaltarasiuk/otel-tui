@@ -1,12 +1,11 @@
 import { expect, test } from "bun:test";
 
+import { TIME_BUCKET_MS } from "#telemetry/time-buckets.ts";
+
 import type { HistogramColumn } from "./bars.ts";
 import {
-  bucketStart,
   hiddenColumns,
-  TIME_BUCKET_MS,
   TIME_SCALE_LABEL,
-  TimeBucket,
   timeAxis,
   timeColumns,
   timeRangeLabel,
@@ -32,23 +31,6 @@ function emptyColumns(startMs: number, count: number) {
 test("buckets the timeline in fixed slices and says so", () => {
   expect(TIME_BUCKET_MS).toBe(10_000);
   expect(TIME_SCALE_LABEL).toBe("10s per column");
-});
-
-test("starts a bucket at the last multiple of its width", () => {
-  expect(bucketStart(noon)).toBe(noon);
-  expect(bucketStart(noon + 9_999)).toBe(noon);
-  expect(bucketStart(noon + 10_000)).toBe(noon + 10_000);
-});
-
-test("reads a bucket row as a column one bucket wide", () => {
-  const row = { bucket_start_ms: noon, count: 2, error_count: 1 };
-
-  expect(TimeBucket.parse(row)).toEqual({
-    from: noon,
-    to: noon + TIME_BUCKET_MS,
-    count: 2,
-    errorCount: 1,
-  });
 });
 
 test("ends the columns at the newest bucket and fills the gaps", () => {

@@ -1,5 +1,6 @@
 import { MouseButton } from "@opentui/core";
 
+import type { Exemplar } from "#telemetry/metrics/series.ts";
 import { Description } from "#tui/components/details.tsx";
 import { useFocusRequest } from "#tui/components/focus.tsx";
 import { Section } from "#tui/components/section.tsx";
@@ -9,7 +10,6 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 
 import { formatMetricValue } from "./metric-value.ts";
-import type { Exemplar } from "./series.ts";
 
 const COLUMN_VALUE_WIDTH = 10;
 

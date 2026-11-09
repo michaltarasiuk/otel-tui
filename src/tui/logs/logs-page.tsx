@@ -1,6 +1,8 @@
 import type { BoxRenderable, ScrollBoxRenderable } from "@opentui/core";
 import { useRef, useState } from "react";
 
+import type { Log } from "#telemetry/logs/log.ts";
+import { isErrorLevel } from "#telemetry/logs/severity.ts";
 import { CopyKey } from "#tui/clipboard.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
@@ -22,8 +24,7 @@ import { stepItem } from "#utils/step-item.ts";
 import { LogDetails } from "./log-details.tsx";
 import { useLogList, useLogTimeline, useLogTotalCount } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
-import type { Log } from "./log.ts";
-import { isErrorLevel, severityColor } from "./severity.ts";
+import { severityColor } from "./severity-color.ts";
 
 const MIN_SEVERITIES = [undefined, "DEBUG", "INFO", "WARN", "ERROR", "FATAL"] as const;
 type MinSeverity = (typeof MIN_SEVERITIES)[number];
