@@ -1,7 +1,12 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api";
+import {
+  DuckDBConnection,
+  DuckDBInstance,
+  type DuckDBResultReader,
+  type DuckDBValue,
+} from "@duckdb/node-api";
 import dedent from "dedent";
 import { z } from "zod";
 
@@ -29,11 +34,6 @@ export const PRUNE_INTERVAL_MS = 5 * SECOND_MS;
 const TRIM_WHEN_MEMORY_ABOVE = 0.8;
 const TRIM_MEMORY_DOWN_TO = 0.6;
 
-export interface ReceiverUrls {
-  http: string;
-  grpc: string;
-}
-
 function firstLine(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return message.split("\n")[0];
@@ -60,11 +60,8 @@ interface ServeOptions {
   grpcPort: number;
 }
 
-async function serveOtlp(
-  connection: DuckDBConnection,
-  { host, httpPort, grpcPort }: ServeOptions,
-): Promise<ReceiverUrls> {
-  let reader;
+async function serveOtlp(connection: DuckDBConnection, { host, httpPort, grpcPort }: ServeOptions) {
+  let reader: DuckDBResultReader;
   try {
     reader = await connection.runAndReadAll(
       `SELECT transport, listen_url FROM otlp_serve(
@@ -92,7 +89,7 @@ async function serveOtlp(
     );
   }
   const [http, grpc] = OtlpServeRows.parse(reader.getRowObjectsJS());
-  return { http: http.listen_url, grpc: grpc.listen_url };
+  return { httpUrl: http.listen_url, grpcUrl: grpc.listen_url };
 }
 
 interface ReceiverOptions {
@@ -116,11 +113,12 @@ export async function startReceiver({
   });
   const connection = await instance.connect();
 
-  let urls: ReceiverUrls;
+  let httpUrl: string;
+  let grpcUrl: string;
   try {
     await loadOtlpExtension(connection);
     await installMacros(connection);
-    urls = await serveOtlp(connection, { host, httpPort, grpcPort });
+    ({ httpUrl, grpcUrl } = await serveOtlp(connection, { host, httpPort, grpcPort }));
   } catch (error) {
     connection.closeSync();
     instance.closeSync();
@@ -239,7 +237,7 @@ export async function startReceiver({
     instance.closeSync();
   }
 
-  return { urls, connect, clear, [Symbol.asyncDispose]: close };
+  return { httpUrl, grpcUrl, connect, clear, [Symbol.asyncDispose]: close };
 }
 
 export type Receiver = Awaited<ReturnType<typeof startReceiver>>;

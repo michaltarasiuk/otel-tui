@@ -13,7 +13,7 @@ test("shows where the receiver listens beside the tabs", async () => {
 
   expect(frame.split("\n")[0]).toMatch(
     new RegExp(
-      `^ Services +Traces +Metrics +Logs +nothing received yet · OTLP/HTTP ${new URL(receiver.urls.http).host} · OTLP/gRPC ${new URL(receiver.urls.grpc).host} $`,
+      `^ Services +Traces +Metrics +Logs +nothing received yet · OTLP/HTTP ${new URL(receiver.httpUrl).host} · OTLP/gRPC ${new URL(receiver.grpcUrl).host} $`,
     ),
   );
   expect(keyHints(frame)).toBe("tab next region ? help");

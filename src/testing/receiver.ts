@@ -20,14 +20,14 @@ export async function startTestReceiver({
     memoryLimitBytes,
   });
   const connection = await receiver.connect();
-  const uri = `otlp:${new URL(receiver.urls.http).host}`;
+  const uri = `otlp:${new URL(receiver.httpUrl).host}`;
 
   function flush() {
     return connection.run("SELECT * FROM otlp_flush($uri)", { uri });
   }
 
   async function sendHttp(path: string, request: unknown) {
-    const response = await fetch(new URL(path, receiver.urls.http), {
+    const response = await fetch(new URL(path, receiver.httpUrl), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(request),
@@ -39,7 +39,8 @@ export async function startTestReceiver({
   }
 
   return {
-    urls: receiver.urls,
+    httpUrl: receiver.httpUrl,
+    grpcUrl: receiver.grpcUrl,
     connect: () => receiver.connect(),
     clear: () => receiver.clear(),
     sendHttp,

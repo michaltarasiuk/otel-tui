@@ -170,10 +170,8 @@ function pruneAndWaitFor(connection: DuckDBConnection, expected: Record<string, 
 test("listens for OTLP/HTTP and OTLP/gRPC on the IPv4 loopback address", async () => {
   await using receiver = await startTestReceiver();
 
-  expect(receiver.urls).toEqual({
-    http: expect.stringMatching(/^http:\/\/127\.0\.0\.1:\d+$/),
-    grpc: expect.stringMatching(/^http:\/\/127\.0\.0\.1:\d+$/),
-  });
+  expect(receiver.httpUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+  expect(receiver.grpcUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
 });
 
 test("stores every signal where its connections can query it", async () => {
@@ -344,14 +342,14 @@ test("closes its connections and stops listening when disposed", async () => {
   await receiver[Symbol.asyncDispose]();
 
   expect(connection.run("SELECT 1")).rejects.toThrow("connection disconnected");
-  expect(fetch(receiver.urls.http)).rejects.toMatchObject({ code: "ECONNREFUSED" });
-  expect(fetch(receiver.urls.grpc)).rejects.toMatchObject({ code: "ECONNREFUSED" });
+  expect(fetch(receiver.httpUrl)).rejects.toMatchObject({ code: "ECONNREFUSED" });
+  expect(fetch(receiver.grpcUrl)).rejects.toMatchObject({ code: "ECONNREFUSED" });
 });
 
 test("names the ports when it can't listen on them", async () => {
   const receiver = await startTestReceiver();
-  const { port: httpPort } = new URL(receiver.urls.http);
-  const { port: grpcPort } = new URL(receiver.urls.grpc);
+  const { port: httpPort } = new URL(receiver.httpUrl);
+  const { port: grpcPort } = new URL(receiver.grpcUrl);
 
   const error = await startReceiver({
     host: LOOPBACK_HOST,

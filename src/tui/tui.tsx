@@ -22,8 +22,6 @@ import {
 } from "@tanstack/react-query";
 import { StrictMode } from "react";
 
-import type { ReceiverUrls } from "#receiver/receiver.ts";
-
 import { App } from "./app.tsx";
 import { ClipboardContext } from "./clipboard.tsx";
 import { ConnectionContext } from "./query/connection.ts";
@@ -67,12 +65,13 @@ export function QueryProvider({ queryClient, connection, children }: QueryProvid
 
 interface TuiOptions {
   connection: DuckDBConnection;
-  receiverUrls: ReceiverUrls;
+  httpUrl: string;
+  grpcUrl: string;
   mcpUrl: string | undefined;
   onClear: () => Promise<void>;
 }
 
-export async function startTui({ connection, receiverUrls, mcpUrl, onClear }: TuiOptions) {
+export async function startTui({ connection, httpUrl, grpcUrl, mcpUrl, onClear }: TuiOptions) {
   const renderer = await createCliRenderer(RENDERER_CONFIG);
 
   const keymap = createDefaultOpenTuiKeymap(renderer);
@@ -113,7 +112,7 @@ export async function startTui({ connection, receiverUrls, mcpUrl, onClear }: Tu
       <KeymapProvider keymap={keymap}>
         <QueryProvider queryClient={queryClient} connection={connection}>
           <ClipboardContext value={(text) => copy(text)}>
-            <App receiverUrls={receiverUrls} mcpUrl={mcpUrl} onClear={onClear} />
+            <App httpUrl={httpUrl} grpcUrl={grpcUrl} mcpUrl={mcpUrl} onClear={onClear} />
           </ClipboardContext>
         </QueryProvider>
       </KeymapProvider>

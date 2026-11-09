@@ -83,7 +83,7 @@ if (parsed.kind === "help") {
 
   if (options.headless) {
     console.log(dedent`
-      otel-tui ${VERSION} is receiving OTLP/HTTP on ${receiver.urls.http} and OTLP/gRPC on ${receiver.urls.grpc}
+      otel-tui ${VERSION} is receiving OTLP/HTTP on ${receiver.httpUrl} and OTLP/gRPC on ${receiver.grpcUrl}
       ${mcp === undefined ? "MCP is off; --mcp serves it" : `MCP: ${mcp.url}`}
       Press ctrl+c to stop.
     `);
@@ -91,7 +91,8 @@ if (parsed.kind === "help") {
   } else {
     const tui = await startTui({
       connection: await receiver.connect(),
-      receiverUrls: receiver.urls,
+      httpUrl: receiver.httpUrl,
+      grpcUrl: receiver.grpcUrl,
       mcpUrl: mcp?.url,
       onClear: () => receiver.clear(),
     });

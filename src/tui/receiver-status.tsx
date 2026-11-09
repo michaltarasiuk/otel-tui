@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { type ReceiverCounters, readReceiverCounters } from "#receiver/receiver-counters.ts";
-import type { ReceiverUrls } from "#receiver/receiver.ts";
 import { formatCount } from "#utils/format-count.ts";
 import { formatTimeAgo } from "#utils/format-time-ago.ts";
 
@@ -32,19 +31,20 @@ function formatReceived({ total_rows, last_received_age_ms }: ReceiverCounters) 
 }
 
 interface ReceiverStatusProps {
-  receiverUrls: ReceiverUrls;
+  httpUrl: string;
+  grpcUrl: string;
   mcpUrl: string | undefined;
 }
 
-export function ReceiverStatus({ receiverUrls, mcpUrl }: ReceiverStatusProps) {
-  const { data: counters } = useReceiverCounters(receiverUrls.http);
+export function ReceiverStatus({ httpUrl, grpcUrl, mcpUrl }: ReceiverStatusProps) {
+  const { data: counters } = useReceiverCounters(httpUrl);
   const paused = usePaused();
 
   return (
     <text fg={THEME.textMuted} wrapMode="none" truncate>
       {paused && <span fg={THEME.textWarning}>paused · </span>}
       {counters != null && `${formatReceived(counters)} · `}
-      OTLP/HTTP {new URL(receiverUrls.http).host} · OTLP/gRPC {new URL(receiverUrls.grpc).host}
+      OTLP/HTTP {new URL(httpUrl).host} · OTLP/gRPC {new URL(grpcUrl).host}
       {mcpUrl !== undefined && ` · MCP ${new URL(mcpUrl).host}`}
     </text>
   );

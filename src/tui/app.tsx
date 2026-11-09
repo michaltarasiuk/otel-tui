@@ -2,8 +2,6 @@ import { useKeymap } from "@opentui/keymap/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 
-import type { ReceiverUrls } from "#receiver/receiver.ts";
-
 import { FocusScope, KeysScope } from "./components/focus.tsx";
 import { AppKeys, Key, StepKeys } from "./components/key-hints.tsx";
 import { Screen } from "./components/screen.tsx";
@@ -22,12 +20,13 @@ import { useFocusedRegion } from "./use-focused-region.ts";
 import { TopBar, Window } from "./window.tsx";
 
 interface AppProps {
-  receiverUrls: ReceiverUrls;
+  httpUrl: string;
+  grpcUrl: string;
   mcpUrl?: string | undefined;
   onClear: () => Promise<void>;
 }
 
-export function App({ receiverUrls, mcpUrl, onClear }: AppProps) {
+export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
   const { region, focus, focusStep } = useFocusedRegion();
   const {
     page,
@@ -89,7 +88,7 @@ export function App({ receiverUrls, mcpUrl, onClear }: AppProps) {
             <FocusScope focused={region === "tabs"} onFocusRequest={() => focus("tabs")}>
               <Tabs current={tab} onSelect={(tab) => selectTab(tab)} />
             </FocusScope>
-            <ReceiverStatus receiverUrls={receiverUrls} mcpUrl={mcpUrl} />
+            <ReceiverStatus httpUrl={httpUrl} grpcUrl={grpcUrl} mcpUrl={mcpUrl} />
           </TopBar>
           <FocusScope
             key={clears}
