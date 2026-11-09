@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { attributeValues } from "./series-attributes.ts";
+import { attributeValues } from "./attribute-values.ts";
 
 test("collects the distinct values of each attribute across sets", () => {
   const attributeSets = [

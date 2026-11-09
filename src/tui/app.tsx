@@ -9,13 +9,13 @@ import { AppKeys, Key, StepKeys } from "./components/key-hints.tsx";
 import { Screen } from "./components/screen.tsx";
 import { activeHelp, Help, type HelpEntry } from "./help.tsx";
 import { LogsPage } from "./logs/logs-page.tsx";
-import { MetricPage } from "./metrics/metric-page.tsx";
+import { MetricSeriesPage } from "./metrics/metric-series-page.tsx";
 import { MetricsPage } from "./metrics/metrics-page.tsx";
 import { usePages } from "./pages.ts";
 import { ReceiverStatus } from "./receiver-status.tsx";
 import { ServicesPage } from "./services/services-page.tsx";
 import { Tabs } from "./tabs.tsx";
-import { TracePage } from "./traces/trace-page.tsx";
+import { TraceSpansPage } from "./traces/trace-spans-page.tsx";
 import { TracesPage } from "./traces/traces-page.tsx";
 import { useEditing } from "./use-editing.ts";
 import { useFocusedRegion } from "./use-focused-region.ts";
@@ -113,7 +113,7 @@ export function App({ receiverUrls, mcpUrl, onClear }: AppProps) {
             </Screen>
             {trace !== undefined && (
               <Screen when={page === "trace"}>
-                <TracePage
+                <TraceSpansPage
                   key={`${trace.traceId}:${trace.spanId}`}
                   traceId={trace.traceId}
                   spanId={trace.spanId}
@@ -128,7 +128,7 @@ export function App({ receiverUrls, mcpUrl, onClear }: AppProps) {
             </Screen>
             {metric !== undefined && (
               <Screen when={page === "metric"}>
-                <MetricPage
+                <MetricSeriesPage
                   key={metric.metric_id}
                   metric={metric}
                   onBack={() => back()}

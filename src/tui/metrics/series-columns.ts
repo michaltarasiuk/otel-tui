@@ -2,7 +2,7 @@ import type { Series } from "#telemetry/metrics/series.ts";
 import { clamp } from "#utils/clamp.ts";
 import { compareText } from "#utils/compare-text.ts";
 
-import { attributeValues } from "./series-attributes.ts";
+import { attributeValues } from "./attribute-values.ts";
 
 const MIN_COLUMN_WEIGHT = 8;
 const MAX_COLUMN_WEIGHT = 32;

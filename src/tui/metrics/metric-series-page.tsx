@@ -32,13 +32,13 @@ function exemplarKey(exemplar: Exemplar) {
   return `${exemplar.time}:${exemplar.value}:${exemplar.span_id}`;
 }
 
-interface MetricPageProps {
+interface MetricSeriesPageProps {
   metric: Metric;
   onBack: () => void;
   onOpenTrace: (traceId: string, spanId: string | undefined) => void;
 }
 
-export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
+export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPageProps) {
   const metricSeries = useMetricSeries(metric);
   const detailsRef = useRef<ScrollBoxRenderable>(null);
   const [chartWindow, setChartWindow] = useState<(typeof CHART_WINDOWS)[number]>();

@@ -8,7 +8,7 @@ import { COLUMN_SERVICE_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration } from "#utils/format-duration.ts";
 
-import { Scale, WaterfallBar } from "./waterfall.tsx";
+import { Scale, WaterfallBar } from "./waterfall-bar.tsx";
 
 const COLUMN_NAME_GROW = 2;
 const COLUMN_DURATION_WIDTH = 8;

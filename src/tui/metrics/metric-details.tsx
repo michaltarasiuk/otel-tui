@@ -11,9 +11,9 @@ import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 
+import { attributeValues } from "./attribute-values.ts";
 import { MetricHeader } from "./metric-header.tsx";
 import { useSuspenseMetricSeries } from "./metric-queries.ts";
-import { attributeValues } from "./series-attributes.ts";
 
 const MAX_LISTED_VALUES = 3;
 

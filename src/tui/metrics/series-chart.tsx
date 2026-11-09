@@ -10,11 +10,11 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
 import { MINUTE_MS } from "#utils/time-units.ts";
 
-import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./chart-lines.ts";
 import { counterIntervals, distributionIntervals } from "./intervals.ts";
 import { LineChart } from "./line-chart.tsx";
 import { useSeriesPoints } from "./metric-queries.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
+import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./series-lines.ts";
 import { PERCENTILES } from "./series-stats.ts";
 
 const CHART_HEIGHT = 8;

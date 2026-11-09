@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { type Distribution, explicitBuckets } from "#telemetry/metrics/distribution.ts";
 
-import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./chart-lines.ts";
+import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./series-lines.ts";
 
 const SECOND_SLOTS: ChartWindow = { start: 0, end: 10_000, slotCount: 10 };
 

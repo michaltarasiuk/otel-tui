@@ -38,7 +38,7 @@ function traceDuration(spans: Span[]) {
   return spans.reduce((end, span) => Math.max(end, span.offset_ms + span.duration_ms), 0);
 }
 
-interface TracePageProps {
+interface TraceSpansPageProps {
   traceId: string;
   spanId: string | undefined;
   onBack: () => void;
@@ -46,7 +46,13 @@ interface TracePageProps {
   onOpenTrace: (traceId: string, spanId: string) => void;
 }
 
-export function TracePage({ traceId, spanId, onBack, onOpenLogs, onOpenTrace }: TracePageProps) {
+export function TraceSpansPage({
+  traceId,
+  spanId,
+  onBack,
+  onOpenLogs,
+  onOpenTrace,
+}: TraceSpansPageProps) {
   const traceSpans = useTraceSpans(traceId);
   const detailsRef = useRef<ScrollBoxRenderable>(null);
 
