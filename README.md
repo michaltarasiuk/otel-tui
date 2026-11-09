@@ -56,7 +56,8 @@ and attributes.
 percentiles, plus the selected series' chart, histogram buckets, and
 exemplars. `tab` moves into the exemplars, where `return` opens an exemplar's
 trace at its span; exemplars whose trace otel-tui never received are marked
-"not stored". A time brush is planned.
+"not stored". `w` narrows the chart to the last 15, 5, or 1 minute, and
+`shift+w` widens it again.
 
 ### Logs
 

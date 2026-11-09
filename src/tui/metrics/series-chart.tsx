@@ -112,13 +112,15 @@ interface SeriesPlotProps {
   series: Series;
   color: string;
   windowStart: number;
+  windowMs: number | undefined;
 }
 
-function SeriesPlot({ metric, series, color, windowStart }: SeriesPlotProps) {
+function SeriesPlot({ metric, series, color, windowStart, windowMs }: SeriesPlotProps) {
   const { data, dataUpdatedAt } = useSeriesPoints(metric, series.series_id);
 
   const end = dataUpdatedAt;
-  const start = Math.min(windowStart, end - MIN_WINDOW_MS);
+  const start =
+    windowMs === undefined ? Math.min(windowStart, end - MIN_WINDOW_MS) : end - windowMs;
 
   return (
     <LineChart
@@ -141,15 +143,27 @@ interface SeriesChartProps {
   series: Series;
   color: string;
   windowStart: number;
+  windowMs: number | undefined;
 }
 
-export function SeriesChart({ metric, series, color, windowStart }: SeriesChartProps) {
+export function SeriesChart({ metric, series, color, windowStart, windowMs }: SeriesChartProps) {
+  const title =
+    windowMs === undefined
+      ? chartTitle(metric)
+      : `${chartTitle(metric)} · last ${windowMs / MINUTE_MS} min`;
+
   return (
-    <Section title={chartTitle(metric)}>
+    <Section title={title}>
       {series.stats.kind === "distribution" && <PercentileLegend color={color} />}
       <ErrorBoundary fallback={<text fg={THEME.textError}>Failed to load data points</text>}>
         <Suspense fallback={<box height={CHART_HEIGHT + CHART_TIME_AXIS_HEIGHT} />}>
-          <SeriesPlot metric={metric} series={series} color={color} windowStart={windowStart} />
+          <SeriesPlot
+            metric={metric}
+            series={series}
+            color={color}
+            windowStart={windowStart}
+            windowMs={windowMs}
+          />
         </Suspense>
       </ErrorBoundary>
     </Section>

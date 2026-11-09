@@ -315,3 +315,17 @@ test("moves into the exemplars when one is clicked", async () => {
 
   await app.waitForFrame((frame) => keyHints(frame).includes("return open trace"));
 });
+
+test("narrows the chart to a shorter window and back", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openMetric(receiver, ITEMS_SHIPPED_ROW);
+  await app.waitForFrame((frame) => detailsLines(frame).includes("Rate"));
+
+  app.mockInput.pressKey("w");
+  await app.waitForFrame((frame) => detailsLines(frame).includes("Rate · last 15 min"));
+  app.mockInput.pressKey("w");
+  await app.waitForFrame((frame) => detailsLines(frame).includes("Rate · last 5 min"));
+  app.mockInput.pressKey("w", { shift: true });
+
+  await app.waitForFrame((frame) => detailsLines(frame).includes("Rate · last 15 min"));
+});

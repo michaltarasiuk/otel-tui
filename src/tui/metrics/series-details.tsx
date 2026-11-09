@@ -19,6 +19,7 @@ interface SeriesDetailsProps {
   series: Series;
   label: string;
   windowStart: number;
+  windowMs: number | undefined;
   children: React.ReactNode;
 }
 
@@ -28,6 +29,7 @@ export function SeriesDetails({
   series,
   label,
   windowStart,
+  windowMs,
   children,
 }: SeriesDetailsProps) {
   const stats = seriesStats(metric, series);
@@ -47,7 +49,13 @@ export function SeriesDetails({
         ))}
       </Meta>
       <ScrollBox ref={ref}>
-        <SeriesChart metric={metric} series={series} color={color} windowStart={windowStart} />
+        <SeriesChart
+          metric={metric}
+          series={series}
+          color={color}
+          windowStart={windowStart}
+          windowMs={windowMs}
+        />
         {series.stats.kind === "distribution" && series.stats.distribution.count > 0 && (
           <Section title="Buckets">
             <BucketBars distribution={series.stats.distribution} unit={metric.unit} color={color} />

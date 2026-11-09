@@ -1,5 +1,5 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
@@ -9,6 +9,8 @@ import { Split } from "#tui/components/split.tsx";
 import { useRegion } from "#tui/components/use-region.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
+import { stepItem } from "#utils/step-item.ts";
+import { MINUTE_MS } from "#utils/time-units.ts";
 
 import { ExemplarList } from "./exemplar-list.tsx";
 import { MetricHeader } from "./metric-header.tsx";
@@ -20,6 +22,8 @@ import { SeriesTable } from "./series-table.tsx";
 import type { Exemplar } from "./series.ts";
 
 const REGION_KEYS_PRIORITY = 1;
+
+const CHART_WINDOWS = [undefined, 15 * MINUTE_MS, 5 * MINUTE_MS, MINUTE_MS] as const;
 
 const SERIES_ONLY = ["series"] as const;
 const SERIES_AND_EXEMPLARS = ["series", "exemplars"] as const;
@@ -37,6 +41,7 @@ interface MetricPageProps {
 export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
   const metricSeries = useMetricSeries(metric);
   const detailsRef = useRef<ScrollBoxRenderable>(null);
+  const [chartWindow, setChartWindow] = useState<(typeof CHART_WINDOWS)[number]>();
 
   const { data: series = [] } = metricSeries;
 
@@ -88,6 +93,7 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
               series={selected}
               label={seriesLabel(selected, columns)}
               windowStart={windowStart}
+              windowMs={chartWindow}
             >
               <FocusScope
                 focused={region === "exemplars"}
@@ -133,6 +139,17 @@ export function MetricPage({ metric, onBack, onOpenTrace }: MetricPageProps) {
             </Key>
           )}
         </FocusScope>
+        {selected !== undefined && (
+          <StepKeys
+            forward="w"
+            backward="shift+w"
+            description="narrow the chart to a shorter window"
+            backwardDescription="widen the chart window"
+            onStep={(step) => setChartWindow((window) => stepItem(CHART_WINDOWS, window, step))}
+          >
+            window
+          </StepKeys>
+        )}
         {selected !== undefined && <ScrollKeys target={detailsRef} />}
         <PauseKey />
         <StepKeys
