@@ -4,13 +4,57 @@ A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
 Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
-![Services view listing each service's rate, error rate, and p50, p95, and p99 latency, with the selected service's operations below](docs/services-view.png)
+![Trace details with a span waterfall across five services and the selected span's attributes](docs/trace-details.png)
+
+## Install
+
+Install with [Homebrew](https://brew.sh) on macOS or Linux:
+
+```shell
+brew install michaltarasiuk/tap/otel-tui
+```
+
+Or download the archive for your system from the
+[latest release](https://github.com/michaltarasiuk/otel-tui/releases/latest)
+(macOS and Linux, arm64 and x64), unpack it, and run `otel-tui`:
+
+```shell
+tar -xzf otel-tui-darwin-arm64.tar.gz
+./otel-tui-darwin-arm64/otel-tui
+```
+
+The first run unpacks DuckDB into `~/.cache/otel-tui` and downloads its OTLP
+extension, so it needs network access once.
+
+To run from source instead, install [Bun](https://bun.sh):
+
+```shell
+bun install
+bun run start
+```
+
+## Send telemetry
+
+Point your OTLP exporter at `http://localhost:4318` for OTLP/HTTP or
+`http://localhost:4317` for OTLP/gRPC. Auth is off, so otel-tui listens only
+on `127.0.0.1` unless you pass `--host`. To receive telemetry from containers,
+as on Linux Docker, use `--host 0.0.0.0` and point the exporter at
+`host.docker.internal` or the host's address, but only on a network you trust:
+anyone who can reach the port can send data.
 
 ## Views
 
+otel-tui opens on Services. The tabs follow the way you dig into a problem:
+Services shows which service is slow or failing, Traces shows where the time
+goes, and Metrics and Logs fill in the rest. The views link to each other, so
+an operation opens its traces, a span its logs, and a log or an exemplar its
+trace.
+
 ### Services
 
-The app opens here. Each service's rate, error rate, and p50, p95, and p99
+![Services view listing each service's rate, error rate, and p50, p95, and p99 latency, with the selected service's operations below](docs/services-view.png)
+
+Each service's rate, error rate, and p50, p95, and p99
 latency over the last 5 minutes come from its server and consumer spans, with
 the selected service's operations below. `return` opens the service's traces,
 `o` sorts by rate, errors, or p95, and `/` searches service names. `tab` moves
@@ -19,10 +63,7 @@ slowest first. A trace opened from there starts at the operation's span.
 
 ### Traces
 
-<p>
-  <img src="docs/traces-view.png" width="49%" alt="Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration">
-  <img src="docs/trace-details.png" width="49%" alt="Trace details with a span waterfall and the selected span's attributes">
-</p>
+![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-view.png)
 
 A histogram above the list charts the traces over time in 10-second columns,
 with the errors in red, so a spike or a gap stands out. `←` or `→` marks the
@@ -73,21 +114,31 @@ bodies, attributes, services, and trace IDs. A histogram above the table
 charts the logs over time with the errors in red, and `←` or `→` narrows the
 table to a column, as on Traces.
 
-### Everywhere
+### Keys on every view
 
-Click a tab to switch to it, or a row to select it and move the focus
-there; the wheel scrolls lists. `?` lists every key the focused page takes, including the ones the footer
-leaves out. `p` pauses live updates so rows stop moving while you read them,
-`ctrl+l` deletes all telemetry and starts the current tab over,
-and `y` copies the selected trace ID, span ID (`shift+y` the trace ID), log
-body, or metric name. Searches also take `key=value` terms that match a span,
-log, or metric attribute or a resource attribute exactly, as in
-`http.route=/api/cart service.name=cart`. `key!=value` matches a different
-value. Like every term, it matches single spans, so `service.name!=cart` still
-lists the traces that pass through cart. `>`, `>=`, `<`, and `<=` compare
-numbers, as in `http.response.status_code>=500`. On Traces, `duration` compares
-each span's duration, in `ns`, `us`, `ms`, `s`, `m`, or `h` (`ms` when you
-leave the unit out), as in `duration>500ms http.route=/api/cart`.
+Click a tab to switch to it, or a row to select it and move the focus there;
+the wheel scrolls lists. `?` lists every key the focused page takes, including
+the ones the footer leaves out. `p` pauses live updates so rows stop moving
+while you read them, `ctrl+l` deletes all telemetry and starts the current tab
+over, and `y` copies the selected trace ID, span ID (`shift+y` the trace ID), log
+body, or metric name.
+
+### Search
+
+`/` searches the focused list. Besides plain text, a search takes terms that
+match a span, log, or metric attribute or a resource attribute. On Traces,
+each term matches single spans, so `service.name!=cart` still lists the traces
+that pass through cart.
+
+| Term                | Matches                                      | Example                          |
+| ------------------- | -------------------------------------------- | -------------------------------- |
+| `key=value`         | the value exactly                            | `http.route=/api/cart`           |
+| `key!=value`        | a different value                            | `service.name!=cart`             |
+| `>` `>=` `<` `<=`   | numbers                                      | `http.response.status_code>=500` |
+| `duration` (Traces) | span duration, in `ns` `us` `ms` `s` `m` `h` | `duration>500ms`                 |
+
+`duration` takes `ms` when you leave the unit out. Combine terms with spaces,
+as in `duration>500ms http.route=/api/cart service.name=cart`.
 
 ## MCP
 
@@ -111,39 +162,7 @@ authentication, so any program on your machine can read your telemetry through
 it. `--headless` runs otel-tui without the terminal UI, for an agent that runs
 it in the background; `ctrl+c` stops it.
 
-## Usage
-
-Install with [Homebrew](https://brew.sh) on macOS or Linux:
-
-```shell
-brew install michaltarasiuk/tap/otel-tui
-```
-
-Or download the archive for your system from the
-[latest release](https://github.com/michaltarasiuk/otel-tui/releases/latest)
-(macOS and Linux, arm64 and x64), unpack it, and run `otel-tui`:
-
-```shell
-tar -xzf otel-tui-darwin-arm64.tar.gz
-./otel-tui-darwin-arm64/otel-tui
-```
-
-The first run unpacks DuckDB into `~/.cache/otel-tui` and downloads its OTLP
-extension, so it needs network access once.
-
-To run from source instead, install [Bun](https://bun.sh):
-
-```shell
-bun install
-bun run start
-```
-
-Point your OTLP exporter at `http://localhost:4318` for OTLP/HTTP or
-`http://localhost:4317` for OTLP/gRPC. Auth is off, so otel-tui listens only on
-`127.0.0.1` unless you pass `--host`. To receive telemetry from containers, as
-on Linux Docker, use `--host 0.0.0.0` and point the exporter at
-`host.docker.internal` or the host's address, but only on a network you trust:
-anyone who can reach the port can send data.
+## Configuration
 
 Telemetry is kept in memory for the retention period. When it nears the memory
 limit, the oldest telemetry is dropped first. A burst that outpaces this spills
