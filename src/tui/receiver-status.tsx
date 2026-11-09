@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 
+import { type ReceiverCounters, readReceiverCounters } from "#receiver/receiver-counters.ts";
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 import { formatCount } from "#utils/format-count.ts";
 import { formatTimeAgo } from "#utils/format-time-ago.ts";
@@ -8,25 +8,14 @@ import { formatTimeAgo } from "#utils/format-time-ago.ts";
 import { usePaused } from "./pause.tsx";
 import { useConnection } from "./query/connection.ts";
 import { POLL_INTERVAL_MS } from "./query/polling.ts";
-import receiverStatus from "./receiver-status.sql" with { type: "text" };
 import { THEME } from "./theme/theme.ts";
-
-const ReceiverCounters = z.object({
-  total_rows: z.number(),
-  last_received_age_ms: z.number().nullable(),
-});
-type ReceiverCounters = z.infer<typeof ReceiverCounters>;
 
 function useReceiverCounters(listenUrl: string) {
   const connection = useConnection();
 
   return useQuery({
     queryKey: ["receiver-status", listenUrl],
-    queryFn: async () => {
-      const reader = await connection.runAndReadAll(receiverStatus, { listenUrl });
-      const [counters = null] = ReceiverCounters.array().parse(reader.getRowObjectsJS());
-      return counters;
-    },
+    queryFn: () => readReceiverCounters(connection, listenUrl),
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
