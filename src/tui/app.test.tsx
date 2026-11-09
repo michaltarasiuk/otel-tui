@@ -396,7 +396,9 @@ test("switches tabs and selects rows with the mouse", async () => {
   await app.waitForFrame((frame) => / services?$/.test(pageHeader(frame)));
 
   await app.mockMouse.click(12, 0);
-  let frame = await app.waitForFrame((frame) => frame.includes("request 1"));
+  let frame = await app.waitForFrame(
+    (frame) => frame.includes("Traces over time") && frame.includes("request 1"),
+  );
   expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: true, fg: "text" },
   });
