@@ -80,7 +80,12 @@ leaves out. `p` pauses live updates so rows stop moving while you read them,
 and `y` copies the selected trace ID, span ID (`shift+y` the trace ID), log
 body, or metric name. Searches also take `key=value` terms that match a span,
 log, or metric attribute or a resource attribute exactly, as in
-`http.route=/api/cart service.name=cart`.
+`http.route=/api/cart service.name=cart`. `key!=value` matches a different
+value. Like every term, it matches single spans, so `service.name!=cart` still
+lists the traces that pass through cart. `>`, `>=`, `<`, and `<=` compare
+numbers, as in `http.response.status_code>=500`. On Traces, `duration` compares
+each span's duration, in `ns`, `us`, `ms`, `s`, `m`, or `h` (`ms` when you
+leave the unit out), as in `duration>500ms http.route=/api/cart`.
 
 ## Usage
 

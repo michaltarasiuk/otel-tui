@@ -13,7 +13,7 @@ HAVING bool_or(parent_span_id IS NULL)
   AND ($minTimeMs IS NULL OR epoch_ms(start_time) >= $minTimeMs)
   AND ($maxTimeMs IS NULL OR epoch_ms(start_time) < $maxTimeMs)
   AND (trace_id ILIKE $pattern ESCAPE '\' OR bool_or(name ILIKE $pattern ESCAPE '\' OR service_name ILIKE $pattern ESCAPE '\'))
-  AND bool_or(matches_filters($attributes, NULL::JSON, span_attributes, resource_attributes))
+  AND bool_or(matches_filters($attributes, json_object('duration', duration_time_unix_nano / 1e6), span_attributes, resource_attributes))
   AND ($serviceName IS NULL OR bool_or(service_name = $serviceName))
 ORDER BY
   CASE $sortBy

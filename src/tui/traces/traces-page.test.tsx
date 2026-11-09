@@ -1,6 +1,6 @@
 import { afterEach, expect, mock, setSystemTime, test } from "bun:test";
 
-import { renderPage } from "#testing/app.tsx";
+import { renderPage, type TestApp } from "#testing/app.tsx";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -252,4 +252,72 @@ test("highlights the selected row only while its region has focus", async () => 
 
   const spans = lineSpans(await app.captureSpans(), "GET /status");
   expect(spanColors(spans, "GET /status").bg).not.toEqual(selectedBackground.toInts());
+});
+
+async function searchTraces(app: TestApp, search: string) {
+  app.mockInput.pressKey("/");
+  await app.waitForFrame((frame) => frame.includes("trace name, service, ID or key=value"));
+  await app.mockInput.typeText(search);
+  app.mockInput.pressEnter();
+  return app.waitForFrame((frame) => pageHeader(frame).startsWith(`/${search} `));
+}
+
+async function clearSearch(app: TestApp) {
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => !pageHeader(frame).startsWith("/"));
+}
+
+test("filters traces by span duration", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+
+  let frame = await searchTraces(app, "duration>200ms");
+  frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith("1 of 3 traces"));
+  expect(tableRows(frame)).toEqual([CHECKOUT_ROW]);
+
+  await clearSearch(app);
+  await searchTraces(app, "duration<10ms");
+  frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith("1 of 3 traces"));
+  expect(tableRows(frame)).toEqual([STATUS_ROW]);
+});
+
+test("filters traces by spans whose attribute has a different value", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+
+  await searchTraces(app, "http.route!=/api/orders");
+  let frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith("1 of 3 traces"));
+  expect(tableRows(frame)).toEqual([CART_ROW]);
+
+  await clearSearch(app);
+  await searchTraces(app, "http.route!=/api/cart");
+  frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
+  expect(pageHeader(frame)).toEndWith("0 of 3 traces");
+});
+
+test("compares numeric attributes", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "frontend",
+      spans: [200, 404, 503].map((status, index) => ({
+        traceId: String(index + 5).repeat(32),
+        spanId: String(index + 5).repeat(16),
+        name: `GET /${status}`,
+        start: at(index * 1000),
+        end: at(index * 1000 + 10),
+        attributes: { "http.response.status_code": status },
+      })),
+    }),
+  );
+  await using app = await renderPage(receiver, "traces");
+  await app.waitForFrame((frame) => tableRows(frame).length === 3);
+
+  await searchTraces(app, "http.response.status_code>=404");
+  const frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith("2 of 3 traces"));
+  expect(tableRows(frame)).toEqual([
+    expect.stringContaining("GET /503"),
+    expect.stringContaining("GET /404"),
+  ]);
 });

@@ -1,20 +1,58 @@
+import { parseDuration } from "#utils/parse-duration.ts";
+
 import { substringPattern } from "./like-pattern.ts";
 
-const ATTRIBUTE_TERM = /^([^\s=]+)=(\S*)$/;
+const OPERATORS = ["=", "!=", ">", ">=", "<", "<="] as const;
+type Operator = (typeof OPERATORS)[number];
 
-interface AttributeFilter {
+const FILTER_TERM = /^([^\s=!<>]+)(!=|>=|<=|=|>|<)(\S*)$/;
+
+const DURATION_KEY = "duration";
+
+interface Filter {
   key: string;
+  operator: Operator;
   value: string;
+  number: number | null;
+}
+
+function isOperator(text: string): text is Operator {
+  return OPERATORS.some((operator) => operator === text);
+}
+
+function isOrdered(operator: Operator) {
+  return operator !== "=" && operator !== "!=";
+}
+
+function parseNumber(key: string, value: string) {
+  if (key === DURATION_KEY) {
+    return parseDuration(value);
+  }
+  const number = Number(value);
+  return value === "" || Number.isNaN(number) ? undefined : number;
+}
+
+function parseFilter(term: string): Filter | undefined {
+  const match = FILTER_TERM.exec(term);
+  const [, key, operator, value] = match ?? [];
+  if (key === undefined || operator === undefined || !isOperator(operator) || value === undefined) {
+    return undefined;
+  }
+  if (!isOrdered(operator)) {
+    return { key, operator, value, number: null };
+  }
+  const number = parseNumber(key, value);
+  return number === undefined ? undefined : { key, operator, value, number };
 }
 
 export function parseSearch(search: string) {
   const words: string[] = [];
-  const attributes: AttributeFilter[] = [];
+  const attributes: Filter[] = [];
 
   for (const term of search.split(/\s+/)) {
-    const match = ATTRIBUTE_TERM.exec(term);
-    if (match?.[1] !== undefined && match[2] !== undefined) {
-      attributes.push({ key: match[1], value: match[2] });
+    const filter = parseFilter(term);
+    if (filter !== undefined) {
+      attributes.push(filter);
     } else if (term !== "") {
       words.push(term);
     }
