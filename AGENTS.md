@@ -28,9 +28,10 @@
 
 ## Tests
 
-- Test through the rendered app: press keys, read the screen. Read regions with `#testing/screen.ts` (`pageHeader`, `tableRows`, `detailsLines`, `keyHints`), never by line index.
-- Open pages with `renderPage`, pick rows with `selectRow`, type queries with `search`, and wait for rows with `app.waitForRows`. Wait for focus with `onList` and `onDetails`. Inject failures through `renderApp({ connection })`.
+- Test through the rendered app: press keys, read the screen. Read regions with `#testing/screen.ts` (`tabBar`, `pageHeader`, `chartLines`, `tableRows`, `listLines`, `spanRows`, `detailsLines`, `keyHints`, `tabStyles`), never by line index.
+- Open pages with `renderPage` or switch with `openTab`, pick rows with `selectRow`, type queries with `search`, and wait for rows with `app.waitForRows`. Wait for focus with `onList` and `onDetails`. Inject failures through `renderApp({ connection })`.
 - Wait for a concrete frame, never for time.
+- Fake global state with `fakeClock`, `fakeTimers`, and `silenceConsoleError`; they reset themselves when the test finishes. Restore spies the test reads with `using`.
 
 ## Commits
 
