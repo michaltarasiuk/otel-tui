@@ -5,11 +5,10 @@ import { DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node
 import dedent from "dedent";
 import { z } from "zod";
 
+import { installMacros } from "#telemetry/macros.ts";
 import { SECOND_MS } from "#utils/time-units.ts";
 
 import { StartupError } from "../startup-error.ts";
-import attributeEntries from "./attribute-entries.sql" with { type: "text" };
-import searchFilters from "./search-filters.sql" with { type: "text" };
 
 const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("http"), listen_url: z.url() }),
@@ -120,8 +119,7 @@ export async function startReceiver({
   let urls: ReceiverUrls;
   try {
     await loadOtlpExtension(connection);
-    await connection.run(attributeEntries);
-    await connection.run(searchFilters);
+    await installMacros(connection);
     urls = await serveOtlp(connection, { host, httpPort, grpcPort });
   } catch (error) {
     connection.closeSync();
