@@ -1,6 +1,6 @@
 import { useKeymap } from "@opentui/keymap/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import type { ReceiverUrls } from "#receiver/receiver.ts";
 
@@ -102,14 +102,16 @@ export function App({ receiverUrls, mcpUrl, onClear }: AppProps) {
               />
             </Screen>
             <Screen when={page === "traces"}>
-              <TracesPage
-                key={tracesOperation}
-                service={tracesService}
-                operation={tracesOperation}
-                onServiceChange={(service) => replace({ name: "traces", service })}
-                onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                onBack={canGoBack ? () => back() : undefined}
-              />
+              <Fragment key={tracesService}>
+                <TracesPage
+                  key={tracesOperation}
+                  service={tracesService}
+                  operation={tracesOperation}
+                  onServiceChange={(service) => replace({ name: "traces", service })}
+                  onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+                  onBack={canGoBack ? () => back() : undefined}
+                />
+              </Fragment>
             </Screen>
             {trace !== undefined && (
               <Screen when={page === "trace"}>

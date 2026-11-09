@@ -3,7 +3,14 @@ import { beforeEach, expect, test } from "bun:test";
 import { renderPage } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
-import { detailsLines, keyHints, onDetails, pageHeader, textLines } from "#testing/screen.ts";
+import {
+  chartLines,
+  detailsLines,
+  keyHints,
+  onDetails,
+  pageHeader,
+  textLines,
+} from "#testing/screen.ts";
 import { otlpTraces, PLACE_ORDER } from "#testing/traces.ts";
 
 const CART_ROW = "● cart 0.2/min 0.0% 80.0ms 80.0ms 80.0ms 1";
@@ -133,4 +140,23 @@ test("opens the selected service's traces and comes back", async () => {
 
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+});
+
+test("never shows the previous service's traces over time", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderServices(receiver);
+  await app.waitForSelection("cart");
+
+  app.mockInput.pressEnter();
+  let frame = await app.waitForFrame((frame) => chartLines(frame).length > 0);
+  const cartChart = chartLines(frame);
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+
+  app.mockInput.pressArrow("down");
+  await app.waitForSelection("checkout");
+  app.mockInput.pressEnter();
+
+  frame = await app.waitForFrame((frame) => pageHeader(frame).startsWith("● checkout"));
+  expect(chartLines(frame)).not.toEqual(cartChart);
 });
