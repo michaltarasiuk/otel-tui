@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 
 import { freePort } from "#testing/free-port.ts";
-import { logsRequest, metricsRequest, SEVERITY_NUMBER } from "#testing/otlp.ts";
+import { logsRequest, metricsRequest, SEVERITY_NUMBER, TEMPORALITY } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 import {
   at,
@@ -174,7 +174,39 @@ test("reads a metric's series", async () => {
       name: "v8js.memory.heap.used",
       type: "gauge",
       service: "frontend",
-      series: [expect.objectContaining({ value: 6, min: 4, max: 6 })],
+      series: [expect.objectContaining({ last: 6, min: 4, max: 6 })],
+    }),
+  ]);
+});
+
+test("reads a counter's rate and total like the app", async () => {
+  await using receiver = await startTestReceiver();
+  const start = new Date(Date.now() - 30_000);
+  await receiver.sendHttp(
+    "/v1/metrics",
+    metricsRequest({
+      service: "frontend",
+      metrics: [
+        {
+          name: "http.server.requests",
+          sum: [
+            { start, time: new Date(start.getTime() + 10_000), value: 10 },
+            { start, time: new Date(start.getTime() + 20_000), value: 30 },
+          ],
+          monotonic: true,
+          temporality: TEMPORALITY.cumulative,
+        },
+      ],
+    }),
+  );
+  await using mcp = await serve(receiver);
+
+  const metrics = await mcp.callJson("get_metric", { name: "http.server.requests" });
+
+  expect(metrics).toEqual([
+    expect.objectContaining({
+      type: "counter",
+      series: [expect.objectContaining({ rate_per_second: 2, total: 30 })],
     }),
   ]);
 });

@@ -5,8 +5,10 @@ import { z } from "zod";
 import type { Attributes } from "#telemetry/attributes.ts";
 import { listLogs } from "#telemetry/logs/read-logs.ts";
 import { quantile } from "#telemetry/metrics/distribution.ts";
+import { counterIntervals, perSecond } from "#telemetry/metrics/intervals.ts";
+import { isDelta, type Metric } from "#telemetry/metrics/metric.ts";
 import { listMetrics, readMetricSeries } from "#telemetry/metrics/read-metrics.ts";
-import type { Series } from "#telemetry/metrics/series.ts";
+import type { NumberPoint, Series } from "#telemetry/metrics/series.ts";
 import { listOperations, listServices } from "#telemetry/services/read-services.ts";
 import { listTraces, readSpanContent, readTraceSpans } from "#telemetry/traces/read-traces.ts";
 
@@ -42,7 +44,12 @@ function isoTime(timeMs: number | null) {
   return timeMs === null ? null : new Date(timeMs).toISOString();
 }
 
-function seriesSummary(series: Series) {
+function latestRate(metric: Metric, points: NumberPoint[]) {
+  const latest = counterIntervals(points, isDelta(metric)).at(-1);
+  return latest === undefined ? null : perSecond(latest);
+}
+
+function seriesSummary(metric: Metric, series: Series) {
   const identity = {
     attributes: attributeObject(series.attributes),
     service: attributeObject(series.resource_attributes)["service.name"] ?? null,
@@ -50,8 +57,11 @@ function seriesSummary(series: Series) {
     last_time: isoTime(series.last_time),
   };
   if (series.stats.kind === "number") {
-    const { value, min, max } = series.stats;
-    return { ...identity, value, min, max };
+    const { value, min, max, latestPoints } = series.stats;
+    if (metric.type === "counter") {
+      return { ...identity, rate_per_second: latestRate(metric, latestPoints), total: value };
+    }
+    return { ...identity, last: value, min, max };
   }
   const { distribution } = series.stats;
   return {
@@ -210,7 +220,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
     {
       title: "Get a metric",
       description:
-        "A metric's series, each with its attributes and either its latest value, min, and max, or for histograms its count, sum, min, max, and p50, p95, and p99.",
+        "A metric's series with their attributes. Counters give their latest rate per second and their total, gauges and up-down counters their last value, min, and max, and histograms their count, sum, min, max, and p50, p95, and p99.",
       inputSchema: {
         name: z.string().describe("Exact metric name"),
         service: z.string().optional(),
@@ -237,7 +247,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
             unit: metric.unit,
             service: metric.service_name,
             series: (await readMetricSeries(connection, metric)).map((series) =>
-              seriesSummary(series),
+              seriesSummary(metric, series),
             ),
           })),
         ),
