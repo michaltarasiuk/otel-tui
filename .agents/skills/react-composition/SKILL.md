@@ -33,7 +33,6 @@ Findings so far:
 - OpenTUI's reconciler implements `hideInstance`, so `Activity` works and stops effects (polling, key bindings) in hidden screens.
 - After an `ErrorBoundary` catches a query error, call `useQueryErrorResetBoundary().reset`. Otherwise a remount by `key` rethrows the cached error instead of fetching.
 - React keeps a shown Suspense fallback for about 300 ms. Fallbacks on interactions (arrowing through rows, typing) flicker.
-- Handlers called from keymap subscriptions use `useEffectEvent`, not a ref updated in a layout effect.
 
 Add new findings here when you find them.
 
