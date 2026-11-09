@@ -1,7 +1,8 @@
 import { MINUTE_MS } from "#utils/time-units.ts";
 
 import { HELP, type Options, OptionsError, parseOptions, VERSION } from "./options.ts";
-import { ReceiverError, startReceiver } from "./receiver/receiver.ts";
+import { startReceiver } from "./receiver/receiver.ts";
+import { StartupError } from "./startup-error.ts";
 import { startTui } from "./tui/tui.tsx";
 
 const START_ERROR_EXIT_CODE = 1;
@@ -36,7 +37,7 @@ async function receive(options: Options) {
       memoryLimitBytes: options.memoryLimitMb * 1024 * 1024,
     });
   } catch (error) {
-    if (error instanceof ReceiverError) {
+    if (error instanceof StartupError) {
       console.error(prefixLines(error.message));
       process.exit(START_ERROR_EXIT_CODE);
     }

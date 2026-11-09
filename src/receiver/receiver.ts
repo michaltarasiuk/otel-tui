@@ -2,10 +2,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api";
+import dedent from "dedent";
 import { z } from "zod";
 
 import { SECOND_MS } from "#utils/time-units.ts";
 
+import { StartupError } from "../startup-error.ts";
 import attributeEntries from "./attribute-entries.sql" with { type: "text" };
 import searchFilters from "./search-filters.sql" with { type: "text" };
 
@@ -33,8 +35,6 @@ export interface ReceiverUrls {
   grpc: string;
 }
 
-export class ReceiverError extends Error {}
-
 function firstLine(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return message.split("\n")[0];
@@ -45,9 +45,11 @@ async function loadOtlpExtension(connection: DuckDBConnection) {
     await connection.run("INSTALL otlp FROM community");
     await connection.run("LOAD otlp");
   } catch (error) {
-    throw new ReceiverError(
-      "couldn't install DuckDB's otlp extension; the first run downloads it, so it needs network access once\n" +
-        firstLine(error),
+    throw new StartupError(
+      dedent`
+        couldn't install DuckDB's otlp extension; the first run downloads it, so it needs network access once
+        ${firstLine(error)}
+      `,
       { cause: error },
     );
   }
@@ -82,9 +84,11 @@ async function serveOtlp(
       },
     );
   } catch (error) {
-    throw new ReceiverError(
-      `couldn't listen on ${host}:${httpPort} and ${host}:${grpcPort}; another OTLP receiver may be using them, so pick other ports with --http-port and --grpc-port\n` +
-        firstLine(error),
+    throw new StartupError(
+      dedent`
+        couldn't listen on ${host}:${httpPort} and ${host}:${grpcPort}; another OTLP receiver may be using them, so pick other ports with --http-port and --grpc-port
+        ${firstLine(error)}
+      `,
       { cause: error },
     );
   }
@@ -244,3 +248,5 @@ export async function startReceiver({
     [Symbol.asyncDispose]: close,
   };
 }
+
+export type Receiver = Awaited<ReturnType<typeof startReceiver>>;

@@ -8,7 +8,8 @@ import { z } from "zod";
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 
-import { PRUNE_INTERVAL_MS, ReceiverError, startReceiver } from "./receiver.ts";
+import { StartupError } from "../startup-error.ts";
+import { PRUNE_INTERVAL_MS, startReceiver } from "./receiver.ts";
 
 const TABLES = [
   "otlp_traces",
@@ -370,7 +371,7 @@ test("names the ports when it can't listen on them", async () => {
     memoryLimitBytes: MEMORY_LIMIT_BYTES,
   }).catch((error: unknown) => error);
 
-  expect(error).toBeInstanceOf(ReceiverError);
+  expect(error).toBeInstanceOf(StartupError);
   expect(error).toHaveProperty(
     "message",
     expect.stringContaining(`couldn't listen on 127.0.0.1:${httpPort} and 127.0.0.1:${grpcPort}`),
