@@ -8,7 +8,7 @@ import { z } from "zod";
 import { logsRequest, metricsRequest, TEMPORALITY, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
 
-import { PRUNE_INTERVAL_MS } from "./receiver.ts";
+import { PRUNE_INTERVAL_MS, ReceiverError, startReceiver } from "./receiver.ts";
 
 const TABLES = [
   "otlp_traces",
@@ -345,4 +345,25 @@ test("closes its connections and stops listening when disposed", async () => {
   expect(connection.run("SELECT 1")).rejects.toThrow("connection disconnected");
   expect(fetch(receiver.urls.http)).rejects.toMatchObject({ code: "ECONNREFUSED" });
   expect(fetch(receiver.urls.grpc)).rejects.toMatchObject({ code: "ECONNREFUSED" });
+});
+
+test("names the ports when it can't listen on them", async () => {
+  const receiver = await startTestReceiver();
+  const { port: httpPort } = new URL(receiver.urls.http);
+  const { port: grpcPort } = new URL(receiver.urls.grpc);
+
+  const error = await startReceiver({
+    host: "127.0.0.1",
+    httpPort: Number(httpPort),
+    grpcPort: Number(grpcPort),
+    retentionMs: RETENTION_MS,
+    memoryLimitBytes: MEMORY_LIMIT_BYTES,
+  }).catch((error: unknown) => error);
+
+  expect(error).toBeInstanceOf(ReceiverError);
+  expect(error).toHaveProperty(
+    "message",
+    expect.stringContaining(`couldn't listen on 127.0.0.1:${httpPort} and 127.0.0.1:${grpcPort}`),
+  );
+  await receiver[Symbol.asyncDispose]();
 });

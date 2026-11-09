@@ -33,6 +33,65 @@ export interface ReceiverUrls {
   grpc: string;
 }
 
+export class ReceiverError extends Error {}
+
+function firstLine(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.split("\n")[0];
+}
+
+async function loadOtlpExtension(connection: DuckDBConnection) {
+  try {
+    await connection.run("INSTALL otlp FROM community");
+    await connection.run("LOAD otlp");
+  } catch (error) {
+    throw new ReceiverError(
+      "couldn't install DuckDB's otlp extension; the first run downloads it, so it needs network access once\n" +
+        firstLine(error),
+      { cause: error },
+    );
+  }
+}
+
+interface ServeOptions {
+  host: string;
+  httpPort: number;
+  grpcPort: number;
+}
+
+async function serveOtlp(
+  connection: DuckDBConnection,
+  { host, httpPort, grpcPort }: ServeOptions,
+): Promise<ReceiverUrls> {
+  let reader;
+  try {
+    reader = await connection.runAndReadAll(
+      `SELECT transport, listen_url FROM otlp_serve(
+        [$httpUri, $grpcUri],
+        transport := ['http', 'grpc'],
+        disable_auth := true,
+        allow_other_hostname := true,
+        seal_max_age_ms := $sealMaxAgeMs,
+        max_buffered_bytes := $maxBufferedBytes
+      )`,
+      {
+        httpUri: `otlp:${host}:${httpPort}`,
+        grpcUri: `otlp:${host}:${grpcPort}`,
+        sealMaxAgeMs: 500,
+        maxBufferedBytes: 32 * 1024 * 1024,
+      },
+    );
+  } catch (error) {
+    throw new ReceiverError(
+      `couldn't listen on ${host}:${httpPort} and ${host}:${grpcPort}; another OTLP receiver may be using them, so pick other ports with --http-port and --grpc-port\n` +
+        firstLine(error),
+      { cause: error },
+    );
+  }
+  const [http, grpc] = OtlpServeRows.parse(reader.getRowObjectsJS());
+  return { http: http.listen_url, grpc: grpc.listen_url };
+}
+
 interface ReceiverOptions {
   host: string;
   httpPort: number;
@@ -54,29 +113,17 @@ export async function startReceiver({
   });
   const connection = await instance.connect();
 
-  await connection.run("INSTALL otlp FROM community");
-  await connection.run("LOAD otlp");
-  await connection.run(attributeEntries);
-  await connection.run(attributeFilters);
-
-  const reader = await connection.runAndReadAll(
-    `SELECT transport, listen_url FROM otlp_serve(
-      [$httpUri, $grpcUri],
-      transport := ['http', 'grpc'],
-      disable_auth := true,
-      allow_other_hostname := true,
-      seal_max_age_ms := $sealMaxAgeMs,
-      max_buffered_bytes := $maxBufferedBytes
-    )`,
-    {
-      httpUri: `otlp:${host}:${httpPort}`,
-      grpcUri: `otlp:${host}:${grpcPort}`,
-      sealMaxAgeMs: 500,
-      maxBufferedBytes: 32 * 1024 * 1024,
-    },
-  );
-  const [http, grpc] = OtlpServeRows.parse(reader.getRowObjectsJS());
-  const urls: ReceiverUrls = { http: http.listen_url, grpc: grpc.listen_url };
+  let urls: ReceiverUrls;
+  try {
+    await loadOtlpExtension(connection);
+    await connection.run(attributeEntries);
+    await connection.run(attributeFilters);
+    urls = await serveOtlp(connection, { host, httpPort, grpcPort });
+  } catch (error) {
+    connection.closeSync();
+    instance.closeSync();
+    throw error;
+  }
 
   const connections = new Set<DuckDBConnection>();
 
