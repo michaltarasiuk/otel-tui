@@ -13,6 +13,7 @@ import {
   tableRows,
   textLines,
 } from "#testing/screen.ts";
+import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
 const baseTime = Date.parse("2026-10-28T12:00:00.000Z");
@@ -513,6 +514,43 @@ test("scrolls the log panel down and back up", async () => {
   await app.waitForFrame((frame) =>
     detailsLines(frame).includes("java.lang.OutOfMemoryError: Java heap space"),
   );
+});
+
+test("scrolls the log panel only once the list's scroll gesture pauses", async () => {
+  const scrollStart = at(10_000);
+  setSystemTime(scrollStart);
+  try {
+    await using receiver = await startTestReceiver();
+    const body = [
+      "java.lang.OutOfMemoryError: Java heap space",
+      ...Array.from({ length: 40 }, (_, index) => `at AdService.java:${index + 200}`),
+    ].join("\n");
+    await receiver.sendHttp(
+      "/v1/logs",
+      logsRequest({ service: "ad", logs: [{ time: at(0), body }] }),
+    );
+    await using app = await renderPage(receiver, "logs");
+    const lines = (
+      await app.waitForFrame(
+        (frame) => frame.includes("Logs over time") && detailsLines(frame).includes("Body"),
+      )
+    ).split("\n");
+    const listLine = lines.findIndex((line) => line.includes("● ad"));
+    const panelLine = lines.findIndex((line) => line.includes("at AdService.java:200"));
+    const panelColumn = lines[panelLine]!.indexOf("at AdService.java:200");
+
+    await app.mockMouse.scroll(2, listLine, "down");
+    await app.mockMouse.scroll(panelColumn, panelLine, "down");
+    expect(detailsLines(await app.waitForFrame((frame) => frame.includes("Body")))).toContain(
+      "Body",
+    );
+
+    setSystemTime(new Date(scrollStart.getTime() + GESTURE_PAUSE_MS + 1));
+    await app.mockMouse.scroll(panelColumn, panelLine, "down");
+    await app.waitForFrame((frame) => !detailsLines(frame).includes("Body"));
+  } finally {
+    setSystemTime();
+  }
 });
 
 test("shows an error when logs cannot be loaded", async () => {

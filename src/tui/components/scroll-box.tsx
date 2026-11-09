@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 
 import { Key } from "./key-hints.tsx";
+import { useScrollGesture } from "./use-scroll-gesture.ts";
 
 const SCROLLBAR_WIDTH = 1;
 
@@ -29,6 +30,8 @@ interface ScrollBoxProps {
 }
 
 export function ScrollBox({ ref, children }: ScrollBoxProps) {
+  const claimScroll = useScrollGesture();
+
   return (
     <scrollbox
       ref={ref}
@@ -37,7 +40,15 @@ export function ScrollBox({ ref, children }: ScrollBoxProps) {
       scrollbarOptions={{ showArrows: false }}
       contentOptions={{ paddingRight: SCROLLBAR_WIDTH }}
     >
-      {children}
+      <box
+        onMouseScroll={(event) => {
+          if (!claimScroll()) {
+            event.stopPropagation();
+          }
+        }}
+      >
+        {children}
+      </box>
     </scrollbox>
   );
 }

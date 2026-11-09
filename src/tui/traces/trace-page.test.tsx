@@ -15,6 +15,7 @@ import {
   tableRows,
   textLines,
 } from "#testing/screen.ts";
+import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
 import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
 
@@ -31,6 +32,7 @@ import {
   missingParentId,
   openTrace,
   PLACE_ORDER,
+  renderTraceList,
   STATUS_ROW,
 } from "./test-traces.ts";
 
@@ -312,6 +314,30 @@ test("goes back to the list with the opened trace still selected", async () => {
   await app.waitForFrame((frame) => tableRows(frame).length === 3);
 
   expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
+});
+
+test("leaves the opened trace alone while the list's scroll gesture continues", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+  const scrollStart = at(10_000);
+  setSystemTime(scrollStart);
+  const listLine = (await app.waitForFrame((frame) => frame.includes("Traces over time")))
+    .split("\n")
+    .findIndex((line) => collapseWhitespace(line) === STATUS_ROW);
+
+  await app.mockMouse.scroll(2, listLine, "down");
+  expect(await app.waitForSelection(PLACE_ORDER)).toBe(CHECKOUT_ROW);
+  app.mockInput.pressEnter();
+  const spanLine = (await app.waitForFrame((frame) => spanRows(frame).length === 3))
+    .split("\n")
+    .findIndex((line) => line.includes("● checkout") && line.includes(PLACE_ORDER));
+
+  await app.mockMouse.scroll(2, spanLine, "down");
+  expect(await app.waitForSelection(PLACE_ORDER)).toContain(PLACE_ORDER);
+
+  setSystemTime(new Date(scrollStart.getTime() + GESTURE_PAUSE_MS + 1));
+  await app.mockMouse.scroll(2, spanLine, "down");
+  expect(await app.waitForSelection("charge")).toContain("charge");
 });
 
 const checkoutLogs = logsRequest(

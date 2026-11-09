@@ -7,6 +7,7 @@ import { clamp } from "#utils/clamp.ts";
 
 import { useFocused, useFocusRequest, useKeysEnabled } from "./focus.tsx";
 import { SelectedContext } from "./table.tsx";
+import { useScrollGesture } from "./use-scroll-gesture.ts";
 
 interface RowsProps<T> {
   items: readonly T[];
@@ -28,6 +29,7 @@ export function Rows<T>({
   const focused = useFocused();
   const keysEnabled = useKeysEnabled();
   const requestFocus = useFocusRequest();
+  const claimScroll = useScrollGesture();
 
   const [visibleRowCount, setVisibleRowCount] = useState(0);
 
@@ -100,6 +102,9 @@ export function Rows<T>({
       overflow="hidden"
       onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
       onMouseScroll={({ scroll }) => {
+        if (!claimScroll()) {
+          return;
+        }
         if (scroll?.direction === "down") {
           onSelect((index) => index + scroll.delta);
         } else if (scroll?.direction === "up") {
