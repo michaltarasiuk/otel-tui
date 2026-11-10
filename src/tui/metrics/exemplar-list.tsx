@@ -1,5 +1,6 @@
 import { MouseButton } from "@opentui/core";
 
+import type { Metric } from "#telemetry/metrics/metric.ts";
 import type { Exemplar } from "#telemetry/metrics/series.ts";
 import { Description } from "#tui/components/details.tsx";
 import { useFocusRequest } from "#tui/components/focus.tsx";
@@ -9,6 +10,7 @@ import { COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatTime } from "#utils/time.ts";
 
+import { useSuspenseSeriesExemplars } from "./metric-queries.ts";
 import { formatMetricValue } from "./metric-value.ts";
 
 const COLUMN_VALUE_WIDTH = 10;
@@ -22,23 +24,17 @@ function traceLabel({ trace_id, span_id, has_trace }: Exemplar) {
 }
 
 interface ExemplarListProps {
-  exemplars: Exemplar[];
-  failed: boolean;
-  unit: string;
+  metric: Metric;
+  seriesId: string;
   selectedIndex: number;
   onSelect: (index: number) => void;
 }
 
-export function ExemplarList({
-  exemplars,
-  failed,
-  unit,
-  selectedIndex,
-  onSelect,
-}: ExemplarListProps) {
+export function ExemplarList({ metric, seriesId, selectedIndex, onSelect }: ExemplarListProps) {
   const requestFocus = useFocusRequest();
+  const { data: exemplars, isError } = useSuspenseSeriesExemplars(metric, seriesId);
 
-  if (failed) {
+  if (isError) {
     return <Description color={THEME.textError}>Failed to load exemplars</Description>;
   }
   if (exemplars.length === 0) {
@@ -63,7 +59,7 @@ export function ExemplarList({
                 {formatTime(exemplar.time)}
               </Cell>
               <Cell width={COLUMN_VALUE_WIDTH} align="right">
-                {formatMetricValue(exemplar.value, unit)}
+                {formatMetricValue(exemplar.value, metric.unit)}
               </Cell>
               <Cell grow={1} muted={!exemplar.has_trace}>
                 {traceLabel(exemplar)}

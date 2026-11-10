@@ -1,6 +1,5 @@
 import type { SetStateAction } from "react";
 
-import type { Operation } from "#telemetry/services/service.ts";
 import { Description } from "#tui/components/details.tsx";
 import { Rows } from "#tui/components/rows.tsx";
 import { SPLIT_PADDING_X } from "#tui/components/split.tsx";
@@ -9,6 +8,7 @@ import { THEME } from "#tui/theme/theme.ts";
 import { formatInteger, formatPercent, formatRate } from "#utils/number.ts";
 import { formatDuration } from "#utils/time.ts";
 
+import { useSuspenseServiceOperations } from "./service-queries.ts";
 import {
   COLUMN_DURATION_WIDTH,
   COLUMN_ERRORS_WIDTH,
@@ -17,19 +17,15 @@ import {
 } from "./service-table.tsx";
 
 interface OperationTableProps {
-  operations: Operation[];
-  failed: boolean;
+  serviceName: string;
   selectedIndex: number;
   onSelect: (action: SetStateAction<number>) => void;
 }
 
-export function OperationTable({
-  operations,
-  failed,
-  selectedIndex,
-  onSelect,
-}: OperationTableProps) {
-  if (failed) {
+export function OperationTable({ serviceName, selectedIndex, onSelect }: OperationTableProps) {
+  const { data: operations, isError } = useSuspenseServiceOperations(serviceName);
+
+  if (isError) {
     return <Description color={THEME.textError}>Failed to load operations</Description>;
   }
   if (operations.length === 0) {

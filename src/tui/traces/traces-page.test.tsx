@@ -1,7 +1,9 @@
-import { expect, test } from "bun:test";
+import { expect, spyOn, test } from "bun:test";
 
-import { renderPage, search, type TestApp } from "#testing/app.tsx";
+import traceList from "#telemetry/traces/sql/trace-list.sql" with { type: "text" };
+import { renderFailedPage, renderPage, search, type TestApp } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
+import { silenceConsoleError } from "#testing/console.ts";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
@@ -162,14 +164,26 @@ test("keeps the search and sort when switching tabs", async () => {
   expect(tableRows(frame)).toEqual([CART_ROW]);
 });
 
-test("shows an error when traces cannot be loaded", async () => {
+test("shows an error when traces cannot be loaded and retries", async () => {
+  silenceConsoleError();
   await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
   const connection = await receiver.connect();
-  await connection.run("DROP TABLE otlp_traces");
+  const runAndReadAll = connection.runAndReadAll.bind(connection);
+  let failures = 1;
+  spyOn(connection, "runAndReadAll").mockImplementation((...args) => {
+    if (args[0] === traceList && failures > 0) {
+      failures--;
+      return Promise.reject(new Error("traces are unavailable"));
+    }
+    return runAndReadAll(...args);
+  });
 
-  await using app = await renderPage(receiver, "traces");
+  await using app = await renderFailedPage(receiver, "traces", { connection });
+  expect(await app.waitForFrame(() => true)).toContain("Failed to load traces");
+  app.mockInput.pressKey("r");
 
-  await app.waitForFrame((frame) => frame.includes("Failed to load traces"));
+  await app.waitForFrame((frame) => tableRows(frame).length > 0);
 });
 
 test("copies the selected trace's ID", async () => {

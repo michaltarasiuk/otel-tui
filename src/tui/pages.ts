@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import type { Metric } from "#telemetry/metrics/metric.ts";
 
@@ -117,11 +117,12 @@ function switchTab(history: History, tab: Tab): History {
 }
 
 export function usePages() {
-  const [history, setHistory] = useState(START_HISTORY);
+  const [current, setHistory] = useState(START_HISTORY);
+  const history = useDeferredValue(current);
 
   return {
     page: pageAt(history.location),
-    tab: history.location.tab,
+    tab: current.location.tab,
     tracesService: history.location.tracesService,
     tracesOperation: history.location.tracesOperation,
     trace: history.location.trace,

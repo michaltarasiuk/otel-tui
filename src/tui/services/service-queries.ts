@@ -1,4 +1,5 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { DuckDBConnection } from "@duckdb/node-api";
+import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 
 import {
   listOperations,
@@ -8,24 +9,31 @@ import {
 import { useConnection } from "#tui/query/connection.ts";
 import { POLL_INTERVAL_MS } from "#tui/query/polling.ts";
 
-export function useServiceList({ search, sort }: ServiceQuery) {
+export function useServices({ search, sort }: ServiceQuery) {
   const connection = useConnection();
 
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["services", { search, sort }],
     queryFn: () => listServices(connection, { search, sort }),
     refetchInterval: POLL_INTERVAL_MS,
-    placeholderData: keepPreviousData,
+  });
+}
+
+function serviceOperationsQuery(connection: DuckDBConnection, serviceName: string | undefined) {
+  return queryOptions({
+    queryKey: ["services", serviceName, "operations"],
+    queryFn: () => (serviceName === undefined ? [] : listOperations(connection, serviceName)),
+    refetchInterval: POLL_INTERVAL_MS,
+    staleTime: POLL_INTERVAL_MS,
   });
 }
 
 export function useServiceOperations(serviceName: string | undefined) {
-  const connection = useConnection();
+  const options = serviceOperationsQuery(useConnection(), serviceName);
 
-  return useQuery({
-    queryKey: ["services", serviceName, "operations"],
-    queryFn: () => (serviceName === undefined ? [] : listOperations(connection, serviceName)),
-    enabled: serviceName !== undefined,
-    refetchInterval: POLL_INTERVAL_MS,
-  });
+  return useQuery({ ...options, enabled: serviceName !== undefined });
+}
+
+export function useSuspenseServiceOperations(serviceName: string) {
+  return useSuspenseQuery(serviceOperationsQuery(useConnection(), serviceName));
 }

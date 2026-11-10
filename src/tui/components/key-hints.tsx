@@ -9,7 +9,7 @@ import { FocusRoot, useFocused, useKeysEnabled } from "./focus.tsx";
 export const AppKeys = createContext<React.ReactNode>(null);
 
 interface KeyHintsProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function KeyHints({ children }: KeyHintsProps) {

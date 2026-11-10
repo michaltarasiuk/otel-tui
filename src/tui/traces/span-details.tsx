@@ -1,6 +1,6 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 
-import type { Span, SpanContent } from "#telemetry/traces/span.ts";
+import type { Span } from "#telemetry/traces/span.ts";
 import {
   Description,
   DetailsHeader,
@@ -10,6 +10,7 @@ import {
   ScopeName,
   Title,
 } from "#tui/components/details.tsx";
+import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
@@ -17,14 +18,23 @@ import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
 import { formatDuration, formatOffset, formatTime } from "#utils/time.ts";
 
+import { useSuspenseSpanContent } from "./trace-queries.ts";
+
 const NESTED_INDENT = 2;
 
 interface SpanSectionsProps {
-  content: SpanContent;
+  traceId: string;
+  spanId: string;
   children: React.ReactNode;
 }
 
-function SpanSections({ content, children }: SpanSectionsProps) {
+function SpanSections({ traceId, spanId, children }: SpanSectionsProps) {
+  const { data: content } = useSuspenseSpanContent(traceId, spanId);
+
+  if (content === null) {
+    return <Description>Span is no longer stored</Description>;
+  }
+
   return (
     <>
       {content.events.length > 0 && (
@@ -68,13 +78,12 @@ function SpanSections({ content, children }: SpanSectionsProps) {
 
 interface SpanDetailsProps {
   ref: React.Ref<ScrollBoxRenderable>;
+  traceId: string;
   span: Span;
-  content: SpanContent | null | undefined;
-  failed: boolean;
   children: React.ReactNode;
 }
 
-export function SpanDetails({ ref, span, content, failed, children }: SpanDetailsProps) {
+export function SpanDetails({ ref, traceId, span, children }: SpanDetailsProps) {
   const detached = span.depth === 0 && span.parent_span_id !== null;
 
   return (
@@ -102,11 +111,13 @@ export function SpanDetails({ ref, span, content, failed, children }: SpanDetail
         </Description>
       )}
       <ScrollBox ref={ref}>
-        {failed && <Description color={THEME.textError}>Failed to load span details</Description>}
-        {content === null && <Description>Span is no longer stored</Description>}
-        {content !== null && content !== undefined && (
-          <SpanSections content={content}>{children}</SpanSections>
-        )}
+        <ErrorBoundary
+          fallback={<Description color={THEME.textError}>Failed to load span details</Description>}
+        >
+          <SpanSections traceId={traceId} spanId={span.span_id}>
+            {children}
+          </SpanSections>
+        </ErrorBoundary>
       </ScrollBox>
     </>
   );

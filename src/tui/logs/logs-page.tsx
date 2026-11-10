@@ -11,6 +11,7 @@ import { Placeholder } from "#tui/components/placeholder.tsx";
 import { ScrollKeys } from "#tui/components/scroll-box.tsx";
 import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { Split } from "#tui/components/split.tsx";
+import { useDeferredState } from "#tui/components/use-deferred-state.ts";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { type HistogramRange, stepSelection } from "#tui/histogram/bars.ts";
@@ -21,7 +22,7 @@ import { cycle, findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
 import { LogDetails } from "./log-details.tsx";
-import { useLogList, useLogTimeline, useLogTotalCount } from "./log-queries.ts";
+import { useLogs } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
 import { severityColor } from "./severity-color.ts";
 
@@ -35,8 +36,6 @@ const MIN_TABLE_AND_DETAILS_HEIGHT = 12;
 const KEY_HINTS_HEIGHT = 1;
 const MIN_HEIGHT_FOR_HISTOGRAM =
   PAGE_HEADER_HEIGHT + HISTOGRAM_HEIGHT + MIN_TABLE_AND_DETAILS_HEIGHT + KEY_HINTS_HEIGHT;
-
-const NO_BUCKETS: HistogramRange[] = [];
 
 function isError(log: Log) {
   return isErrorLevel(log.severity);
@@ -52,35 +51,34 @@ interface LogsPageProps {
 
 export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }: LogsPageProps) {
   const search = useSearch();
-  const [minSeverity, setMinSeverity] = useState<MinSeverity>();
-  const [timeRange, setTimeRange] = useState<HistogramRange>();
-  const [height, setHeight] = useState(0);
+  const [minSeverity, setMinSeverity] = useDeferredState<MinSeverity>(undefined);
+  const [timeRange, setTimeRange] = useDeferredState<HistogramRange | undefined>(undefined);
+
   const pageRef = useRef<BoxRenderable>(null);
   const detailsRef = useRef<ScrollBoxRenderable>(null);
+  const [height, setHeight] = useState(0);
 
-  const filter = { search: search.text, minSeverity, traceId, spanId };
-  const logList = useLogList({ ...filter, timeRange });
-  const logTimeline = useLogTimeline(filter);
-  const { data: timeline } = logTimeline;
-  const occupied = timeline?.occupied ?? NO_BUCKETS;
-  const logTotalCount = useLogTotalCount();
+  const [logList, logTimeline] = useLogs({
+    search: search.query,
+    minSeverity,
+    traceId,
+    spanId,
+    timeRange,
+  });
 
-  const { data: logs = [] } = logList;
-  const { data: totalCount = 0 } = logTotalCount;
+  const { logs, totalCount } = logList.data;
+  const timeline = logTimeline.data;
 
   const [selectedIndex, select] = useSelection(logs, (log) => log.log_id);
   const selected = logs[selectedIndex];
   const selectedTraceId = selected?.trace_id ?? null;
 
   const filtered =
-    search.text !== "" ||
+    search.query !== "" ||
     minSeverity !== undefined ||
     traceId !== undefined ||
     timeRange !== undefined;
   const browsing = !search.isEditing;
-
-  const isPending = logList.isPending || logTotalCount.isPending;
-  const failed = logList.isError || logTotalCount.isError;
 
   return (
     <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
@@ -94,7 +92,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
         {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
         <Count>{formatShownCount(logs.length, totalCount, "log")}</Count>
       </PageHeader>
-      {timeline !== undefined && height >= MIN_HEIGHT_FOR_HISTOGRAM && (
+      {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
         <TimeHistogram
           title="Logs over time"
           occupied={timeline.occupied}
@@ -102,9 +100,9 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
           selected={timeRange}
         />
       )}
-      {failed ? (
+      {logList.isError ? (
         <Placeholder text="Failed to load logs" variant="error" />
-      ) : isPending || selected === undefined ? (
+      ) : selected === undefined ? (
         <Placeholder text={filtered ? "No logs match" : "Waiting for logs..."} />
       ) : (
         <FocusScope focused={browsing}>
@@ -163,13 +161,15 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
               any time
             </Key>
           )}
-          {occupied.length > 0 && (
+          {timeline.occupied.length > 0 && (
             <StepKeys
               forward="right"
               backward="left"
               description="later range"
               backwardDescription="earlier range"
-              onStep={(step) => setTimeRange((range) => stepSelection(occupied, range, step))}
+              onStep={(step) =>
+                setTimeRange((range) => stepSelection(timeline.occupied, range, step))
+              }
             >
               range
             </StepKeys>

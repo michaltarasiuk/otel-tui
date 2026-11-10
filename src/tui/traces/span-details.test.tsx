@@ -6,7 +6,7 @@ import { at } from "#testing/clock.ts";
 import { silenceConsoleError } from "#testing/console.ts";
 import { tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { detailsLines, keyHints, tableRows } from "#testing/screen.ts";
+import { detailsLines, keyHints, spanRows, tableRows } from "#testing/screen.ts";
 import {
   CART_ROW,
   cartTraceId,
@@ -124,7 +124,7 @@ test("selects a span linked within the same trace", async () => {
   await using app = await renderPage(receiver, "traces");
   await app.waitForFrame((frame) => keyHints(frame).includes("return open"));
   app.mockInput.pressEnter();
-  await app.waitForSelection("run batch");
+  await app.waitForFrame((frame) => spanRows(frame).length === 3);
   app.mockInput.pressArrow("down");
   app.mockInput.pressArrow("down");
   await app.waitForSelection("merge");

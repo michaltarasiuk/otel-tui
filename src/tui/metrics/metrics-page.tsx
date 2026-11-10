@@ -1,5 +1,5 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef } from "react";
 
 import {
   METRIC_SORT_COLUMNS,
@@ -15,6 +15,7 @@ import { Placeholder } from "#tui/components/placeholder.tsx";
 import { ScrollKeys } from "#tui/components/scroll-box.tsx";
 import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { Split } from "#tui/components/split.tsx";
+import { useDeferredState } from "#tui/components/use-deferred-state.ts";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
@@ -22,7 +23,7 @@ import { cycle } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
 import { MetricDetails } from "./metric-details.tsx";
-import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
+import { useMetrics } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
 
 const BY_NAME: MetricSort = { column: "name", descending: false };
@@ -43,22 +44,18 @@ interface MetricsPageProps {
 
 export function MetricsPage({ onOpen }: MetricsPageProps) {
   const search = useSearch();
-  const [sort, setSort] = useState(BY_NAME);
+  const [sort, setSort] = useDeferredState(BY_NAME);
+
   const detailsRef = useRef<ScrollBoxRenderable>(null);
 
-  const metricList = useMetricList({ search: search.text, sort });
-  const metricTotalCount = useMetricTotalCount();
-
-  const { data: metrics = [] } = metricList;
-  const { data: totalCount = 0 } = metricTotalCount;
+  const metricList = useMetrics({ search: search.query, sort });
+  const { metrics, totalCount } = metricList.data;
 
   const [selectedIndex, select] = useSelection(metrics, (metric) => metric.metric_id);
   const selected = metrics[selectedIndex];
+  const detailed = useDeferredValue(selected);
 
   const browsing = !search.isEditing;
-
-  const isPending = metricList.isPending || metricTotalCount.isPending;
-  const isError = metricList.isError || metricTotalCount.isError;
 
   return (
     <box flexGrow={1}>
@@ -66,10 +63,10 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
         <SearchInput search={search} placeholder="name, description, service or key=value" />
         <Count>{formatShownCount(metrics.length, totalCount, "metric")}</Count>
       </PageHeader>
-      {isError ? (
+      {metricList.isError ? (
         <Placeholder text="Failed to load metrics" variant="error" />
-      ) : isPending || selected === undefined ? (
-        <Placeholder text={search.text !== "" ? "No metrics match" : "Waiting for metrics..."} />
+      ) : selected === undefined || detailed === undefined ? (
+        <Placeholder text={search.query !== "" ? "No metrics match" : "Waiting for metrics..."} />
       ) : (
         <FocusScope focused={browsing}>
           <Split>
@@ -79,7 +76,7 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
               onSelect={(action) => select(action)}
               sort={sort}
             />
-            <MetricDetails key={selected.metric_id} ref={detailsRef} metric={selected} />
+            <MetricDetails key={detailed.metric_id} ref={detailsRef} metric={detailed} />
           </Split>
         </FocusScope>
       )}

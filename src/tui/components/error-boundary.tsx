@@ -1,5 +1,7 @@
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
-import { Component } from "react";
+import { Component, createContext, use } from "react";
+
+const RetryContext = createContext(() => {});
 
 interface CatchProps {
   fallback: React.ReactNode;
@@ -23,7 +25,14 @@ class Catch extends Component<CatchProps, CatchState> {
   }
 
   override render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
+    if (!this.state.failed) {
+      return this.props.children;
+    }
+    return (
+      <RetryContext value={() => this.setState({ failed: false })}>
+        {this.props.fallback}
+      </RetryContext>
+    );
   }
 }
 
@@ -40,4 +49,8 @@ export function ErrorBoundary({ fallback, children }: ErrorBoundaryProps) {
       {children}
     </Catch>
   );
+}
+
+export function useRetry() {
+  return use(RetryContext);
 }

@@ -103,3 +103,18 @@ export async function search(app: TestApp, text: string) {
   await app.waitForFrame((frame) => keyHints(frame).includes("return apply"));
   await app.mockInput.typeText(text);
 }
+
+export async function renderFailedPage(
+  receiver: TestReceiver,
+  tab: Exclude<Tab, "services">,
+  options?: AppOptions,
+) {
+  const app = await renderApp(receiver, options);
+  const previous = TAB_ORDER[TAB_ORDER.indexOf(tab) - 1] ?? "services";
+  await openTab(app, previous);
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => frame.includes("Failed to load"));
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => keyHints(frame).includes("r retry"));
+  return app;
+}

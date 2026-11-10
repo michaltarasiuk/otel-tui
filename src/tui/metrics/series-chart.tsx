@@ -1,5 +1,4 @@
 import { RGBA } from "@opentui/core";
-import { Suspense } from "react";
 
 import { counterIntervals, distributionIntervals } from "#telemetry/metrics/intervals.ts";
 import { isDelta, type Metric } from "#telemetry/metrics/metric.ts";
@@ -17,7 +16,6 @@ import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from ".
 import { PERCENTILES } from "./series-stats.ts";
 
 const CHART_HEIGHT = 8;
-const CHART_TIME_AXIS_HEIGHT = 1;
 
 const MIN_WINDOW_MS = MINUTE_MS;
 
@@ -155,15 +153,13 @@ export function SeriesChart({ metric, series, color, windowStart, windowMs }: Se
     <Section title={title}>
       {series.stats.kind === "distribution" && <PercentileLegend color={color} />}
       <ErrorBoundary fallback={<text fg={THEME.textError}>Failed to load data points</text>}>
-        <Suspense fallback={<box height={CHART_HEIGHT + CHART_TIME_AXIS_HEIGHT} />}>
-          <SeriesPlot
-            metric={metric}
-            series={series}
-            color={color}
-            windowStart={windowStart}
-            windowMs={windowMs}
-          />
-        </Suspense>
+        <SeriesPlot
+          metric={metric}
+          series={series}
+          color={color}
+          windowStart={windowStart}
+          windowMs={windowMs}
+        />
       </ErrorBoundary>
     </Section>
   );

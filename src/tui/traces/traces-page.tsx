@@ -9,6 +9,7 @@ import { Chip, Count, PageHeader, SearchInput } from "#tui/components/page-heade
 import { Placeholder } from "#tui/components/placeholder.tsx";
 import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
+import { useDeferredState } from "#tui/components/use-deferred-state.ts";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { type HistogramRange, stepSelection } from "#tui/histogram/bars.ts";
@@ -19,7 +20,7 @@ import { THEME } from "#tui/theme/theme.ts";
 import { cycle, findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
-import { useTraceList, useTraceTimeline, useTraceTotalCount } from "./trace-queries.ts";
+import { useTraces } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
 
 const PAGE_HEADER_HEIGHT = 1;
@@ -27,8 +28,6 @@ const MIN_TABLE_HEIGHT = 6;
 const KEY_HINTS_HEIGHT = 1;
 const MIN_HEIGHT_FOR_HISTOGRAM =
   PAGE_HEADER_HEIGHT + HISTOGRAM_HEIGHT + MIN_TABLE_HEIGHT + KEY_HINTS_HEIGHT;
-
-const NO_BUCKETS: HistogramRange[] = [];
 
 const NEWEST_FIRST: TraceSort = { column: "start_time", descending: true };
 
@@ -54,43 +53,31 @@ export function TracesPage({
   onBack,
 }: TracesPageProps) {
   const search = useSearch();
-  const [errorsOnly, setErrorsOnly] = useState(false);
-  const [timeRange, setTimeRange] = useState<HistogramRange>();
-  const [sort, setSort] = useState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
-  const [height, setHeight] = useState(0);
+  const [errorsOnly, setErrorsOnly] = useDeferredState(false);
+  const [timeRange, setTimeRange] = useDeferredState<HistogramRange | undefined>(undefined);
+  const [sort, setSort] = useDeferredState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
 
   const pageRef = useRef<BoxRenderable>(null);
+  const [height, setHeight] = useState(0);
 
-  const traceList = useTraceList({
-    search: search.text,
+  const [traceList, traceTimeline] = useTraces({
+    search: search.query,
     errorsOnly,
     serviceName: service,
     operationName: operation,
     timeRange,
     sort,
   });
-  const traceTimeline = useTraceTimeline({
-    search: search.text,
-    errorsOnly,
-    serviceName: service,
-    operationName: operation,
-  });
-  const traceTotalCount = useTraceTotalCount();
 
-  const { data: traces = [] } = traceList;
-  const { data: timeline } = traceTimeline;
-  const { data: totalCount = 0 } = traceTotalCount;
+  const { traces, totalCount } = traceList.data;
+  const timeline = traceTimeline.data;
 
   const [selectedIndex, select] = useSelection(traces, (trace) => trace.trace_id);
   const selected = traces[selectedIndex];
 
-  const occupied = timeline?.occupied ?? NO_BUCKETS;
   const filtered =
-    search.text !== "" || errorsOnly || timeRange !== undefined || service !== undefined;
+    search.query !== "" || errorsOnly || timeRange !== undefined || service !== undefined;
   const browsing = !search.isEditing;
-
-  const isPending = traceList.isPending || traceTotalCount.isPending;
-  const isError = traceList.isError || traceTotalCount.isError;
 
   return (
     <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
@@ -106,7 +93,7 @@ export function TracesPage({
         {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
         <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
       </PageHeader>
-      {timeline !== undefined && height >= MIN_HEIGHT_FOR_HISTOGRAM && (
+      {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
         <TimeHistogram
           title="Traces over time"
           occupied={timeline.occupied}
@@ -114,9 +101,9 @@ export function TracesPage({
           selected={timeRange}
         />
       )}
-      {isError ? (
+      {traceList.isError ? (
         <Placeholder text="Failed to load traces" variant="error" />
-      ) : isPending || selected === undefined ? (
+      ) : selected === undefined ? (
         <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />
       ) : (
         <FocusScope focused={browsing}>
@@ -176,13 +163,15 @@ export function TracesPage({
                 all traces
               </Key>
             )}
-          {occupied.length > 0 && (
+          {timeline.occupied.length > 0 && (
             <StepKeys
               forward="right"
               description="later range"
               backwardDescription="earlier range"
               backward="left"
-              onStep={(step) => setTimeRange((range) => stepSelection(occupied, range, step))}
+              onStep={(step) =>
+                setTimeRange((range) => stepSelection(timeline.occupied, range, step))
+              }
             >
               range
             </StepKeys>

@@ -80,7 +80,11 @@ test("shows the selected service's operations", async () => {
 
   app.mockInput.pressArrow("down");
 
-  const frame = await app.waitForFrame((frame) => detailsLines(frame).length === 3);
+  const frame = await app.waitForFrame(
+    (frame) =>
+      detailsLines(frame).includes("● checkout server and consumer spans") &&
+      detailsLines(frame).length === 3,
+  );
   expect(detailsLines(frame)).toEqual([
     "● checkout server and consumer spans",
     "Operation Rate Errors p50 p95 p99 Spans",

@@ -1,7 +1,8 @@
 import { beforeEach, expect, test } from "bun:test";
 
-import { renderPage, search } from "#testing/app.tsx";
+import { renderFailedPage, renderPage, search } from "#testing/app.tsx";
 import { atSecond, fakeClock } from "#testing/clock.ts";
+import { silenceConsoleError } from "#testing/console.ts";
 import {
   BODY_SIZE_ROW,
   BY_NAME,
@@ -172,11 +173,12 @@ test("scrolls the metric panel down and back up", async () => {
 });
 
 test("shows an error when metrics cannot be loaded", async () => {
+  silenceConsoleError();
   await using receiver = await startTestReceiver();
   const connection = await receiver.connect();
   await connection.run("DROP TABLE otlp_metrics_gauge");
 
-  await using app = await renderPage(receiver, "metrics");
+  await using app = await renderFailedPage(receiver, "metrics");
 
-  await app.waitForFrame((frame) => frame.includes("Failed to load metrics"));
+  expect(await app.waitForFrame(() => true)).toContain("Failed to load metrics");
 });

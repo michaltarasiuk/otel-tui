@@ -1,7 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { renderPage, search } from "#testing/app.tsx";
+import { renderFailedPage, renderPage, search } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
+import { silenceConsoleError } from "#testing/console.ts";
 import {
   CART_EVENT_ROW,
   checkoutTrace,
@@ -296,13 +297,14 @@ test("lists identical logs separately and selects each in turn", async () => {
 });
 
 test("shows an error when logs cannot be loaded", async () => {
+  silenceConsoleError();
   await using receiver = await startTestReceiver();
   const connection = await receiver.connect();
   await connection.run("DROP TABLE otlp_logs");
 
-  await using app = await renderPage(receiver, "logs");
+  await using app = await renderFailedPage(receiver, "logs");
 
-  await app.waitForFrame((frame) => frame.includes("Failed to load logs"));
+  expect(await app.waitForFrame(() => true)).toContain("Failed to load logs");
 });
 
 test("copies the selected log's body", async () => {

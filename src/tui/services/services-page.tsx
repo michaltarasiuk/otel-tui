@@ -1,23 +1,27 @@
-import { useState } from "react";
+import { useDeferredValue } from "react";
 
 import { SERVICE_WINDOW_MS } from "#telemetry/services/read-services.ts";
 import { SERVICE_SORT_COLUMNS, type ServiceSort } from "#telemetry/services/service.ts";
+import { Description } from "#tui/components/details.tsx";
+import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#tui/components/page-header.tsx";
 import { Placeholder } from "#tui/components/placeholder.tsx";
 import { SearchKeys } from "#tui/components/search-keys.tsx";
 import { Split } from "#tui/components/split.tsx";
+import { useDeferredState } from "#tui/components/use-deferred-state.ts";
 import { useRegion } from "#tui/components/use-region.ts";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
+import { THEME } from "#tui/theme/theme.ts";
 import { cycle } from "#utils/cycle.ts";
 import { formatCount } from "#utils/number.ts";
 
 import { OperationTable } from "./operation-table.tsx";
 import { ServiceDetails } from "./service-details.tsx";
-import { useServiceList, useServiceOperations } from "./service-queries.ts";
+import { useServiceOperations, useServices } from "./service-queries.ts";
 import { ServiceTable } from "./service-table.tsx";
 
 const REGION_KEYS_PRIORITY = 1;
@@ -35,15 +39,16 @@ interface ServicesPageProps {
 
 export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
   const search = useSearch();
-  const [sort, setSort] = useState(BUSIEST_FIRST);
+  const [sort, setSort] = useDeferredState(BUSIEST_FIRST);
 
-  const serviceList = useServiceList({ search: search.text, sort });
-  const { data: services = [] } = serviceList;
+  const serviceList = useServices({ search: search.query, sort });
+  const { data: services } = serviceList;
 
   const [selectedIndex, select] = useSelection(services, (service) => service.service_name);
   const selected = services[selectedIndex];
+  const detailed = useDeferredValue(selected);
 
-  const serviceOperations = useServiceOperations(selected?.service_name);
+  const serviceOperations = useServiceOperations(detailed?.service_name);
   const { data: operations = [] } = serviceOperations;
   const [operationIndex, selectOperation] = useSelection(operations, (operation) => operation.name);
   const operation = operations[operationIndex];
@@ -63,10 +68,10 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
       </PageHeader>
       {serviceList.isError ? (
         <Placeholder text="Failed to load services" variant="error" />
-      ) : serviceList.isPending || selected === undefined ? (
+      ) : selected === undefined || detailed === undefined ? (
         <Placeholder
           text={
-            search.text !== "" ? "No services match" : "Waiting for server or consumer spans..."
+            search.query !== "" ? "No services match" : "Waiting for server or consumer spans..."
           }
         />
       ) : (
@@ -83,17 +88,22 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
                 sort={sort}
               />
             </FocusScope>
-            <ServiceDetails service={selected}>
+            <ServiceDetails key={detailed.service_name} service={detailed}>
               <FocusScope
                 focused={region === "operations"}
                 onFocusRequest={() => focusRegion("operations")}
               >
-                <OperationTable
-                  operations={operations}
-                  failed={serviceOperations.isError}
-                  selectedIndex={operationIndex}
-                  onSelect={(action) => selectOperation(action)}
-                />
+                <ErrorBoundary
+                  fallback={
+                    <Description color={THEME.textError}>Failed to load operations</Description>
+                  }
+                >
+                  <OperationTable
+                    serviceName={detailed.service_name}
+                    selectedIndex={operationIndex}
+                    onSelect={(action) => selectOperation(action)}
+                  />
+                </ErrorBoundary>
               </FocusScope>
             </ServiceDetails>
           </Split>

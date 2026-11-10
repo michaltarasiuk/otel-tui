@@ -129,8 +129,9 @@ test("opens the logs of the selected span", async () => {
 
   app.mockInput.pressKey("l", { shift: true });
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Credit card info is invalid."));
+  const frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith(" logs"));
   expect(pageHeader(frame)).toBe(`trace 22222222 span ${"2b".repeat(4)} 1 of 3 logs`);
+  expect(frame).toContain("Credit card info is invalid.");
   expect(frame).not.toContain("[PlaceOrder]");
 });
 

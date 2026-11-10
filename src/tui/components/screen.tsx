@@ -1,4 +1,4 @@
-import { Activity } from "react";
+import { Activity, useState } from "react";
 
 interface ScreenProps {
   when: boolean;
@@ -6,5 +6,10 @@ interface ScreenProps {
 }
 
 export function Screen({ when, children }: ScreenProps) {
-  return <Activity mode={when ? "visible" : "hidden"}>{children}</Activity>;
+  const [shown, setShown] = useState(when);
+  if (when && !shown) {
+    setShown(true);
+  }
+
+  return <Activity mode={when ? "visible" : "hidden"}>{shown && children}</Activity>;
 }

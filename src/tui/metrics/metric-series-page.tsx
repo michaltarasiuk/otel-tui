@@ -1,8 +1,10 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 
 import type { Metric } from "#telemetry/metrics/metric.ts";
 import type { Exemplar } from "#telemetry/metrics/series.ts";
+import { Description } from "#tui/components/details.tsx";
+import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { FocusScope } from "#tui/components/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#tui/components/key-hints.tsx";
 import { Placeholder } from "#tui/components/placeholder.tsx";
@@ -11,6 +13,7 @@ import { Split } from "#tui/components/split.tsx";
 import { useRegion } from "#tui/components/use-region.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
+import { THEME } from "#tui/theme/theme.ts";
 import { cycle } from "#utils/cycle.ts";
 import { MINUTE_MS } from "#utils/time.ts";
 
@@ -39,19 +42,21 @@ interface MetricSeriesPageProps {
 }
 
 export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPageProps) {
-  const metricSeries = useMetricSeries(metric);
-  const detailsRef = useRef<ScrollBoxRenderable>(null);
   const [chartWindow, setChartWindow] = useState<(typeof CHART_WINDOWS)[number]>();
 
-  const { data: series = [] } = metricSeries;
+  const detailsRef = useRef<ScrollBoxRenderable>(null);
 
+  const metricSeries = useMetricSeries(metric);
+  const { data: series } = metricSeries;
   const columns = attributeColumns(series);
   const rows = sortByColumns(series, columns);
-  const [selectedIndex, select] = useSelection(rows, (row) => row.series_id);
-  const selected = rows[selectedIndex];
   const windowStart = Math.min(...series.map((row) => row.first_time));
 
-  const seriesExemplars = useSeriesExemplars(metric, selected?.series_id);
+  const [selectedIndex, select] = useSelection(rows, (row) => row.series_id);
+  const selected = rows[selectedIndex];
+  const detailed = useDeferredValue(selected);
+
+  const seriesExemplars = useSeriesExemplars(metric, detailed?.series_id);
   const { data: exemplars = [] } = seriesExemplars;
   const [exemplarIndex, selectExemplar] = useSelection(exemplars, (exemplar) =>
     exemplarKey(exemplar),
@@ -67,10 +72,8 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
     <box flexGrow={1}>
       {metricSeries.isError ? (
         <Placeholder text="Failed to load metric" variant="error" />
-      ) : selected === undefined ? (
-        <Placeholder
-          text={metricSeries.isPending ? "Loading metric..." : "This metric is no longer available"}
-        />
+      ) : selected === undefined || detailed === undefined ? (
+        <Placeholder text="This metric is no longer available" />
       ) : (
         <>
           <box paddingX={1}>
@@ -87,11 +90,11 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
               />
             </FocusScope>
             <SeriesDetails
-              key={selected.series_id}
+              key={detailed.series_id}
               ref={detailsRef}
               metric={metric}
-              series={selected}
-              label={seriesLabel(selected, columns)}
+              series={detailed}
+              label={seriesLabel(detailed, columns)}
               windowStart={windowStart}
               windowMs={chartWindow}
             >
@@ -99,13 +102,18 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
                 focused={region === "exemplars"}
                 onFocusRequest={() => focusRegion("exemplars")}
               >
-                <ExemplarList
-                  exemplars={exemplars}
-                  failed={seriesExemplars.isError}
-                  unit={metric.unit}
-                  selectedIndex={exemplarIndex}
-                  onSelect={(index) => selectExemplar(index)}
-                />
+                <ErrorBoundary
+                  fallback={
+                    <Description color={THEME.textError}>Failed to load exemplars</Description>
+                  }
+                >
+                  <ExemplarList
+                    metric={metric}
+                    seriesId={detailed.series_id}
+                    selectedIndex={exemplarIndex}
+                    onSelect={(index) => selectExemplar(index)}
+                  />
+                </ErrorBoundary>
               </FocusScope>
             </SeriesDetails>
           </Split>

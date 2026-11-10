@@ -1,5 +1,5 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 
 import {
   ancestorIds,
@@ -53,38 +53,28 @@ export function TraceSpansPage({
   onOpenLogs,
   onOpenTrace,
 }: TraceSpansPageProps) {
-  const traceSpans = useTraceSpans(traceId);
-  const detailsRef = useRef<ScrollBoxRenderable>(null);
-
-  const { data: spans = [] } = traceSpans;
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [showCriticalPath, setShowCriticalPath] = useState(false);
 
-  const shown = visibleSpans(spans, collapsed);
-  const [selectedIndex, select, selectKey] = useSelection(shown, (span) => span.span_id, spanId);
-  const selected = shown[selectedIndex];
-  const selectedChildren = descendantCount(spans, spans.indexOf(selected ?? spans[0]!));
+  const detailsRef = useRef<ScrollBoxRenderable>(null);
 
+  const traceSpans = useTraceSpans(traceId);
+  const { data: spans } = traceSpans;
+  const [root] = spans;
+  const durationMs = traceDuration(spans);
   const hiddenCounts = new Map(
     spans.flatMap((span, index) =>
       collapsed.has(span.span_id) ? [[span.span_id, descendantCount(spans, index)] as const] : [],
     ),
   );
 
-  function toggleCollapsed(spanId: string) {
-    setCollapsed((collapsed) => {
-      const next = new Set(collapsed);
-      if (!next.delete(spanId)) {
-        next.add(spanId);
-      }
-      return next;
-    });
-  }
+  const shown = visibleSpans(spans, collapsed);
+  const [selectedIndex, select, selectKey] = useSelection(shown, (span) => span.span_id, spanId);
+  const selected = shown[selectedIndex];
+  const detailed = useDeferredValue(selected);
+  const selectedChildren = descendantCount(spans, spans.indexOf(selected ?? spans[0]!));
 
-  const [root] = spans;
-  const durationMs = traceDuration(spans);
-
-  const spanContent = useSpanContent(traceId, selected?.span_id);
+  const spanContent = useSpanContent(traceId, detailed?.span_id);
   const links = spanContent.data?.links ?? [];
   const [linkIndex, selectLink] = useSelection(links, (link) => linkKey(link));
   const link = links[linkIndex];
@@ -96,6 +86,16 @@ export function TraceSpansPage({
   const [region, stepRegion, focusRegion] = useRegion(
     links.length > 0 ? SPANS_AND_LINKS : SPANS_ONLY,
   );
+
+  function toggleCollapsed(spanId: string) {
+    setCollapsed((collapsed) => {
+      const next = new Set(collapsed);
+      if (!next.delete(spanId)) {
+        next.add(spanId);
+      }
+      return next;
+    });
+  }
 
   function openLink(link: SpanLink) {
     if (linkedSpanIndex !== -1) {
@@ -112,10 +112,8 @@ export function TraceSpansPage({
     <box flexGrow={1}>
       {traceSpans.isError ? (
         <Placeholder text="Failed to load trace" variant="error" />
-      ) : root === undefined || selected === undefined ? (
-        <Placeholder
-          text={traceSpans.isPending ? "Loading trace..." : "This trace is no longer available"}
-        />
+      ) : root === undefined || detailed === undefined ? (
+        <Placeholder text="This trace is no longer available" />
       ) : (
         <>
           <TraceHeader traceId={traceId} root={root} spans={spans} durationMs={durationMs} />
@@ -130,13 +128,7 @@ export function TraceSpansPage({
                 criticalPath={showCriticalPath ? criticalPath(spans) : undefined}
               />
             </FocusScope>
-            <SpanDetails
-              key={selected.span_id}
-              ref={detailsRef}
-              span={selected}
-              content={spanContent.data}
-              failed={spanContent.isError}
-            >
+            <SpanDetails key={detailed.span_id} ref={detailsRef} traceId={traceId} span={detailed}>
               <FocusScope focused={region === "links"} onFocusRequest={() => focusRegion("links")}>
                 <LinkList
                   links={links}

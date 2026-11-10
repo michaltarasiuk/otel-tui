@@ -1,5 +1,4 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { Suspense } from "react";
 
 import type { Attributes } from "#telemetry/attributes.ts";
 import type { Metric } from "#telemetry/metrics/metric.ts";
@@ -14,7 +13,7 @@ import { formatInteger } from "#utils/number.ts";
 
 import { attributeValues } from "./attribute-values.ts";
 import { MetricHeader } from "./metric-header.tsx";
-import { useSuspenseMetricSeries } from "./metric-queries.ts";
+import { useMetricSeries } from "./metric-queries.ts";
 
 const MAX_LISTED_VALUES = 3;
 
@@ -47,7 +46,7 @@ interface SeriesSummaryProps {
 }
 
 function SeriesSummary({ metric }: SeriesSummaryProps) {
-  const { data: series } = useSuspenseMetricSeries(metric);
+  const { data: series } = useMetricSeries(metric);
   const attributes = summarize(series.map(({ attributes }) => attributes));
   const resourceAttributes = summarize(
     series.map(({ resource_attributes }) => resource_attributes),
@@ -90,9 +89,7 @@ export function MetricDetails({ ref, metric }: MetricDetailsProps) {
         <ErrorBoundary
           fallback={<Description color={THEME.textError}>Failed to load series</Description>}
         >
-          <Suspense>
-            <SeriesSummary metric={metric} />
-          </Suspense>
+          <SeriesSummary metric={metric} />
         </ErrorBoundary>
       </ScrollBox>
     </>
