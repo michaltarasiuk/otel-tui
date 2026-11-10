@@ -1,6 +1,12 @@
 import { expect, test } from "bun:test";
 
-import { ancestorIds, criticalPath, descendantCount, visibleSpans } from "./span-tree.ts";
+import {
+  ancestorIds,
+  criticalPath,
+  descendantCount,
+  hiddenCounts,
+  visibleSpans,
+} from "./span-tree.ts";
 import type { Span } from "./span.ts";
 
 function span(
@@ -42,6 +48,17 @@ test("counts every span nested under a span", () => {
   expect(descendantCount(SPANS, 0)).toBe(3);
   expect(descendantCount(SPANS, 1)).toBe(1);
   expect(descendantCount(SPANS, 3)).toBe(0);
+});
+
+test("counts the spans hidden under each collapsed span", () => {
+  const collapsed = new Set(["a", "b"]);
+
+  expect(hiddenCounts(SPANS, collapsed)).toEqual(
+    new Map([
+      ["a", 1],
+      ["b", 0],
+    ]),
+  );
 });
 
 test("hides the spans under each collapsed span", () => {

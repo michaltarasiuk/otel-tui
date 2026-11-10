@@ -5,6 +5,7 @@ import {
   ancestorIds,
   criticalPath,
   descendantCount,
+  hiddenCounts,
   visibleSpans,
 } from "#telemetry/traces/span-tree.ts";
 import type { Span, SpanLink } from "#telemetry/traces/span.ts";
@@ -62,26 +63,20 @@ export function TraceSpansPage({
   const { data: spans } = traceSpans;
   const [root] = spans;
   const durationMs = traceDuration(spans);
-  const hiddenCounts = new Map(
-    spans.flatMap((span, index) =>
-      collapsed.has(span.span_id) ? [[span.span_id, descendantCount(spans, index)] as const] : [],
-    ),
-  );
 
   const shown = visibleSpans(spans, collapsed);
   const [selectedIndex, select, selectKey] = useSelection(shown, (span) => span.span_id, spanId);
   const selected = shown[selectedIndex];
   const detailed = useDeferredValue(selected);
-  const selectedChildren = descendantCount(spans, spans.indexOf(selected ?? spans[0]!));
 
   const spanContent = useSpanContent(traceId, detailed?.span_id);
   const links = spanContent.data?.links ?? [];
   const [linkIndex, selectLink] = useSelection(links, (link) => linkKey(link));
   const link = links[linkIndex];
-  const linkedSpanIndex =
-    link?.trace_id === traceId ? spans.findIndex((span) => span.span_id === link.span_id) : -1;
   const canOpenLink =
-    linkedSpanIndex !== -1 || (link !== undefined && link.trace_id !== traceId && link.has_trace);
+    link?.trace_id === traceId
+      ? spans.some((span) => span.span_id === link.span_id)
+      : link?.has_trace === true;
 
   const [region, stepRegion, focusRegion] = useRegion(
     links.length > 0 ? SPANS_AND_LINKS : SPANS_ONLY,
@@ -98,7 +93,7 @@ export function TraceSpansPage({
   }
 
   function openLink(link: SpanLink) {
-    if (linkedSpanIndex !== -1) {
+    if (link.trace_id === traceId) {
       const ancestors = new Set(ancestorIds(spans, link.span_id));
       setCollapsed((collapsed) => new Set([...collapsed].filter((id) => !ancestors.has(id))));
       selectKey(link.span_id);
@@ -124,7 +119,7 @@ export function TraceSpansPage({
                 selectedIndex={selectedIndex}
                 onSelect={(action) => select(action)}
                 traceDurationMs={durationMs}
-                hiddenCounts={hiddenCounts}
+                hiddenCounts={hiddenCounts(spans, collapsed)}
                 criticalPath={showCriticalPath ? criticalPath(spans) : undefined}
               />
             </FocusScope>
@@ -168,7 +163,7 @@ export function TraceSpansPage({
               next error
             </StepKeys>
           )}
-          {selected !== undefined && selectedChildren > 0 && (
+          {selected !== undefined && descendantCount(spans, spans.indexOf(selected)) > 0 && (
             <Key
               name="space"
               description={

@@ -16,6 +16,16 @@ export function descendantCount(spans: Span[], index: number) {
   return count;
 }
 
+export function hiddenCounts(spans: Span[], collapsed: ReadonlySet<string>) {
+  const counts = new Map<string, number>();
+  for (const [index, span] of spans.entries()) {
+    if (collapsed.has(span.span_id)) {
+      counts.set(span.span_id, descendantCount(spans, index));
+    }
+  }
+  return counts;
+}
+
 export function visibleSpans(spans: Span[], collapsed: ReadonlySet<string>) {
   const visible: Span[] = [];
   let hiddenBelowDepth: number | undefined;
