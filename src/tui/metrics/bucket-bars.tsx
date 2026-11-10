@@ -9,6 +9,7 @@ import {
 } from "#telemetry/metrics/distribution.ts";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
+import { formatInteger } from "#utils/number.ts";
 
 import { formatMetricValue } from "./metric-value.ts";
 
@@ -65,7 +66,7 @@ export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
             {BAR_MARK.repeat(barLength(bucket.count))}
           </text>
           <text width={COLUMN_COUNT_WIDTH} flexShrink={0} textAlign="right" fg={THEME.text}>
-            {bucket.count.toLocaleString()}
+            {formatInteger(bucket.count)}
           </text>
         </box>
       ))}

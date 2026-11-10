@@ -18,8 +18,8 @@ import { Split } from "#tui/components/split.tsx";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
-import { formatShownCount } from "#utils/format-shown-count.ts";
-import { stepItem } from "#utils/step-item.ts";
+import { cycle } from "#utils/cycle.ts";
+import { formatShownCount } from "#utils/number.ts";
 
 import { MetricDetails } from "./metric-details.tsx";
 import { useMetricList, useMetricTotalCount } from "./metric-queries.ts";
@@ -33,7 +33,7 @@ const DESCENDING_FIRST = { name: false, series_count: true, last_time: true } sa
 >;
 
 function nextSort(column: MetricSortColumn) {
-  const next = stepItem(METRIC_SORT_COLUMNS, column, 1);
+  const next = cycle(METRIC_SORT_COLUMNS, column, 1);
   return { column: next, descending: DESCENDING_FIRST[next] };
 }
 

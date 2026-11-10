@@ -3,7 +3,7 @@ import { useBindings } from "@opentui/keymap/react";
 import { type SetStateAction, useEffectEvent, useRef, useState } from "react";
 
 import { THEME } from "#tui/theme/theme.ts";
-import { clamp } from "#utils/clamp.ts";
+import { clamp } from "#utils/number.ts";
 
 import { useFocused, useFocusRequest, useKeysEnabled } from "./focus.tsx";
 import { SelectedContext } from "./table.tsx";

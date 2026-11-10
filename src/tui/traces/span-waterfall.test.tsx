@@ -24,7 +24,7 @@ import {
   STATUS_ROW,
 } from "#testing/traces.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { collapseWhitespace } from "#utils/text.ts";
 
 function barExtent({ lines }: CapturedFrame, name: string, color: string) {
   const background = RGBA.fromHex(color);

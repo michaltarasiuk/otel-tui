@@ -5,8 +5,8 @@ import { Rows } from "#tui/components/rows.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#tui/components/table.tsx";
 import { COLUMN_SERVICE_WIDTH, COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { collapseWhitespace } from "#utils/text.ts";
+import { formatTime } from "#utils/time.ts";
 
 import { severityColor } from "./severity-color.ts";
 
@@ -36,7 +36,7 @@ export function LogTable({ logs, selectedIndex, onSelect }: LogTableProps) {
         {(log) => (
           <Row>
             <Cell width={COLUMN_TIME_WIDTH} muted>
-              {log.time !== null && formatTimeOfDay(log.time)}
+              {log.time !== null && formatTime(log.time)}
             </Cell>
             <Cell width={COLUMN_SEVERITY_WIDTH} color={severityColor(log.severity)}>
               {log.severity ?? log.severity_text}

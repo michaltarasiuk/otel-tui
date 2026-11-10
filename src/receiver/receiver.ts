@@ -11,7 +11,7 @@ import dedent from "dedent";
 import { z } from "zod";
 
 import { installMacros } from "#telemetry/macros.ts";
-import { SECOND_MS } from "#utils/time-units.ts";
+import { SECOND_MS } from "#utils/time.ts";
 
 import { StartupError } from "../startup-error.ts";
 

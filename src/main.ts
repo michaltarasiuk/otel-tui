@@ -1,6 +1,6 @@
 import dedent from "dedent";
 
-import { MINUTE_MS } from "#utils/time-units.ts";
+import { MINUTE_MS } from "#utils/time.ts";
 
 import { startMcpServer } from "./mcp/mcp-server.ts";
 import { HELP, type Options, OptionsError, parseOptions, VERSION } from "./options.ts";

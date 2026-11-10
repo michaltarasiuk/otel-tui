@@ -9,7 +9,8 @@ import {
   COLUMN_SORT_ARROW_WIDTH,
   COLUMN_TIME_WIDTH,
 } from "#tui/theme/columns.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatInteger } from "#utils/number.ts";
+import { formatTime } from "#utils/time.ts";
 
 const COLUMN_TYPE_WIDTH = 13;
 const COLUMN_UNIT_WIDTH = 10;
@@ -52,7 +53,7 @@ export function MetricTable({ metrics, selectedIndex, onSelect, sort }: MetricTa
         {(metric) => (
           <Row>
             <Cell width={COLUMN_TIME_WIDTH} muted>
-              {formatTimeOfDay(metric.last_time)}
+              {formatTime(metric.last_time)}
             </Cell>
             <Cell width={COLUMN_SERVICE_WIDTH} muted>
               {metric.service_name !== null && <ServiceName name={metric.service_name} />}
@@ -65,7 +66,7 @@ export function MetricTable({ metrics, selectedIndex, onSelect, sort }: MetricTa
               {metric.unit}
             </Cell>
             <Cell width={COLUMN_SERIES_WIDTH} align="right">
-              {metric.series_count.toLocaleString()}
+              {formatInteger(metric.series_count)}
             </Cell>
           </Row>
         )}

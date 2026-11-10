@@ -1,3 +1,3 @@
-import { SECOND_MS } from "#utils/time-units.ts";
+import { SECOND_MS } from "#utils/time.ts";
 
 export const POLL_INTERVAL_MS = SECOND_MS;

@@ -12,8 +12,8 @@ import { useRegion } from "#tui/components/use-region.ts";
 import { useSearch } from "#tui/components/use-search.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
-import { formatCount } from "#utils/format-count.ts";
-import { stepItem } from "#utils/step-item.ts";
+import { cycle } from "#utils/cycle.ts";
+import { formatCount } from "#utils/number.ts";
 
 import { OperationTable } from "./operation-table.tsx";
 import { ServiceDetails } from "./service-details.tsx";
@@ -120,7 +120,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
             name="o"
             onPress={() =>
               setSort((sort) => ({
-                column: stepItem(SERVICE_SORT_COLUMNS, sort.column, 1),
+                column: cycle(SERVICE_SORT_COLUMNS, sort.column, 1),
                 descending: true,
               }))
             }

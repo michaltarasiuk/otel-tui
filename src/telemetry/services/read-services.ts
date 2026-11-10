@@ -1,7 +1,7 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
 
 import { substringPattern } from "#telemetry/like-pattern.ts";
-import { MINUTE_MS } from "#utils/time-units.ts";
+import { MINUTE_MS } from "#utils/time.ts";
 
 import { Operation, Service, type ServiceSort } from "./service.ts";
 import serviceList from "./sql/service-list.sql" with { type: "text" };

@@ -1,4 +1,4 @@
-import { parseDuration } from "#utils/parse-duration.ts";
+import { parseDuration } from "#utils/time.ts";
 
 import { substringPattern } from "./like-pattern.ts";
 

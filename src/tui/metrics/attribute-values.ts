@@ -1,5 +1,5 @@
 import type { Attributes } from "#telemetry/attributes.ts";
-import { compareText } from "#utils/compare-text.ts";
+import { compareText } from "#utils/text.ts";
 
 export function attributeValues(attributeSets: Attributes[]) {
   const byKey = new Map<string, { values: Set<string>; setCount: number }>();

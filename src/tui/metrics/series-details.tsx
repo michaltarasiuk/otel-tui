@@ -7,7 +7,7 @@ import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatTime } from "#utils/time.ts";
 
 import { BucketBars } from "./bucket-bars.tsx";
 import { SeriesChart } from "./series-chart.tsx";
@@ -39,7 +39,7 @@ export function SeriesDetails({
     <>
       <DetailsHeader>
         <Title>{label}</Title>
-        <Id>{formatTimeOfDay(series.last_time)}</Id>
+        <Id>{formatTime(series.last_time)}</Id>
       </DetailsHeader>
       <Meta>
         {statKeys(metric.type).map((key) => (

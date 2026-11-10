@@ -6,9 +6,8 @@ import { Rows } from "#tui/components/rows.tsx";
 import { SPLIT_PADDING_X } from "#tui/components/split.tsx";
 import { Cell, Column, Row, TableHeader } from "#tui/components/table.tsx";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatDuration } from "#utils/format-duration.ts";
-import { formatPercent } from "#utils/format-percent.ts";
-import { formatRate } from "#utils/format-rate.ts";
+import { formatInteger, formatPercent, formatRate } from "#utils/number.ts";
+import { formatDuration } from "#utils/time.ts";
 
 import {
   COLUMN_DURATION_WIDTH,
@@ -90,7 +89,7 @@ export function OperationTable({
               {formatDuration(operation.p99_ms)}
             </Cell>
             <Cell width={COLUMN_SPANS_WIDTH} align="right" muted>
-              {operation.span_count.toLocaleString()}
+              {formatInteger(operation.span_count)}
             </Cell>
           </Row>
         )}

@@ -10,8 +10,7 @@ import {
   COLUMN_TIME_WIDTH,
 } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatDuration } from "#utils/format-duration.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatDuration, formatTime } from "#utils/time.ts";
 
 const COLUMN_SPANS_WIDTH = 5 + COLUMN_SORT_ARROW_WIDTH;
 const COLUMN_ERRORS_WIDTH = 6 + COLUMN_SORT_ARROW_WIDTH;
@@ -57,7 +56,7 @@ export function TraceTable({ traces, selectedIndex, onSelect, sort }: TraceTable
         {(trace) => (
           <Row>
             <Cell width={COLUMN_TIME_WIDTH} muted>
-              {formatTimeOfDay(trace.start_time)}
+              {formatTime(trace.start_time)}
             </Cell>
             <Cell width={COLUMN_SERVICE_WIDTH} muted>
               {trace.service_name !== null && <ServiceName name={trace.service_name} />}

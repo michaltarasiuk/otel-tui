@@ -1,6 +1,5 @@
-import { formatDuration } from "#utils/format-duration.ts";
-import { roundToTenths } from "#utils/round-to-tenths.ts";
-import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
+import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS, formatDuration } from "#utils/time.ts";
+import { formatBytes } from "#utils/units.ts";
 
 const MILLISECONDS_PER_UNIT: Record<string, number> = {
   ns: 1e-6,
@@ -27,9 +26,6 @@ const BYTES_PER_UNIT: Record<string, number> = {
 const dimensionlessUnits = new Set(["", "1"]);
 const ANNOTATION_UNIT = /^\{[^}]*\}$/;
 
-const BYTE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"] as const;
-const BYTE_UNIT_BASE = 1024;
-
 const COMPACT_FROM = 1e6;
 const ROUND_FROM = 1000;
 
@@ -49,21 +45,6 @@ function formatNumber(value: number) {
     return integerFormatter.format(value);
   }
   return fractionFormatter.format(value);
-}
-
-function formatBytes(bytes: number) {
-  let exponent = 0;
-
-  while (
-    exponent < BYTE_UNITS.length - 1 &&
-    roundToTenths(bytes / BYTE_UNIT_BASE ** exponent) >= BYTE_UNIT_BASE
-  ) {
-    exponent++;
-  }
-  if (exponent === 0) {
-    return `${Math.round(bytes)} B`;
-  }
-  return `${(bytes / BYTE_UNIT_BASE ** exponent).toFixed(1)} ${BYTE_UNITS[exponent]}`;
 }
 
 export function formatMetricValue(value: number, unit: string): string {

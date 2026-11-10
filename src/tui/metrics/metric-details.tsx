@@ -10,6 +10,7 @@ import { KeyValueList } from "#tui/components/key-value-list.tsx";
 import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { THEME } from "#tui/theme/theme.ts";
+import { formatInteger } from "#utils/number.ts";
 
 import { attributeValues } from "./attribute-values.ts";
 import { MetricHeader } from "./metric-header.tsx";
@@ -20,7 +21,7 @@ const MAX_LISTED_VALUES = 3;
 function describeValues(values: string[]) {
   const listed = values.slice(0, MAX_LISTED_VALUES).join(", ");
   const unlistedCount = values.length - MAX_LISTED_VALUES;
-  return unlistedCount > 0 ? `${listed} and ${unlistedCount.toLocaleString()} more` : listed;
+  return unlistedCount > 0 ? `${listed} and ${formatInteger(unlistedCount)} more` : listed;
 }
 
 function summarize(attributeSets: Attributes[]) {

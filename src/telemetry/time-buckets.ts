@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { SECOND_MS } from "#utils/time-units.ts";
+import { SECOND_MS } from "#utils/time.ts";
 
 export const TIME_BUCKET_MS = 10 * SECOND_MS;
 

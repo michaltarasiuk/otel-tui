@@ -2,6 +2,7 @@ import { quantile } from "#telemetry/metrics/distribution.ts";
 import { counterIntervals, perSecond } from "#telemetry/metrics/intervals.ts";
 import { isDelta, type Metric, type MetricType } from "#telemetry/metrics/metric.ts";
 import type { Series } from "#telemetry/metrics/series.ts";
+import { formatInteger } from "#utils/number.ts";
 
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
 
@@ -49,7 +50,7 @@ export function seriesStats(metric: Metric, { stats }: Series): Partial<Record<S
   if (stats.kind === "distribution") {
     const { distribution } = stats;
     return {
-      count: distribution.count.toLocaleString(),
+      count: formatInteger(distribution.count),
       ...Object.fromEntries(
         PERCENTILES.map(({ key, quantile: q }) => [key, format(quantile(distribution, q))]),
       ),

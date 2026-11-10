@@ -6,7 +6,7 @@ import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#tui/components/table.tsx";
 import { COLUMN_SERVICE_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatDuration } from "#utils/format-duration.ts";
+import { formatDuration } from "#utils/time.ts";
 
 import { Scale, WaterfallBar } from "./waterfall-bar.tsx";
 

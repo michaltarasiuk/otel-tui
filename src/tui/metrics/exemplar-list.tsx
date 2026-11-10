@@ -7,7 +7,7 @@ import { Section } from "#tui/components/section.tsx";
 import { Cell, Row, SelectedContext } from "#tui/components/table.tsx";
 import { COLUMN_TIME_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatTime } from "#utils/time.ts";
 
 import { formatMetricValue } from "./metric-value.ts";
 
@@ -60,7 +60,7 @@ export function ExemplarList({
           <SelectedContext value={index === selectedIndex}>
             <Row>
               <Cell width={COLUMN_TIME_WIDTH} muted>
-                {formatTimeOfDay(exemplar.time)}
+                {formatTime(exemplar.time)}
               </Cell>
               <Cell width={COLUMN_VALUE_WIDTH} align="right">
                 {formatMetricValue(exemplar.value, unit)}

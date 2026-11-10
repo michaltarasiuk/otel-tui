@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { stepItem } from "#utils/step-item.ts";
+import { cycle } from "#utils/cycle.ts";
 
 const REGIONS = ["tabs", "content"] as const;
 type Region = (typeof REGIONS)[number];
@@ -14,7 +14,7 @@ export function useFocusedRegion() {
       setRegion(region);
     },
     focusStep: (step: 1 | -1) => {
-      setRegion((region) => stepItem(REGIONS, region, step));
+      setRegion((region) => cycle(REGIONS, region, step));
     },
   };
 }

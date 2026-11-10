@@ -1,4 +1,4 @@
-import { clamp } from "#utils/clamp.ts";
+import { clamp } from "#utils/number.ts";
 
 const LOWER_BLOCKS = "▁▂▃▄▅▆▇█";
 const EIGHTHS_PER_CELL = LOWER_BLOCKS.length;

@@ -16,9 +16,8 @@ import { timeRangeLabel } from "#tui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#tui/histogram/time-histogram.tsx";
 import { PauseKey } from "#tui/pause.tsx";
 import { THEME } from "#tui/theme/theme.ts";
-import { findNextIndex } from "#utils/find-next-index.ts";
-import { formatShownCount } from "#utils/format-shown-count.ts";
-import { stepItem } from "#utils/step-item.ts";
+import { cycle, findNextIndex } from "#utils/cycle.ts";
+import { formatShownCount } from "#utils/number.ts";
 
 import { useTraceList, useTraceTimeline, useTraceTotalCount } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
@@ -195,7 +194,7 @@ export function TracesPage({
             name="o"
             onPress={() =>
               setSort((sort) => ({
-                column: stepItem(TRACE_SORT_COLUMNS, sort.column, 1),
+                column: cycle(TRACE_SORT_COLUMNS, sort.column, 1),
                 descending: true,
               }))
             }

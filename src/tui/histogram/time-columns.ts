@@ -1,6 +1,5 @@
 import { TIME_BUCKET_MS } from "#telemetry/time-buckets.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
-import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS } from "#utils/time-units.ts";
+import { DAY_MS, HOUR_MS, MINUTE_MS, SECOND_MS, formatTime } from "#utils/time.ts";
 
 import type { HistogramColumn, HistogramRange } from "./bars.ts";
 
@@ -69,7 +68,7 @@ export function hiddenColumns(occupied: HistogramColumn[], columns: HistogramCol
 
 export function timeRangeLabel({ from, to }: HistogramRange) {
   const precision = clockPrecision(to - from);
-  return `${formatTimeOfDay(from, precision)}–${formatTimeOfDay(to, precision)}`;
+  return `${formatTime(from, precision)}–${formatTime(to, precision)}`;
 }
 
 function tickInterval(columnWidth: number) {
@@ -94,7 +93,7 @@ export function timeAxis(columns: HistogramColumn[], columnWidth: number) {
     if (untilTick >= TIME_BUCKET_MS) {
       continue;
     }
-    const label = formatTimeOfDay(from + untilTick, precision);
+    const label = formatTime(from + untilTick, precision);
     const labelStart = position * columnWidth;
     if (labelStart + label.length <= axisWidth) {
       axis = axis.padEnd(labelStart) + label;

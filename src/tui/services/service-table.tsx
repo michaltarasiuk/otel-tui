@@ -6,9 +6,8 @@ import { ServiceName } from "#tui/components/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#tui/components/table.tsx";
 import { COLUMN_SORT_ARROW_WIDTH } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatDuration } from "#utils/format-duration.ts";
-import { formatPercent } from "#utils/format-percent.ts";
-import { formatRate } from "#utils/format-rate.ts";
+import { formatInteger, formatPercent, formatRate } from "#utils/number.ts";
+import { formatDuration } from "#utils/time.ts";
 
 export const COLUMN_SPANS_WIDTH = 9;
 export const COLUMN_RATE_WIDTH = 10 + COLUMN_SORT_ARROW_WIDTH;
@@ -78,7 +77,7 @@ export function ServiceTable({ services, selectedIndex, onSelect, sort }: Servic
               {formatDuration(service.p99_ms)}
             </Cell>
             <Cell width={COLUMN_SPANS_WIDTH} align="right" muted>
-              {service.span_count.toLocaleString()}
+              {formatInteger(service.span_count)}
             </Cell>
           </Row>
         )}

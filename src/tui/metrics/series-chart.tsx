@@ -8,8 +8,7 @@ import { ErrorBoundary } from "#tui/components/error-boundary.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
-import { MINUTE_MS } from "#utils/time-units.ts";
+import { MINUTE_MS, formatTime } from "#utils/time.ts";
 
 import { LineChart } from "./line-chart.tsx";
 import { useSeriesPoints } from "./metric-queries.ts";
@@ -126,7 +125,7 @@ function SeriesPlot({ metric, series, color, windowStart, windowMs }: SeriesPlot
     <LineChart
       height={CHART_HEIGHT}
       includeZero={metric.type !== "gauge" && metric.type !== "updowncounter"}
-      startLabel={formatTimeOfDay(start)}
+      startLabel={formatTime(start)}
       endLabel="now"
       formatValue={(value) =>
         metric.type === "counter"

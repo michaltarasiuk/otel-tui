@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { type ReceiverCounters, readReceiverCounters } from "#receiver/receiver-counters.ts";
-import { formatCount } from "#utils/format-count.ts";
-import { formatTimeAgo } from "#utils/format-time-ago.ts";
+import { formatCount } from "#utils/number.ts";
+import { formatAgo } from "#utils/time.ts";
 
 import { usePaused } from "./pause.tsx";
 import { useConnection } from "./query/connection.ts";
@@ -27,7 +27,7 @@ function formatReceived({ total_rows, last_received_age_ms }: ReceiverCounters) 
   if (last_received_age_ms === null) {
     return received;
   }
-  return `${received} ${formatTimeAgo(last_received_age_ms)}`;
+  return `${received} ${formatAgo(last_received_age_ms)}`;
 }
 
 interface ReceiverStatusProps {

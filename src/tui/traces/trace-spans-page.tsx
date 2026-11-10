@@ -17,7 +17,7 @@ import { Split } from "#tui/components/split.tsx";
 import { useRegion } from "#tui/components/use-region.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
-import { findNextIndex } from "#utils/find-next-index.ts";
+import { findNextIndex } from "#utils/cycle.ts";
 
 import { LinkList } from "./link-list.tsx";
 import { SpanDetails } from "./span-details.tsx";

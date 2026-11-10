@@ -11,8 +11,8 @@ import { Split } from "#tui/components/split.tsx";
 import { useRegion } from "#tui/components/use-region.ts";
 import { useSelection } from "#tui/components/use-selection.ts";
 import { PauseKey } from "#tui/pause.tsx";
-import { stepItem } from "#utils/step-item.ts";
-import { MINUTE_MS } from "#utils/time-units.ts";
+import { cycle } from "#utils/cycle.ts";
+import { MINUTE_MS } from "#utils/time.ts";
 
 import { ExemplarList } from "./exemplar-list.tsx";
 import { MetricHeader } from "./metric-header.tsx";
@@ -145,7 +145,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
             backward="shift+w"
             description="narrow the chart to a shorter window"
             backwardDescription="widen the chart window"
-            onStep={(step) => setChartWindow((window) => stepItem(CHART_WINDOWS, window, step))}
+            onStep={(step) => setChartWindow((window) => cycle(CHART_WINDOWS, window, step))}
           >
             window
           </StepKeys>

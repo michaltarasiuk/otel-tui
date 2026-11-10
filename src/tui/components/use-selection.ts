@@ -1,6 +1,6 @@
 import { type SetStateAction, useState } from "react";
 
-import { clamp } from "#utils/clamp.ts";
+import { clamp } from "#utils/number.ts";
 
 export function useSelection<T>(
   items: readonly T[],

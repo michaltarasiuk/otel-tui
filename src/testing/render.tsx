@@ -10,7 +10,7 @@ import { createRoot, flushSync } from "@opentui/react";
 import { StrictMode } from "react";
 
 import { RENDERER_CONFIG } from "#tui/tui.tsx";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { collapseWhitespace } from "#utils/text.ts";
 
 import { selectedBackground } from "./screen.ts";
 

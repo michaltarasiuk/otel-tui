@@ -8,8 +8,8 @@ import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatJson } from "#utils/format-json.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatJson } from "#utils/text.ts";
+import { formatTime } from "#utils/time.ts";
 
 import { severityColor } from "./severity-color.ts";
 
@@ -46,7 +46,7 @@ export function LogDetails({ ref, log }: LogDetailsProps) {
               <ServiceName name={log.service_name} />
             </Fact>
           )}
-          {log.time !== null && <Fact>{formatTimeOfDay(log.time)}</Fact>}
+          {log.time !== null && <Fact>{formatTime(log.time)}</Fact>}
           {log.event_name !== null && <Fact>{log.event_name}</Fact>}
         </Meta>
         {log.trace_id !== null && (

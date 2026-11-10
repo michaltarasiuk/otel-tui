@@ -3,7 +3,7 @@ import { expect, test } from "bun:test";
 import { openTab, renderApp, search } from "#testing/app.tsx";
 import { startTestReceiver } from "#testing/receiver.ts";
 import { keyHints, onList } from "#testing/screen.ts";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { collapseWhitespace } from "#utils/text.ts";
 
 test("lists every key of the focused page in a help overlay", async () => {
   await using receiver = await startTestReceiver();

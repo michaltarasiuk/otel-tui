@@ -2,9 +2,8 @@ import type { Span } from "#telemetry/traces/span.ts";
 import { DetailsHeader, Id, Meta, Fact, Title } from "#tui/components/details.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatCount } from "#utils/format-count.ts";
-import { formatDuration } from "#utils/format-duration.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatCount } from "#utils/number.ts";
+import { formatDuration, formatTime } from "#utils/time.ts";
 
 interface TraceHeaderProps {
   traceId: string;
@@ -32,7 +31,7 @@ export function TraceHeader({ traceId, root, spans, durationMs }: TraceHeaderPro
             <ServiceName name={root.service_name} />
           </Fact>
         )}
-        <Fact>{formatTimeOfDay(startTime)}</Fact>
+        <Fact>{formatTime(startTime)}</Fact>
         <Fact>{formatCount(spans.length, "span")}</Fact>
         {errorCount > 0 && <Fact color={THEME.textError}>{formatCount(errorCount, "error")}</Fact>}
         <Fact>{formatDuration(durationMs)}</Fact>

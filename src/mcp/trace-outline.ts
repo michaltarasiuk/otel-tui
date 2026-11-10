@@ -1,6 +1,6 @@
 import { ancestorIds, criticalPath } from "#telemetry/traces/span-tree.ts";
 import type { Span } from "#telemetry/traces/span.ts";
-import { formatDuration } from "#utils/format-duration.ts";
+import { formatDuration, formatOffset } from "#utils/time.ts";
 
 const INDENT = "  ";
 
@@ -9,7 +9,7 @@ function spanLine(span: Span, onCriticalPath: boolean) {
     `${onCriticalPath ? "*" : " "} ${INDENT.repeat(span.depth)}${span.name}`,
     `[${span.service_name ?? "unknown"}, ${span.kind}]`,
     formatDuration(span.duration_ms),
-    `at +${formatDuration(span.offset_ms)}`,
+    `at ${formatOffset(span.offset_ms)}`,
     span.span_id,
     ...(span.is_error
       ? [`ERROR${span.status_message === null ? "" : `: ${span.status_message}`}`]

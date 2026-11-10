@@ -15,14 +15,9 @@ import { ScrollBox } from "#tui/components/scroll-box.tsx";
 import { Section } from "#tui/components/section.tsx";
 import { ServiceName } from "#tui/components/service-name.tsx";
 import { THEME } from "#tui/theme/theme.ts";
-import { formatDuration } from "#utils/format-duration.ts";
-import { formatTimeOfDay } from "#utils/format-time-of-day.ts";
+import { formatDuration, formatOffset, formatTime } from "#utils/time.ts";
 
 const NESTED_INDENT = 2;
-
-function formatOffset(ms: number) {
-  return ms < 0 ? `-${formatDuration(-ms)}` : `+${formatDuration(ms)}`;
-}
 
 interface SpanSectionsProps {
   content: SpanContent;
@@ -96,7 +91,7 @@ export function SpanDetails({ ref, span, content, failed, children }: SpanDetail
         )}
         <Fact>{span.kind}</Fact>
         <Fact>
-          {formatTimeOfDay(span.start_time)} +{formatDuration(span.offset_ms)}
+          {formatTime(span.start_time)} {formatOffset(span.offset_ms)}
         </Fact>
         <Fact>{formatDuration(span.duration_ms)}</Fact>
         {detached && <Fact>parent {span.parent_span_id} not received</Fact>}

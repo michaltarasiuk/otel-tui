@@ -6,7 +6,7 @@ import {
   exponentialBuckets,
 } from "#telemetry/metrics/distribution.ts";
 import { render } from "#testing/render.tsx";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { collapseWhitespace } from "#utils/text.ts";
 
 import { BucketBars } from "./bucket-bars.tsx";
 

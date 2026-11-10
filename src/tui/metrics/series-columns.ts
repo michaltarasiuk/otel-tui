@@ -1,6 +1,6 @@
 import type { Series } from "#telemetry/metrics/series.ts";
-import { clamp } from "#utils/clamp.ts";
-import { compareText } from "#utils/compare-text.ts";
+import { clamp } from "#utils/number.ts";
+import { compareText } from "#utils/text.ts";
 
 import { attributeValues } from "./attribute-values.ts";
 

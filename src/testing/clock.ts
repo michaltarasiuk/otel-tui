@@ -1,6 +1,6 @@
 import { jest, onTestFinished, setSystemTime } from "bun:test";
 
-import { SECOND_MS } from "#utils/time-units.ts";
+import { SECOND_MS } from "#utils/time.ts";
 
 const BASE_TIME = Date.parse("2026-10-28T12:00:00.000Z");
 

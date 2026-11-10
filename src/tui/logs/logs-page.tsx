@@ -17,9 +17,8 @@ import { type HistogramRange, stepSelection } from "#tui/histogram/bars.ts";
 import { timeRangeLabel } from "#tui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#tui/histogram/time-histogram.tsx";
 import { PauseKey } from "#tui/pause.tsx";
-import { findNextIndex } from "#utils/find-next-index.ts";
-import { formatShownCount } from "#utils/format-shown-count.ts";
-import { stepItem } from "#utils/step-item.ts";
+import { cycle, findNextIndex } from "#utils/cycle.ts";
+import { formatShownCount } from "#utils/number.ts";
 
 import { LogDetails } from "./log-details.tsx";
 import { useLogList, useLogTimeline, useLogTotalCount } from "./log-queries.ts";
@@ -193,7 +192,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
             backwardDescription="lower severity"
             backward="shift+s"
             onStep={(step) =>
-              setMinSeverity((minSeverity) => stepItem(MIN_SEVERITIES, minSeverity, step))
+              setMinSeverity((minSeverity) => cycle(MIN_SEVERITIES, minSeverity, step))
             }
           >
             severity

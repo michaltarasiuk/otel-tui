@@ -24,7 +24,7 @@ import {
   STATUS_ROW,
 } from "#testing/traces.ts";
 import { GESTURE_PAUSE_MS } from "#tui/components/use-scroll-gesture.ts";
-import { collapseWhitespace } from "#utils/collapse-whitespace.ts";
+import { collapseWhitespace } from "#utils/text.ts";
 
 test("jumps between spans with errors", async () => {
   await using receiver = await startTestReceiver();

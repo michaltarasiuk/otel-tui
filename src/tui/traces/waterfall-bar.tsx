@@ -2,7 +2,7 @@ import { TextAttributes } from "@opentui/core";
 
 import type { Span } from "#telemetry/traces/span.ts";
 import { serviceColor, THEME } from "#tui/theme/theme.ts";
-import { formatDuration } from "#utils/format-duration.ts";
+import { formatDuration } from "#utils/time.ts";
 
 const TIMELINE_GROW_TOTAL = 1000;
 
