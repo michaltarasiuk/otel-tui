@@ -14,9 +14,10 @@
   },
   "scripts": {
     "prepare": "lefthook install",
-    "dev": "bun --watch src/main.ts",
-    "dev:devtools": "DEV=true bun --watch src/main.ts",
-    "dev:stats": "OTUI_SHOW_STATS=true bun --watch src/main.ts",
+    "dev": "bun --hot src/main.ts",
+    "dev:watch": "bun --watch src/main.ts",
+    "dev:devtools": "DEV=true bun --hot src/main.ts",
+    "dev:stats": "OTUI_SHOW_STATS=true bun --hot src/main.ts",
     "start": "bun src/main.ts",
     "build": "bun scripts/build.ts",
     "typecheck": "tsc --noEmit",
