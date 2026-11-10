@@ -9,21 +9,20 @@ const HELP_KEYS_PRIORITY = 2;
 
 export interface HelpEntry {
   key: string;
-  description: string;
+  desc: string;
 }
 
 export function activeHelp(keymap: ReturnType<typeof useKeymap>): HelpEntry[] {
-  const keysByDescription = new Map<string, string[]>();
-  for (const { display, commandAttrs } of keymap.getActiveKeys({ includeMetadata: true })) {
-    const description = commandAttrs?.["desc"];
-    if (typeof description === "string") {
-      keysByDescription.set(description, [...(keysByDescription.get(description) ?? []), display]);
-    }
-  }
-  return [...keysByDescription].map(([description, keys]) => ({
-    key: keys.join(" "),
-    description,
-  }));
+  const keysByDesc = keymap
+    .getActiveKeys({ includeMetadata: true })
+    .reduce((acc, { display, commandAttrs: { desc } = {} }) => {
+      if (typeof desc === "string") {
+        acc.getOrInsert(desc, []).push(display);
+      }
+      return acc;
+    }, new Map<string, string[]>());
+
+  return [...keysByDesc].map(([desc, keys]) => ({ key: keys.join(", "), desc }));
 }
 
 interface HelpProps {
@@ -54,13 +53,13 @@ export function Help({ entries, onClose }: HelpProps) {
           Keys
         </text>
         <box>
-          {entries.map(({ key, description }) => (
+          {entries.map(({ key, desc }) => (
             <box key={key} flexDirection="row" gap={COLUMN_GAP}>
               <text width={keyWidth} fg={THEME.text} flexShrink={0}>
                 {key}
               </text>
               <text fg={THEME.textMuted} wrapMode="none">
-                {description}
+                {desc}
               </text>
             </box>
           ))}
