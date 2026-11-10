@@ -13,16 +13,16 @@ export interface HelpEntry {
 }
 
 export function activeHelp(keymap: ReturnType<typeof useKeymap>): HelpEntry[] {
-  const keysByDesc = keymap
-    .getActiveKeys({ includeMetadata: true })
-    .reduce((acc, { display, commandAttrs: { desc } = {} }) => {
-      if (typeof desc === "string") {
-        acc.getOrInsert(desc, []).push(display);
-      }
-      return acc;
-    }, new Map<string, string[]>());
+  const keys = keymap.getActiveKeys({ includeMetadata: true });
+  const described = keys.flatMap(({ display, commandAttrs: { desc } = {} }) =>
+    typeof desc === "string" ? [{ display, desc }] : [],
+  );
+  const byDesc = Map.groupBy(described, (key) => key.desc);
 
-  return [...keysByDesc].map(([desc, keys]) => ({ key: keys.join(", "), desc }));
+  return [...byDesc].map(([desc, group]) => ({
+    key: group.map((key) => key.display).join(", "),
+    desc,
+  }));
 }
 
 interface HelpProps {

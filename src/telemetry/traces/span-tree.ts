@@ -41,19 +41,14 @@ export function ancestorIds(spans: Span[], spanId: string) {
 }
 
 export function criticalPath(spans: Span[]) {
-  const children = new Map<string, Span[]>();
-  for (const span of spans) {
-    if (span.parent_span_id !== null) {
-      children.set(span.parent_span_id, [...(children.get(span.parent_span_id) ?? []), span]);
-    }
-  }
+  const children = Map.groupBy(spans, (span) => span.parent_span_id);
 
   const path = new Set<string>();
 
   function walk(span: Span, endLimit: number) {
     path.add(span.span_id);
     let cursor = Math.min(spanEnd(span), endLimit);
-    const latestFirst = [...(children.get(span.span_id) ?? [])].sort(
+    const latestFirst = (children.get(span.span_id) ?? []).toSorted(
       (a, b) => spanEnd(b) - spanEnd(a),
     );
     for (const child of latestFirst) {
