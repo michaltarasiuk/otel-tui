@@ -4,7 +4,9 @@ import { Placeholder } from "./placeholder.tsx";
 
 export function PageLoading() {
   return (
-    <box flexGrow={1}>
+    // Top padding stands in for the page header row, so the text centers where the page's own
+    // placeholders do.
+    <box flexGrow={1} paddingTop={1}>
       <Placeholder text="Loading..." />
       <KeyHints />
     </box>
@@ -20,7 +22,9 @@ export function PageError({ text, onBack }: PageErrorProps) {
   const retry = useRetry();
 
   return (
-    <box flexGrow={1}>
+    // Top padding stands in for the page header row, so the text centers where the page's own
+    // placeholders do.
+    <box flexGrow={1} paddingTop={1}>
       <Placeholder text={text} variant="error" />
       <KeyHints>
         <Key name="r" onPress={() => retry()}>
