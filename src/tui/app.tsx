@@ -98,7 +98,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
             onFocusRequest={() => focus("content")}
           >
             <Suspense fallback={<PageLoading />}>
-              <Screen when={page === "services"}>
+              <Screen mode={page === "services" ? "visible" : "hidden"}>
                 <ErrorBoundary fallback={<PageError text="Failed to load services" />}>
                   <ServicesPage
                     onOpenTraces={(service, operation) =>
@@ -107,7 +107,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                   />
                 </ErrorBoundary>
               </Screen>
-              <Screen when={page === "traces"}>
+              <Screen mode={page === "traces" ? "visible" : "hidden"}>
                 <ErrorBoundary
                   fallback={
                     <PageError
@@ -129,7 +129,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                 </ErrorBoundary>
               </Screen>
               {trace !== undefined && (
-                <Screen when={page === "trace"}>
+                <Screen mode={page === "trace" ? "visible" : "hidden"}>
                   <ErrorBoundary
                     fallback={<PageError text="Failed to load trace" onBack={() => back()} />}
                   >
@@ -146,13 +146,13 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                   </ErrorBoundary>
                 </Screen>
               )}
-              <Screen when={page === "metrics"}>
+              <Screen mode={page === "metrics" ? "visible" : "hidden"}>
                 <ErrorBoundary fallback={<PageError text="Failed to load metrics" />}>
                   <MetricsPage onOpen={(metric) => open({ name: "metric", metric })} />
                 </ErrorBoundary>
               </Screen>
               {metric !== undefined && (
-                <Screen when={page === "metric"}>
+                <Screen mode={page === "metric" ? "visible" : "hidden"}>
                   <ErrorBoundary
                     fallback={<PageError text="Failed to load metric" onBack={() => back()} />}
                   >
@@ -165,7 +165,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                   </ErrorBoundary>
                 </Screen>
               )}
-              <Screen when={page === "logs"}>
+              <Screen mode={page === "logs" ? "visible" : "hidden"}>
                 <ErrorBoundary
                   fallback={
                     <PageError
