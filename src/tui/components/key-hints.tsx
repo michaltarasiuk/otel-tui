@@ -25,35 +25,26 @@ interface KeyProps {
   name: string;
   priority?: number | undefined;
   description?: string | undefined;
-  onPress?: () => unknown;
+  onPress: () => void;
   children?: string | undefined;
 }
 
 export function Key({ name, priority = 0, description, onPress, children }: KeyProps) {
-  const desc = description ?? children;
   const focused = useFocused();
-  const active = focused && useKeysEnabled();
-  const bound = onPress !== undefined;
-
+  const keysEnabled = useKeysEnabled();
   const command = useId();
-  const press = useEffectEvent(() => onPress?.());
+  const press = useEffectEvent(() => onPress());
+
+  const desc = description ?? children;
 
   useBindings(
     () => ({
-      enabled: active && bound,
+      enabled: focused && keysEnabled,
       priority,
-      commands: [
-        {
-          name: command,
-          ...(desc === undefined ? {} : { desc }),
-          run() {
-            return press() !== false;
-          },
-        },
-      ],
+      commands: [{ name: command, ...(desc === undefined ? {} : { desc }), run: () => press() }],
       bindings: [{ key: name, cmd: command }],
     }),
-    [active, bound, command, desc, name, priority],
+    [focused, keysEnabled, priority, command, desc, name],
   );
 
   if (!focused || children === undefined) {
@@ -73,7 +64,7 @@ interface StepKeysProps {
   priority?: number | undefined;
   description?: string;
   backwardDescription: string;
-  onStep: (step: 1 | -1) => unknown;
+  onStep: (step: 1 | -1) => void;
   children?: string;
 }
 
