@@ -1,9 +1,9 @@
 import { FocusScope } from "./focus.tsx";
 import { Key } from "./key-hints.tsx";
-import type { useSearch } from "./use-search.ts";
+import type { Search } from "./use-search.ts";
 
 interface SearchKeysProps {
-  search: ReturnType<typeof useSearch>;
+  search: Search;
 }
 
 export function SearchKeys({ search }: SearchKeysProps) {

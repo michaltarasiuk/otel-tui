@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
-import { renderPage, search } from "#testing/app.tsx";
+import { renderPage, search, type TestApp } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
@@ -92,9 +92,7 @@ async function renderHistogram(
   await app.waitForFrame((frame) => frame.includes(TIMELINE_STATUS_ROW.slice(0, 12)));
   return app;
 }
-type HistogramApp = Awaited<ReturnType<typeof renderHistogram>>;
-
-async function showsOnly(app: HistogramApp, row: string, range: string, totalCount = 3) {
+async function showsOnly(app: TestApp, row: string, range: string, totalCount = 3) {
   const frame = await app.waitForRows([row]);
   expect(pageHeader(frame)).toBe(`${range} 1 of ${totalCount} traces`);
   return frame;
@@ -104,7 +102,7 @@ function axisLine(frame: string) {
   return chartLines(frame).at(-1);
 }
 
-async function barSpans(app: HistogramApp) {
+async function barSpans(app: TestApp) {
   const barRow = (await app.captureSpans()).lines.find(({ spans }) =>
     spans.some((span) => span.text.includes("█")),
   );

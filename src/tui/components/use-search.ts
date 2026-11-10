@@ -20,3 +20,5 @@ export function useSearch() {
     },
   };
 }
+
+export type Search = ReturnType<typeof useSearch>;

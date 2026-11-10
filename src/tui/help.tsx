@@ -1,5 +1,5 @@
-import { TextAttributes } from "@opentui/core";
-import type { useKeymap } from "@opentui/keymap/react";
+import { type KeyEvent, type Renderable, TextAttributes } from "@opentui/core";
+import type { Keymap } from "@opentui/keymap";
 
 import { Key } from "./components/key-hints.tsx";
 import { COLUMN_GAP } from "./theme/columns.ts";
@@ -12,7 +12,7 @@ export interface HelpEntry {
   desc: string;
 }
 
-export function activeHelp(keymap: ReturnType<typeof useKeymap>): HelpEntry[] {
+export function activeHelp(keymap: Keymap<Renderable, KeyEvent>): HelpEntry[] {
   const keys = keymap.getActiveKeys({ includeMetadata: true });
   const described = keys.flatMap(({ display, commandAttrs: { desc } = {} }) =>
     typeof desc === "string" ? [{ display, desc }] : [],

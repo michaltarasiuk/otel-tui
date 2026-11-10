@@ -4,7 +4,7 @@ import { COLUMN_GAP } from "#tui/theme/columns.ts";
 import { THEME } from "#tui/theme/theme.ts";
 
 import { useFocused } from "./focus.tsx";
-import type { useSearch } from "./use-search.ts";
+import type { Search } from "./use-search.ts";
 
 interface PageHeaderProps {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ export function PageHeader({ children }: PageHeaderProps) {
 }
 
 interface SearchInputProps {
-  search: ReturnType<typeof useSearch>;
+  search: Search;
   placeholder: string;
 }
 
