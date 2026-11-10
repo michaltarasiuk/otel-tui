@@ -48,8 +48,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
   const selected = services[selectedIndex];
   const detailed = useDeferredValue(selected);
 
-  const serviceOperations = useServiceOperations(detailed?.service_name);
-  const { data: operations = [] } = serviceOperations;
+  const { data: operations = [] } = useServiceOperations(detailed?.service_name);
   const [operationIndex, selectOperation] = useSelection(operations, (operation) => operation.name);
   const operation = operations[operationIndex];
 

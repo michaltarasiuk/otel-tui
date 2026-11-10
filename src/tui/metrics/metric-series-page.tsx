@@ -56,8 +56,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
   const selected = rows[selectedIndex];
   const detailed = useDeferredValue(selected);
 
-  const seriesExemplars = useSeriesExemplars(metric, detailed?.series_id);
-  const { data: exemplars = [] } = seriesExemplars;
+  const { data: exemplars = [] } = useSeriesExemplars(metric, detailed?.series_id);
   const [exemplarIndex, selectExemplar] = useSelection(exemplars, (exemplar) =>
     exemplarKey(exemplar),
   );

@@ -29,7 +29,6 @@ interface AppProps {
 }
 
 export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
-  const { region, focus, focusStep } = useFocusedRegion();
   const {
     page,
     tab,
@@ -45,11 +44,13 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
     reset,
     back,
   } = usePages();
-  const queryClient = useQueryClient();
+  const { region, focus, focusStep } = useFocusedRegion();
   const [clears, setClears] = useState(0);
+  const [help, setHelp] = useState<HelpEntry[]>();
+
+  const queryClient = useQueryClient();
   const keymap = useKeymap();
   const editing = useEditing();
-  const [help, setHelp] = useState<HelpEntry[]>();
 
   async function clear() {
     try {
