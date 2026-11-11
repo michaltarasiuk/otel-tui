@@ -62,9 +62,9 @@ export async function renderApp(
     ...screen,
     waitForRows,
     async [Symbol.asyncDispose]() {
+      await settleQueries(queryClient);
       await screen[Symbol.asyncDispose]();
       focusManager.setFocused(undefined);
-      await waitForInFlightQueries(queryClient);
     },
   };
 }
@@ -117,4 +117,13 @@ export async function renderFailedPage(
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => keyHints(frame).includes("r retry"));
   return app;
+}
+
+// React crashes when a suspended query settles after its Activity has unmounted,
+// so let every load finish, and the renders it triggers, before unmounting.
+async function settleQueries(queryClient: QueryClient) {
+  while (queryClient.isFetching() > 0) {
+    await waitForInFlightQueries(queryClient);
+    await new Promise((resolve) => setImmediate(resolve));
+  }
 }
