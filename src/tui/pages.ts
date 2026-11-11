@@ -31,16 +31,13 @@ type Destination =
   | { name: "metric"; metric: Metric }
   | { name: "logs"; traceId: string | undefined; spanId?: string | undefined };
 
-const START_HISTORY: History = {
-  location: {
-    tab: "services",
-    tracesService: undefined,
-    tracesOperation: undefined,
-    trace: undefined,
-    metric: undefined,
-    logsTrace: undefined,
-  },
-  previous: [],
+const START_LOCATION: Location = {
+  tab: "services",
+  tracesService: undefined,
+  tracesOperation: undefined,
+  trace: undefined,
+  metric: undefined,
+  logsTrace: undefined,
 };
 
 function pageAt({ tab, trace, metric }: Location): PageName {
@@ -56,7 +53,7 @@ function pageAt({ tab, trace, metric }: Location): PageName {
   }
 }
 
-function change(destination: Destination): Partial<Location> {
+function changeTo(destination: Destination): Partial<Location> {
   switch (destination.name) {
     case "traces":
       return {
@@ -80,6 +77,19 @@ function change(destination: Destination): Partial<Location> {
   }
 }
 
+function closeChange(tab: Tab): Partial<Location> {
+  switch (tab) {
+    case "services":
+      return {};
+    case "traces":
+      return { trace: undefined };
+    case "metrics":
+      return { metric: undefined };
+    case "logs":
+      return { logsTrace: undefined };
+  }
+}
+
 function replace({ location, previous }: History, change: Partial<Location>): History {
   return { location: { ...location, ...change }, previous };
 }
@@ -88,25 +98,12 @@ function push({ location, previous }: History, change: Partial<Location>): Histo
   return { location: { ...location, ...change }, previous: [...previous, location] };
 }
 
-function pop(history: History): History {
+function back(history: History): History {
   const location = history.previous.at(-1);
   if (location === undefined) {
-    return history;
+    return replace(history, closeChange(history.location.tab));
   }
   return { location, previous: history.previous.slice(0, -1) };
-}
-
-function close(history: History): History {
-  switch (history.location.tab) {
-    case "services":
-      return history;
-    case "traces":
-      return replace(history, { trace: undefined });
-    case "metrics":
-      return replace(history, { metric: undefined });
-    case "logs":
-      return replace(history, { logsTrace: undefined });
-  }
 }
 
 function switchTab(history: History, tab: Tab): History {
@@ -116,33 +113,38 @@ function switchTab(history: History, tab: Tab): History {
   return { location: { ...history.location, tab }, previous: [] };
 }
 
+function restart(history: History): History {
+  const location = { ...START_LOCATION, tab: history.location.tab };
+  return { location, previous: [] };
+}
+
 export function usePages() {
-  const [current, setHistory] = useState(START_HISTORY);
-  const history = useDeferredValue(current);
+  const [current, setHistory] = useState<History>({ location: START_LOCATION, previous: [] });
+  const { location, previous } = useDeferredValue(current);
 
   return {
-    page: pageAt(history.location),
+    page: pageAt(location),
     tab: current.location.tab,
-    tracesService: history.location.tracesService,
-    tracesOperation: history.location.tracesOperation,
-    trace: history.location.trace,
-    metric: history.location.metric,
-    logsTrace: history.location.logsTrace,
-    canGoBack: history.previous.length > 0,
+    tracesService: location.tracesService,
+    tracesOperation: location.tracesOperation,
+    trace: location.trace,
+    metric: location.metric,
+    logsTrace: location.logsTrace,
+    canGoBack: previous.length > 0,
     selectTab: (tab: Tab) => {
       setHistory((history) => switchTab(history, tab));
     },
     open: (destination: Destination) => {
-      setHistory((history) => push(history, change(destination)));
+      setHistory((history) => push(history, changeTo(destination)));
     },
     replace: (destination: Destination) => {
-      setHistory((history) => replace(history, change(destination)));
+      setHistory((history) => replace(history, changeTo(destination)));
     },
     reset: () => {
-      setHistory((history) => switchTab(START_HISTORY, history.location.tab));
+      setHistory((history) => restart(history));
     },
     back: () => {
-      setHistory((history) => (history.previous.length > 0 ? pop(history) : close(history)));
+      setHistory((history) => back(history));
     },
   };
 }
