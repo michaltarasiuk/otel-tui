@@ -9,7 +9,7 @@
 
 - Each signal (`services`, `traces`, `metrics`, `logs`) keeps its SQL, reads, queries, screens, and tests in one flat folder.
 - Imports flow one way: `utils` → `telemetry`, `query`, `ui` → signals → `app`, `mcp`. A signal never imports another signal or `app`; `app` links the views.
-- A file lives in the folder of what it is, not of who calls it; move it only when its place starts to hurt.
+- Keep code as close to its use as its kind allows: signal code in its signal's folder, generic helpers in `utils` or `ui` even with one caller. Move a file only when its place starts to hurt.
 
 ## Code
 
