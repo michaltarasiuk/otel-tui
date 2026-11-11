@@ -2,20 +2,19 @@ import type { DuckDBConnection } from "@duckdb/node-api";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+import type { Log } from "#logs/log.ts";
+import { listLogs } from "#logs/read-logs.ts";
+import { quantile } from "#metrics/distribution.ts";
+import { counterIntervals, perSecond } from "#metrics/intervals.ts";
+import { isDelta, type Metric, type MetricSort } from "#metrics/metric.ts";
+import { listMetrics, readMetricSeries } from "#metrics/read-metrics.ts";
+import type { NumberPoint, Series } from "#metrics/series.ts";
+import { listOperations, listServices } from "#services/read-services.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
-import type { Log } from "#telemetry/logs/log.ts";
-import { listLogs } from "#telemetry/logs/read-logs.ts";
-import { quantile } from "#telemetry/metrics/distribution.ts";
-import { counterIntervals, perSecond } from "#telemetry/metrics/intervals.ts";
-import { isDelta, type Metric, type MetricSort } from "#telemetry/metrics/metric.ts";
-import { listMetrics, readMetricSeries } from "#telemetry/metrics/read-metrics.ts";
-import type { NumberPoint, Series } from "#telemetry/metrics/series.ts";
-import { listOperations, listServices } from "#telemetry/services/read-services.ts";
-import { listTraces, readSpanContent, readTraceSpans } from "#telemetry/traces/read-traces.ts";
-import type { SpanContent } from "#telemetry/traces/span.ts";
-import type { Trace } from "#telemetry/traces/trace.ts";
-
-import { traceOutline } from "./trace-outline.ts";
+import { listTraces, readSpanContent, readTraceSpans } from "#traces/read-traces.ts";
+import type { SpanContent } from "#traces/span.ts";
+import { traceOutline } from "#traces/trace-outline.ts";
+import type { Trace } from "#traces/trace.ts";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 200;

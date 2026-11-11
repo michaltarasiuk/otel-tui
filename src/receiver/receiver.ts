@@ -10,10 +10,10 @@ import {
 import dedent from "dedent";
 import { z } from "zod";
 
-import { installMacros } from "#telemetry/macros.ts";
 import { SECOND_MS } from "#utils/time.ts";
 
 import { StartupError } from "../startup-error.ts";
+import { installMacros } from "./macros.ts";
 
 const OtlpServeRows = z.tuple([
   z.object({ transport: z.literal("http"), listen_url: z.url() }),

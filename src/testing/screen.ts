@@ -1,6 +1,6 @@
 import { type CapturedFrame, type CapturedSpan, RGBA } from "@opentui/core";
 
-import { THEME } from "#tui/theme/theme.ts";
+import { THEME } from "#ui/theme.ts";
 import { collapseWhitespace } from "#utils/text.ts";
 
 const DETAILS_BORDER = "─";

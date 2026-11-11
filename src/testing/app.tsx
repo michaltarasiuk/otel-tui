@@ -1,10 +1,10 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { focusManager, QueryClient } from "@tanstack/react-query";
 
-import { App } from "#tui/app.tsx";
-import { ClipboardContext } from "#tui/clipboard.tsx";
-import type { Tab } from "#tui/pages.ts";
-import { QUERY_CLIENT_CONFIG, QueryProvider, waitForInFlightQueries } from "#tui/tui.tsx";
+import { App } from "#app/app.tsx";
+import type { Tab } from "#app/pages.ts";
+import { QUERY_CLIENT_CONFIG, QueryProvider, waitForInFlightQueries } from "#app/tui.tsx";
+import { ClipboardContext } from "#ui/clipboard.tsx";
 
 import type { TestReceiver } from "./receiver.ts";
 import { render } from "./render.tsx";

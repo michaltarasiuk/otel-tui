@@ -1,12 +1,12 @@
 import dedent from "dedent";
 
+import { startTui } from "#app/tui.tsx";
 import { MINUTE_MS } from "#utils/time.ts";
 
 import { startMcpServer } from "./mcp/mcp-server.ts";
 import { HELP, type Options, OptionsError, parseOptions, VERSION } from "./options.ts";
 import { type Receiver, startReceiver } from "./receiver/receiver.ts";
 import { StartupError } from "./startup-error.ts";
-import { startTui } from "./tui/tui.tsx";
 
 const START_ERROR_EXIT_CODE = 1;
 const USAGE_ERROR_EXIT_CODE = 2;

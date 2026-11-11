@@ -5,11 +5,17 @@
   "license": "MIT",
   "type": "module",
   "imports": {
+    "#app/*": "./src/app/*",
+    "#logs/*": "./src/logs/*",
     "#mcp/*": "./src/mcp/*",
+    "#metrics/*": "./src/metrics/*",
+    "#query/*": "./src/query/*",
     "#receiver/*": "./src/receiver/*",
+    "#services/*": "./src/services/*",
     "#telemetry/*": "./src/telemetry/*",
     "#testing/*": "./src/testing/*",
-    "#tui/*": "./src/tui/*",
+    "#traces/*": "./src/traces/*",
+    "#ui/*": "./src/ui/*",
     "#utils/*": "./src/utils/*"
   },
   "scripts": {
