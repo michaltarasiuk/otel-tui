@@ -5,6 +5,12 @@
 - When existing code makes a change awkward, fix the code instead of working around it, even outside the files the task names.
 - Commit the refactor on its own, before the change it enables.
 
+## Files
+
+- Each signal (`services`, `traces`, `metrics`, `logs`) keeps its SQL, reads, queries, screens, and tests in one flat folder.
+- Imports flow one way: `utils` → `telemetry`, `query`, `ui` → signals → `app`, `mcp`. A signal never imports another signal or `app`; `app` links the views.
+- A file lives in the folder of what it is, not of who calls it; move it only when its place starts to hurt.
+
 ## Code
 
 - Don't pass a function as a callback unless it was designed for it; forward only the arguments you mean (`items.map((item) => format(item))`). See https://jakearchibald.com/2021/function-callback-risks/.

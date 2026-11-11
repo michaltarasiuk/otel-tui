@@ -229,4 +229,7 @@ Each view queries DuckDB with SQL built from its own search and filters, and
 [OpenTUI](https://opentui.com/) draws the results.
 
 - `src/receiver/`: DuckDB instance and OTLP receiver.
-- `src/tui/`: views and charts.
+- `src/services/`, `src/traces/`, `src/metrics/`, `src/logs/`: each view with
+  its SQL, queries, and screens.
+- `src/app/`: the app shell that puts the views together.
+- `src/mcp/`: the MCP server over the same queries.
