@@ -31,23 +31,23 @@ export function Rows<T>({
   const requestFocus = useFocusRequest();
   const claimScroll = useScrollGesture();
 
-  const [visibleRowCount, setVisibleRowCount] = useState(items.length);
+  const [measured, setMeasured] = useState({ height: items.length, itemCount: items.length });
+
+  const visibleRowCount = measured.height < measured.itemCount ? measured.height : items.length;
+  const hiddenRowCount = items.length - visibleRowCount;
+  const halfPage = Math.max(1, Math.floor(visibleRowCount / 2));
 
   const firstVisibleIndex = clamp(
     selectedIndex - Math.floor(visibleRowCount / 2),
     0,
-    items.length - visibleRowCount,
+    hiddenRowCount,
   );
   const visibleItems = items.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount);
-
-  const hiddenRowCount = items.length - visibleRowCount;
   const scrollThumbTop = Math.round((firstVisibleIndex / hiddenRowCount) * (visibleRowCount - 1));
 
   const moveBy = useEffectEvent((offset: number) => onSelect((index) => index + offset));
   const movePage = useEffectEvent((direction: 1 | -1) => moveBy(direction * visibleRowCount));
-  const moveHalfPage = useEffectEvent((direction: 1 | -1) =>
-    moveBy(direction * Math.max(1, Math.floor(visibleRowCount / 2))),
-  );
+  const moveHalfPage = useEffectEvent((direction: 1 | -1) => moveBy(direction * halfPage));
   const moveTo = useEffectEvent((index: number) => onSelect(index));
   const moveToLast = useEffectEvent(() => onSelect(items.length - 1));
 
@@ -93,6 +93,10 @@ export function Rows<T>({
 
   const rowsRef = useRef<BoxRenderable>(null);
 
+  function measure() {
+    setMeasured({ height: rowsRef.current?.height ?? 0, itemCount: items.length });
+  }
+
   return (
     <box
       ref={rowsRef}
@@ -100,34 +104,36 @@ export function Rows<T>({
       flexBasis={0}
       maxHeight={items.length}
       overflow="hidden"
-      onSizeChange={() => setVisibleRowCount(rowsRef.current?.height ?? 0)}
+      onSizeChange={() => measure()}
       onMouseScroll={({ scroll }) => {
-        if (!claimScroll()) {
+        if (!claimScroll() || scroll === undefined) {
           return;
         }
-        if (scroll?.direction === "down") {
+        if (scroll.direction === "down") {
           onSelect((index) => index + scroll.delta);
-        } else if (scroll?.direction === "up") {
+        } else if (scroll.direction === "up") {
           onSelect((index) => index - scroll.delta);
         }
       }}
     >
-      {visibleItems.map((item, offset) => (
-        <box
-          key={getKey(item)}
-          flexShrink={0}
-          onMouseDown={(event) => {
-            if (event.button === MouseButton.LEFT) {
-              requestFocus();
-              onSelect(firstVisibleIndex + offset);
-            }
-          }}
-        >
-          <SelectedContext value={firstVisibleIndex + offset === selectedIndex}>
-            {children(item)}
-          </SelectedContext>
-        </box>
-      ))}
+      <box flexShrink={0} onSizeChange={() => measure()}>
+        {visibleItems.map((item, offset) => (
+          <box
+            key={getKey(item)}
+            flexShrink={0}
+            onMouseDown={(event) => {
+              if (event.button === MouseButton.LEFT) {
+                requestFocus();
+                onSelect(firstVisibleIndex + offset);
+              }
+            }}
+          >
+            <SelectedContext value={firstVisibleIndex + offset === selectedIndex}>
+              {children(item)}
+            </SelectedContext>
+          </box>
+        ))}
+      </box>
       {visibleRowCount > 0 && hiddenRowCount > 0 && (
         <text position="absolute" right={0} top={scrollThumbTop} fg={THEME.textMuted}>
           █

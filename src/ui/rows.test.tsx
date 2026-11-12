@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
-import { use } from "react";
+import { useBindings } from "@opentui/keymap/react";
+import { use, useState } from "react";
 
 import { render } from "#testing/render.tsx";
 import { textLines } from "#testing/screen.ts";
@@ -47,6 +48,25 @@ function NumberedRows({ count, halfPageKeys = false }: NumberedRowsProps) {
       {(row) => <NumberedRow name={row} />}
     </Rows>
   );
+}
+
+interface GrowingRowsProps {
+  from: number;
+  to: number;
+}
+
+function GrowingRows({ from, to }: GrowingRowsProps) {
+  const [count, setCount] = useState(from);
+
+  useBindings(
+    () => ({
+      commands: [{ name: "rows.grow", run: () => setCount(to) }],
+      bindings: [{ key: "g", cmd: "rows.grow" }],
+    }),
+    [to],
+  );
+
+  return <NumberedRows count={count} />;
 }
 
 function visibleRows(frame: string) {
@@ -228,4 +248,17 @@ test("shows more rows after the terminal grows", async () => {
 
   const frame = await screen.waitForFrame((frame) => visibleRows(frame).includes("row 8"));
   expect(visibleRows(frame)).toHaveLength(8);
+});
+
+test("keeps the rows in place on the frame more rows arrive", async () => {
+  await using screen = await render(<GrowingRows from={3} to={20} />, SCREEN_SIZE);
+  await screen.waitForFrame(selected(1));
+  screen.mockInput.pressArrow("down");
+  screen.mockInput.pressArrow("down");
+  await screen.waitForFrame(selected(3));
+
+  screen.mockInput.pressKey("g");
+
+  const frame = await screen.waitForFrame((frame) => visibleRows(frame).includes("row 4"));
+  expect(visibleRows(frame)).toEqual(["row 1", "row 2", "> row 3", "row 4", "row 5"]);
 });
