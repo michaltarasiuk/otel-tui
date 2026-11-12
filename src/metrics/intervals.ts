@@ -1,4 +1,5 @@
 import { type Distribution, hasNegativeCounts, subtractDistributions } from "./distribution.ts";
+import { isDelta, type Metric } from "./metric.ts";
 import type { DistributionPoint, NumberPoint } from "./series.ts";
 
 export interface Interval<T> {
@@ -69,4 +70,9 @@ export function distributionIntervals(points: DistributionPoint[], delta: boolea
 
 export function perSecond(interval: Interval<number>) {
   return (interval.value * 1000) / (interval.end - interval.start);
+}
+
+export function latestRate(metric: Metric, points: NumberPoint[]) {
+  const latest = counterIntervals(points, isDelta(metric)).at(-1);
+  return latest === undefined ? null : perSecond(latest);
 }

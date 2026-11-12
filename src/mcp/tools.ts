@@ -5,10 +5,10 @@ import { z } from "zod";
 import type { Log } from "#logs/log.ts";
 import { readLogList } from "#logs/read-logs.ts";
 import { quantile } from "#metrics/distribution.ts";
-import { counterIntervals, perSecond } from "#metrics/intervals.ts";
-import { isDelta, type Metric, type MetricSort } from "#metrics/metric.ts";
+import { latestRate } from "#metrics/intervals.ts";
+import type { Metric, MetricSort } from "#metrics/metric.ts";
 import { readMetricList, readMetricSeries } from "#metrics/read-metrics.ts";
-import type { NumberPoint, Series } from "#metrics/series.ts";
+import type { Series } from "#metrics/series.ts";
 import { readServiceOperations, readServiceList } from "#services/read-services.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
 import { readTraceList, readSpanContent, readTraceSpans } from "#traces/read-traces.ts";
@@ -93,11 +93,6 @@ function logSummary(log: Log) {
     span_id: log.span_id,
     attributes: attributeObject(log.attributes),
   };
-}
-
-function latestRate(metric: Metric, points: NumberPoint[]) {
-  const latest = counterIntervals(points, isDelta(metric)).at(-1);
-  return latest === undefined ? null : perSecond(latest);
 }
 
 function seriesSummary(metric: Metric, series: Series) {

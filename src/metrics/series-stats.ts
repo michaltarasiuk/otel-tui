@@ -1,9 +1,9 @@
 import { formatInteger } from "#utils/number.ts";
 
 import { quantile } from "./distribution.ts";
-import { counterIntervals, perSecond } from "./intervals.ts";
+import { latestRate } from "./intervals.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
-import { isDelta, type Metric, type MetricType } from "./metric.ts";
+import type { Metric, MetricType } from "./metric.ts";
 import type { Series } from "./series.ts";
 
 type StatKey = "rate" | "total" | "last" | "min" | "max" | "count" | "p50" | "p95" | "p99";
@@ -58,9 +58,9 @@ export function seriesStats(metric: Metric, { stats }: Series): Partial<Record<S
     };
   }
   if (metric.type === "counter") {
-    const latest = counterIntervals(stats.latestPoints, isDelta(metric)).at(-1);
+    const rate = latestRate(metric, stats.latestPoints);
     return {
-      rate: latest === undefined ? "" : formatMetricRate(perSecond(latest), metric.unit),
+      rate: rate === null ? "" : formatMetricRate(rate, metric.unit),
       total: format(stats.value),
     };
   }
