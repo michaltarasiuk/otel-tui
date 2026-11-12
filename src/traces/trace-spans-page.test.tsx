@@ -40,6 +40,21 @@ test("draws the waterfall on the frame the trace first shows", async () => {
   expect(spanRows(frame)).toHaveLength(3);
 });
 
+test("clips the spans that don't fit on the frame the trace first shows", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver, { size: { width: 120, height: 10 } });
+  await selectRow(app, NEWEST_FIRST, CART_ROW);
+
+  app.mockInput.pressEnter();
+  const frame = await app.waitForFrame((frame) => frame.includes("3 spans"));
+
+  const rows = spanRows(frame).map((row) => collapseWhitespace(row.replace("█", "")));
+  expect(rows).toEqual([
+    "● frontend GET /api/cart 120.0ms",
+    "● cart POST /oteldemo...tService/GetCart 80.0ms",
+  ]);
+});
+
 test("jumps between spans with errors", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);

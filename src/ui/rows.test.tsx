@@ -167,7 +167,8 @@ test("moves the selection once for every scroll event, however fast they come", 
 
 test("places the scroll indicator by how far the list has scrolled", async () => {
   await using screen = await render(<NumberedRows count={20} />, SCREEN_SIZE);
-  expect(indicatorLine(await screen.waitForFrame(selected(1)))).toBe(0);
+  const frame = await screen.waitForFrame((frame) => frame.includes(SCROLL_INDICATOR));
+  expect(indicatorLine(frame)).toBe(0);
 
   screen.mockInput.pressKey("END");
 

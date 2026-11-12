@@ -115,6 +115,7 @@ export function Rows<T>({
       {visibleItems.map((item, offset) => (
         <box
           key={getKey(item)}
+          flexShrink={0}
           onMouseDown={(event) => {
             if (event.button === MouseButton.LEFT) {
               requestFocus();
