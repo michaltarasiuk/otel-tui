@@ -40,7 +40,7 @@ function filterParams({ search, errorsOnly, serviceName, operationName }: TraceF
   };
 }
 
-export async function listTraces(
+export async function readTraceList(
   connection: DuckDBConnection,
   { timeRange, sort, ...filter }: TraceQuery,
 ) {
@@ -65,17 +65,9 @@ export async function readTraceTimeline(connection: DuckDBConnection, filter: Tr
   return { newestBucketMs, occupied: TimeBucket.array().parse(reader.getRowObjectsJS()) };
 }
 
-export async function countTraces(connection: DuckDBConnection) {
+export async function readTraceCount(connection: DuckDBConnection) {
   const reader = await connection.runAndReadAll(traceCount);
   return z.number().parse(reader.value(0, 0));
-}
-
-export async function readTraceList(connection: DuckDBConnection, query: TraceQuery) {
-  const [traces, totalCount] = await Promise.all([
-    listTraces(connection, query),
-    countTraces(connection),
-  ]);
-  return { traces, totalCount };
 }
 
 export async function readTraceSpans(connection: DuckDBConnection, traceId: string) {

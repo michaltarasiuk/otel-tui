@@ -40,7 +40,7 @@ export interface MetricQuery {
   sort: MetricSort;
 }
 
-export async function listMetrics(connection: DuckDBConnection, { search, sort }: MetricQuery) {
+export async function readMetricList(connection: DuckDBConnection, { search, sort }: MetricQuery) {
   const reader = await connection.runAndReadAll(metricList, {
     limit: METRIC_LIMIT,
     ...searchParams(search),
@@ -50,17 +50,9 @@ export async function listMetrics(connection: DuckDBConnection, { search, sort }
   return Metric.array().parse(reader.getRowObjectsJS());
 }
 
-export async function countMetrics(connection: DuckDBConnection) {
+export async function readMetricCount(connection: DuckDBConnection) {
   const reader = await connection.runAndReadAll(metricCount);
   return z.number().parse(reader.value(0, 0));
-}
-
-export async function readMetricList(connection: DuckDBConnection, query: MetricQuery) {
-  const [metrics, totalCount] = await Promise.all([
-    listMetrics(connection, query),
-    countMetrics(connection),
-  ]);
-  return { metrics, totalCount };
 }
 
 export async function readMetricSeries(connection: DuckDBConnection, metric: Metric) {

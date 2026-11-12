@@ -6,6 +6,7 @@ import { POLL_INTERVAL_MS } from "#query/polling.ts";
 import type { Metric } from "./metric.ts";
 import {
   type MetricQuery,
+  readMetricCount,
   readMetricList,
   readMetricSeries,
   readSeriesExemplars,
@@ -15,7 +16,13 @@ import {
 export function metricListQuery(connection: DuckDBConnection, query: MetricQuery) {
   return queryOptions({
     queryKey: ["metrics", query],
-    queryFn: () => readMetricList(connection, query),
+    queryFn: async () => {
+      const [metrics, totalCount] = await Promise.all([
+        readMetricList(connection, query),
+        readMetricCount(connection),
+      ]);
+      return { metrics, totalCount };
+    },
     refetchInterval: POLL_INTERVAL_MS,
   });
 }

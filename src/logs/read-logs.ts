@@ -40,7 +40,10 @@ function filterParams({ search, minSeverity, traceId, spanId }: LogFilter) {
   };
 }
 
-export async function listLogs(connection: DuckDBConnection, { timeRange, ...filter }: LogQuery) {
+export async function readLogList(
+  connection: DuckDBConnection,
+  { timeRange, ...filter }: LogQuery,
+) {
   const reader = await connection.runAndReadAll(logList, {
     limit: LOG_LIMIT,
     ...filterParams(filter),
@@ -61,15 +64,7 @@ export async function readLogTimeline(connection: DuckDBConnection, filter: LogF
   return { newestBucketMs, occupied: TimeBucket.array().parse(reader.getRowObjectsJS()) };
 }
 
-export async function countLogs(connection: DuckDBConnection) {
+export async function readLogCount(connection: DuckDBConnection) {
   const reader = await connection.runAndReadAll(logCount);
   return z.number().parse(reader.value(0, 0));
-}
-
-export async function readLogList(connection: DuckDBConnection, query: LogQuery) {
-  const [logs, totalCount] = await Promise.all([
-    listLogs(connection, query),
-    countLogs(connection),
-  ]);
-  return { logs, totalCount };
 }

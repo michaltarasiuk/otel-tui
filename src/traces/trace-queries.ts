@@ -5,6 +5,7 @@ import { POLL_INTERVAL_MS } from "#query/polling.ts";
 
 import {
   readSpanContent,
+  readTraceCount,
   readTraceList,
   readTraceSpans,
   readTraceTimeline,
@@ -15,7 +16,13 @@ import {
 export function traceListQuery(connection: DuckDBConnection, query: TraceQuery) {
   return queryOptions({
     queryKey: ["traces", query],
-    queryFn: () => readTraceList(connection, query),
+    queryFn: async () => {
+      const [traces, totalCount] = await Promise.all([
+        readTraceList(connection, query),
+        readTraceCount(connection),
+      ]);
+      return { traces, totalCount };
+    },
     refetchInterval: POLL_INTERVAL_MS,
   });
 }

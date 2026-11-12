@@ -20,7 +20,10 @@ export interface ServiceQuery {
   sort: ServiceSort;
 }
 
-export async function listServices(connection: DuckDBConnection, { search, sort }: ServiceQuery) {
+export async function readServiceList(
+  connection: DuckDBConnection,
+  { search, sort }: ServiceQuery,
+) {
   const reader = await connection.runAndReadAll(serviceList, {
     ...windowParams(),
     pattern: substringPattern(search),
@@ -30,7 +33,7 @@ export async function listServices(connection: DuckDBConnection, { search, sort 
   return Service.array().parse(reader.getRowObjectsJS());
 }
 
-export async function listOperations(connection: DuckDBConnection, serviceName: string) {
+export async function readServiceOperations(connection: DuckDBConnection, serviceName: string) {
   const reader = await connection.runAndReadAll(serviceOperations, {
     ...windowParams(),
     serviceName,

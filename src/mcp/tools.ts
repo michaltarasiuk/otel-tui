@@ -3,15 +3,15 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import type { Log } from "#logs/log.ts";
-import { listLogs } from "#logs/read-logs.ts";
+import { readLogList } from "#logs/read-logs.ts";
 import { quantile } from "#metrics/distribution.ts";
 import { counterIntervals, perSecond } from "#metrics/intervals.ts";
 import { isDelta, type Metric, type MetricSort } from "#metrics/metric.ts";
-import { listMetrics, readMetricSeries } from "#metrics/read-metrics.ts";
+import { readMetricList, readMetricSeries } from "#metrics/read-metrics.ts";
 import type { NumberPoint, Series } from "#metrics/series.ts";
-import { listOperations, listServices } from "#services/read-services.ts";
+import { readServiceOperations, readServiceList } from "#services/read-services.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
-import { listTraces, readSpanContent, readTraceSpans } from "#traces/read-traces.ts";
+import { readTraceList, readSpanContent, readTraceSpans } from "#traces/read-traces.ts";
 import type { SpanContent } from "#traces/span.ts";
 import { traceOutline } from "#traces/trace-outline.ts";
 import type { Trace } from "#traces/trace.ts";
@@ -142,7 +142,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, sort }) => {
-      const services = await listServices(connection, { search, sort: descending(sort) });
+      const services = await readServiceList(connection, { search, sort: descending(sort) });
       return jsonResult(services);
     },
   );
@@ -157,7 +157,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       inputSchema: { service: z.string().describe("Service name, as list_services returns it") },
       annotations: READ_ONLY,
     },
-    async ({ service }) => jsonResult(await listOperations(connection, service)),
+    async ({ service }) => jsonResult(await readServiceOperations(connection, service)),
   );
 
   server.registerTool(
@@ -181,7 +181,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, service, operation, errors_only, sort, limit }) => {
-      const traces = await listTraces(connection, {
+      const traces = await readTraceList(connection, {
         search,
         errorsOnly: errors_only,
         serviceName: service,
@@ -243,7 +243,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, limit }) => {
-      const metrics = await listMetrics(connection, { search, sort: BY_NAME });
+      const metrics = await readMetricList(connection, { search, sort: BY_NAME });
       const shown = metrics.slice(0, limit).map((metric) => metricSummary(metric));
       return jsonResult(shown);
     },
@@ -265,7 +265,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ name, service }) => {
-      const candidates = await listMetrics(connection, { search: name, sort: BY_NAME });
+      const candidates = await readMetricList(connection, { search: name, sort: BY_NAME });
       const metrics = candidates.filter((metric) => isMetricNamed(metric, name, service));
       if (metrics.length === 0) {
         const from = service === undefined ? "" : ` from ${service}`;
@@ -304,7 +304,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, min_severity, trace_id, span_id, limit }) => {
-      const logs = await listLogs(connection, {
+      const logs = await readLogList(connection, {
         search,
         minSeverity: min_severity,
         traceId: trace_id,
