@@ -4,29 +4,23 @@ import { clamp } from "#utils/number.ts";
 
 export function useSelection<T>(
   items: readonly T[],
-  getKey: (item: T) => string,
+  keyOf: (item: T) => string,
   initialKey?: string,
 ) {
   const [selectedKey, setSelectedKey] = useState(initialKey);
 
   function indexOf(key: string | undefined) {
-    return Math.max(
-      0,
-      items.findIndex((item) => getKey(item) === key),
-    );
+    const index = items.findIndex((item) => keyOf(item) === key);
+    return Math.max(index, 0);
   }
 
   function select(action: SetStateAction<number>) {
     setSelectedKey((key) => {
       const index = typeof action === "function" ? action(indexOf(key)) : action;
       const item = items[clamp(index, 0, items.length - 1)];
-      return item === undefined ? key : getKey(item);
+      return item === undefined ? key : keyOf(item);
     });
   }
 
-  function selectKey(key: string) {
-    setSelectedKey(key);
-  }
-
-  return [indexOf(selectedKey), select, selectKey] as const;
+  return [indexOf(selectedKey), select, setSelectedKey] as const;
 }
