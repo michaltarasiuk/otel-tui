@@ -21,6 +21,7 @@ import {
   detailsLines,
   keyHints,
   listLines,
+  onDetails,
   tableRows,
   textLines,
 } from "#testing/screen.ts";
@@ -28,6 +29,17 @@ import { otlpTraces } from "#testing/traces.ts";
 
 beforeEach(() => {
   fakeClock(atSecond(60));
+});
+
+test("draws the chart on the frame the metric first shows", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderMetricList(receiver, { size: DETAILS_SIZE });
+  await selectRow(app, BY_NAME, FLAG_REQUESTS_ROW);
+
+  app.mockInput.pressEnter();
+  const frame = await app.waitForFrame(onDetails);
+
+  expect(frame).toMatch(CHART_DOTS);
 });
 
 test("opens a counter's series with their rates and totals", async () => {

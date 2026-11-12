@@ -1,6 +1,6 @@
-import type { BoxRenderable, ColorInput } from "@opentui/core";
-import { useRef, useState } from "react";
+import type { ColorInput } from "@opentui/core";
 
+import { useRegionSize } from "#ui/size.tsx";
 import { THEME } from "#ui/theme.ts";
 
 const BRAILLE_DOT_COLUMNS = 2;
@@ -129,7 +129,7 @@ export function LineChart({
   formatValue,
   getLines,
 }: LineChartProps) {
-  const [width, setWidth] = useState(0);
+  const { width } = useRegionSize();
 
   const columns = Math.max(0, width - LABEL_WIDTH - LABEL_GAP);
 
@@ -172,10 +172,8 @@ export function LineChart({
     ));
   }
 
-  const chartRef = useRef<BoxRenderable>(null);
-
   return (
-    <box ref={chartRef} onSizeChange={() => setWidth(chartRef.current?.width ?? 0)}>
+    <box>
       <box height={height}>{renderPlot()}</box>
       <box flexDirection="row" justifyContent="space-between" paddingLeft={LABEL_WIDTH + LABEL_GAP}>
         <text fg={THEME.textMuted}>{startLabel}</text>

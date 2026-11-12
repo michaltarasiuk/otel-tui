@@ -6,9 +6,19 @@ import logList from "#logs/sql/log-list.sql" with { type: "text" };
 import metricList from "#metrics/sql/metric-list.sql" with { type: "text" };
 import serviceList from "#services/sql/service-list.sql" with { type: "text" };
 import { openTab, renderApp } from "#testing/app.tsx";
+import { otlpLogs } from "#testing/logs.ts";
 import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { keyHints, onDetails, onList, tabStyles } from "#testing/screen.ts";
+import {
+  chartLines,
+  keyHints,
+  onDetails,
+  onList,
+  pageHeader,
+  tableRows,
+  tabStyles,
+} from "#testing/screen.ts";
+import { otlpTraces } from "#testing/traces.ts";
 import traceList from "#traces/sql/trace-list.sql" with { type: "text" };
 
 function queriesRun(runAndReadAll: Mock<DuckDBConnection["runAndReadAll"]>) {
@@ -218,4 +228,24 @@ test("clears the telemetry with ctrl+l and starts the current tab over", async (
   expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: false, fg: "text" },
   });
+});
+
+test("draws a tab whole on the frame it first shows", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await receiver.sendHttp("/v1/logs", otlpLogs);
+  await using app = await renderApp(receiver);
+  await app.waitForFrame((frame) => pageHeader(frame).endsWith(" services"));
+
+  app.mockInput.pressArrow("right");
+  const traces = await app.waitForFrame((frame) => pageHeader(frame).endsWith(" traces"));
+  expect(chartLines(traces)).not.toEqual([]);
+  expect(tableRows(traces)).toHaveLength(3);
+
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => / metrics?$/.test(pageHeader(frame)));
+  app.mockInput.pressArrow("right");
+  const logs = await app.waitForFrame((frame) => pageHeader(frame).endsWith(" logs"));
+  expect(chartLines(logs)).not.toEqual([]);
+  expect(tableRows(logs)).not.toEqual([]);
 });

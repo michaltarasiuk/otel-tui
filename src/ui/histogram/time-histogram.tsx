@@ -1,7 +1,7 @@
-import { type BoxRenderable, TextAttributes } from "@opentui/core";
-import { useRef, useState } from "react";
+import { TextAttributes } from "@opentui/core";
 
 import { COLUMN_GAP } from "#ui/columns.ts";
+import { useRegionSize } from "#ui/size.tsx";
 import { THEME } from "#ui/theme.ts";
 
 import { barRows, type HistogramColumn, type HistogramRange, overlaps } from "./bars.ts";
@@ -32,7 +32,7 @@ interface TimeHistogramProps {
 }
 
 export function TimeHistogram({ title, occupied, newestBucketMs, selected }: TimeHistogramProps) {
-  const [width, setWidth] = useState(0);
+  const { width } = useRegionSize();
 
   const columnCount = Math.max(
     0,
@@ -95,15 +95,5 @@ export function TimeHistogram({ title, occupied, newestBucketMs, selected }: Tim
     );
   }
 
-  const histogramRef = useRef<BoxRenderable>(null);
-
-  return (
-    <box
-      ref={histogramRef}
-      paddingX={HISTOGRAM_PADDING_X}
-      onSizeChange={() => setWidth(histogramRef.current?.width ?? 0)}
-    >
-      {renderChart()}
-    </box>
-  );
+  return <box paddingX={HISTOGRAM_PADDING_X}>{renderChart()}</box>;
 }

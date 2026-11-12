@@ -1,4 +1,4 @@
-import type { BoxRenderable, ScrollBoxRenderable } from "@opentui/core";
+import type { ScrollBoxRenderable } from "@opentui/core";
 import { useDeferredValue, useRef, useState } from "react";
 
 import { CopyKey } from "#ui/clipboard.tsx";
@@ -12,6 +12,7 @@ import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
+import { useRegionSize } from "#ui/size.tsx";
 import { Split } from "#ui/split.tsx";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
@@ -77,12 +78,12 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
     deferredTimeRange !== undefined;
   const browsing = !search.isEditing;
 
-  const pageRef = useRef<BoxRenderable>(null);
+  const { height = 0 } = useRegionSize();
+
   const detailsRef = useRef<ScrollBoxRenderable>(null);
-  const [height, setHeight] = useState(0);
 
   return (
-    <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
+    <box flexGrow={1}>
       <PageHeader>
         <SearchInput search={search} placeholder="body, service, trace ID or key=value" />
         {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_ID_LENGTH)}</Chip>}

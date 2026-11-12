@@ -1,11 +1,13 @@
 import { expect, test } from "bun:test";
 
+import { selectRow } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { logsRequest, SEVERITY_NUMBER } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
   detailsLines,
   keyHints,
+  onDetails,
   pageHeader,
   spanRows,
   tableRows,
@@ -18,6 +20,7 @@ import {
   CHARGE_FAILED,
   CHECKOUT_ROW,
   checkoutTraceId,
+  NEWEST_FIRST,
   openTrace,
   PLACE_ORDER,
   renderTraceList,
@@ -25,6 +28,17 @@ import {
 } from "#testing/traces.ts";
 import { GESTURE_PAUSE_MS } from "#ui/use-scroll-gesture.ts";
 import { collapseWhitespace } from "#utils/text.ts";
+
+test("draws the waterfall on the frame the trace first shows", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderTraceList(receiver);
+  await selectRow(app, NEWEST_FIRST, CART_ROW);
+
+  app.mockInput.pressEnter();
+  const frame = await app.waitForFrame(onDetails);
+
+  expect(spanRows(frame)).toHaveLength(3);
+});
 
 test("jumps between spans with errors", async () => {
   await using receiver = await startTestReceiver();

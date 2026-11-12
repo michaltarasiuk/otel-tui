@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 
 import { Key } from "./key-hints.tsx";
+import { SizeProvider, useRegionSize } from "./size.tsx";
 import { useScrollGesture } from "./use-scroll-gesture.ts";
 
 const SCROLLBAR_WIDTH = 1;
@@ -31,6 +32,7 @@ interface ScrollBoxProps {
 
 export function ScrollBox({ ref, children }: ScrollBoxProps) {
   const claimScroll = useScrollGesture();
+  const { width } = useRegionSize();
 
   return (
     <scrollbox
@@ -47,7 +49,9 @@ export function ScrollBox({ ref, children }: ScrollBoxProps) {
           }
         }}
       >
-        {children}
+        <SizeProvider value={{ width: width - 2 * SCROLLBAR_WIDTH, height: undefined }}>
+          {children}
+        </SizeProvider>
       </box>
     </scrollbox>
   );

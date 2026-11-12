@@ -247,3 +247,17 @@ test("leaves the list its room on a short terminal", async () => {
 
   expect(frame).not.toContain("Traces over time");
 });
+
+test("fits the histogram to the terminal after a resize", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderHistogram(receiver);
+  await app.waitForFrame((frame) => axisLine(frame) === MINUTE_TICKS);
+
+  app.resize(60, 30);
+  const narrow = await app.waitForFrame((frame) => axisLine(frame) !== MINUTE_TICKS);
+  expect(axisLine(narrow)).toBe("11:57 11:58 11:59 12:00");
+
+  app.resize(120, 12);
+  const short = await app.waitForFrame((frame) => !frame.includes("Traces over time"));
+  expect(tableRows(short)).toHaveLength(3);
+});

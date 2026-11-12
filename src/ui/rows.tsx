@@ -31,7 +31,7 @@ export function Rows<T>({
   const requestFocus = useFocusRequest();
   const claimScroll = useScrollGesture();
 
-  const [visibleRowCount, setVisibleRowCount] = useState(0);
+  const [visibleRowCount, setVisibleRowCount] = useState(items.length);
 
   const firstVisibleIndex = clamp(
     selectedIndex - Math.floor(visibleRowCount / 2),

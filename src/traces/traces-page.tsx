@@ -1,5 +1,4 @@
-import type { BoxRenderable } from "@opentui/core";
-import { useDeferredValue, useRef, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
@@ -12,6 +11,7 @@ import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
+import { useRegionSize } from "#ui/size.tsx";
 import { THEME } from "#ui/theme.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
@@ -81,11 +81,10 @@ export function TracesPage({
     service !== undefined;
   const browsing = !search.isEditing;
 
-  const pageRef = useRef<BoxRenderable>(null);
-  const [height, setHeight] = useState(0);
+  const { height = 0 } = useRegionSize();
 
   return (
-    <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
+    <box flexGrow={1}>
       <PageHeader>
         <SearchInput search={search} placeholder="trace name, service, ID or key=value" />
         {service !== undefined && (

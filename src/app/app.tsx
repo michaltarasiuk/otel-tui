@@ -20,7 +20,7 @@ import { Screen } from "./screen.tsx";
 import { Tabs } from "./tabs.tsx";
 import { useEditing } from "./use-editing.ts";
 import { useFocusedRegion } from "./use-focused-region.ts";
-import { TopBar, Window } from "./window.tsx";
+import { Content, TopBar, Window } from "./window.tsx";
 
 interface AppProps {
   httpUrl: string;
@@ -99,93 +99,95 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
             focused={region === "content"}
             onFocusRequest={() => focus("content")}
           >
-            <Suspense fallback={<PageLoading />}>
-              <Screen mode={page === "services" ? "visible" : "hidden"}>
-                <ErrorBoundary fallback={<PageError text="Failed to load services" />}>
-                  <ServicesPage
-                    onOpenTraces={(service, operation) =>
-                      open({ name: "traces", service, operation })
-                    }
-                  />
-                </ErrorBoundary>
-              </Screen>
-              <Screen mode={page === "traces" ? "visible" : "hidden"}>
-                <ErrorBoundary
-                  fallback={
-                    <PageError
-                      text="Failed to load traces"
-                      onBack={canGoBack ? () => back() : undefined}
-                    />
-                  }
-                >
-                  <Fragment key={tracesService}>
-                    <TracesPage
-                      key={tracesOperation}
-                      service={tracesService}
-                      operation={tracesOperation}
-                      onServiceChange={(service) => replace({ name: "traces", service })}
-                      onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                      onBack={canGoBack ? () => back() : undefined}
-                    />
-                  </Fragment>
-                </ErrorBoundary>
-              </Screen>
-              {trace !== undefined && (
-                <Screen mode={page === "trace" ? "visible" : "hidden"}>
-                  <ErrorBoundary
-                    fallback={<PageError text="Failed to load trace" onBack={() => back()} />}
-                  >
-                    <TraceSpansPage
-                      key={`${trace.traceId}:${trace.spanId}`}
-                      traceId={trace.traceId}
-                      spanId={trace.spanId}
-                      onBack={() => back()}
-                      onOpenLogs={(spanId) =>
-                        open({ name: "logs", traceId: trace.traceId, spanId })
+            <Content>
+              <Suspense fallback={<PageLoading />}>
+                <Screen mode={page === "services" ? "visible" : "hidden"}>
+                  <ErrorBoundary fallback={<PageError text="Failed to load services" />}>
+                    <ServicesPage
+                      onOpenTraces={(service, operation) =>
+                        open({ name: "traces", service, operation })
                       }
-                      onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
                     />
                   </ErrorBoundary>
                 </Screen>
-              )}
-              <Screen mode={page === "metrics" ? "visible" : "hidden"}>
-                <ErrorBoundary fallback={<PageError text="Failed to load metrics" />}>
-                  <MetricsPage onOpen={(metric) => open({ name: "metric", metric })} />
-                </ErrorBoundary>
-              </Screen>
-              {metric !== undefined && (
-                <Screen mode={page === "metric" ? "visible" : "hidden"}>
+                <Screen mode={page === "traces" ? "visible" : "hidden"}>
                   <ErrorBoundary
-                    fallback={<PageError text="Failed to load metric" onBack={() => back()} />}
+                    fallback={
+                      <PageError
+                        text="Failed to load traces"
+                        onBack={canGoBack ? () => back() : undefined}
+                      />
+                    }
                   >
-                    <MetricSeriesPage
-                      key={metric.metric_id}
-                      metric={metric}
-                      onBack={() => back()}
-                      onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                    />
+                    <Fragment key={tracesService}>
+                      <TracesPage
+                        key={tracesOperation}
+                        service={tracesService}
+                        operation={tracesOperation}
+                        onServiceChange={(service) => replace({ name: "traces", service })}
+                        onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+                        onBack={canGoBack ? () => back() : undefined}
+                      />
+                    </Fragment>
                   </ErrorBoundary>
                 </Screen>
-              )}
-              <Screen mode={page === "logs" ? "visible" : "hidden"}>
-                <ErrorBoundary
-                  fallback={
-                    <PageError
-                      text="Failed to load logs"
+                {trace !== undefined && (
+                  <Screen mode={page === "trace" ? "visible" : "hidden"}>
+                    <ErrorBoundary
+                      fallback={<PageError text="Failed to load trace" onBack={() => back()} />}
+                    >
+                      <TraceSpansPage
+                        key={`${trace.traceId}:${trace.spanId}`}
+                        traceId={trace.traceId}
+                        spanId={trace.spanId}
+                        onBack={() => back()}
+                        onOpenLogs={(spanId) =>
+                          open({ name: "logs", traceId: trace.traceId, spanId })
+                        }
+                        onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+                      />
+                    </ErrorBoundary>
+                  </Screen>
+                )}
+                <Screen mode={page === "metrics" ? "visible" : "hidden"}>
+                  <ErrorBoundary fallback={<PageError text="Failed to load metrics" />}>
+                    <MetricsPage onOpen={(metric) => open({ name: "metric", metric })} />
+                  </ErrorBoundary>
+                </Screen>
+                {metric !== undefined && (
+                  <Screen mode={page === "metric" ? "visible" : "hidden"}>
+                    <ErrorBoundary
+                      fallback={<PageError text="Failed to load metric" onBack={() => back()} />}
+                    >
+                      <MetricSeriesPage
+                        key={metric.metric_id}
+                        metric={metric}
+                        onBack={() => back()}
+                        onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+                      />
+                    </ErrorBoundary>
+                  </Screen>
+                )}
+                <Screen mode={page === "logs" ? "visible" : "hidden"}>
+                  <ErrorBoundary
+                    fallback={
+                      <PageError
+                        text="Failed to load logs"
+                        onBack={canGoBack ? () => back() : undefined}
+                      />
+                    }
+                  >
+                    <LogsPage
+                      traceId={logsTrace?.traceId}
+                      spanId={logsTrace?.spanId}
+                      onTraceChange={(traceId) => replace({ name: "logs", traceId })}
+                      onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
                       onBack={canGoBack ? () => back() : undefined}
                     />
-                  }
-                >
-                  <LogsPage
-                    traceId={logsTrace?.traceId}
-                    spanId={logsTrace?.spanId}
-                    onTraceChange={(traceId) => replace({ name: "logs", traceId })}
-                    onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                    onBack={canGoBack ? () => back() : undefined}
-                  />
-                </ErrorBoundary>
-              </Screen>
-            </Suspense>
+                  </ErrorBoundary>
+                </Screen>
+              </Suspense>
+            </Content>
           </FocusScope>
         </KeysScope>
         {help !== undefined && <Help entries={help} onClose={() => setHelp(undefined)} />}

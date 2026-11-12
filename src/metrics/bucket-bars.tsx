@@ -1,7 +1,7 @@
-import type { BoxRenderable, ColorInput } from "@opentui/core";
-import { useRef, useState } from "react";
+import type { ColorInput } from "@opentui/core";
 
 import { COLUMN_GAP } from "#ui/columns.ts";
+import { useRegionSize } from "#ui/size.tsx";
 import { THEME } from "#ui/theme.ts";
 import { formatInteger } from "#utils/number.ts";
 
@@ -32,7 +32,7 @@ interface BucketBarsProps {
 }
 
 export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
-  const [width, setWidth] = useState(0);
+  const { width } = useRegionSize();
 
   const buckets = nonEmptyRange(bucketsOf(limitBuckets(distribution, 16)));
   const maxCount = Math.max(...buckets.map((bucket) => bucket.count));
@@ -42,10 +42,8 @@ export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
     return count > 0 ? Math.max(1, Math.round((count / maxCount) * barColumns)) : 0;
   }
 
-  const barsRef = useRef<BoxRenderable>(null);
-
   return (
-    <box ref={barsRef} onSizeChange={() => setWidth(barsRef.current?.width ?? 0)}>
+    <box>
       {buckets.map((bucket) => (
         <box key={`${bucket.lower} ${bucket.upper}`} flexDirection="row" gap={COLUMN_GAP}>
           <text
