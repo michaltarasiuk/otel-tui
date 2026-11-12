@@ -57,8 +57,6 @@ export function TraceSpansPage({
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [showCriticalPath, setShowCriticalPath] = useState(false);
 
-  const detailsRef = useRef<ScrollBoxRenderable>(null);
-
   const traceSpans = useTraceSpans(traceId);
   const { data: spans } = traceSpans;
   const [root] = spans;
@@ -67,9 +65,9 @@ export function TraceSpansPage({
   const shown = visibleSpans(spans, collapsed);
   const [selectedIndex, select, selectKey] = useSelection(shown, (span) => span.span_id, spanId);
   const selected = shown[selectedIndex];
-  const detailed = useDeferredValue(selected);
+  const deferredSelected = useDeferredValue(selected);
 
-  const spanContent = useSpanContent(traceId, detailed?.span_id);
+  const spanContent = useSpanContent(traceId, deferredSelected?.span_id);
   const links = spanContent.data?.links ?? [];
   const [linkIndex, selectLink] = useSelection(links, (link) => linkKey(link));
   const link = links[linkIndex];
@@ -103,11 +101,13 @@ export function TraceSpansPage({
     }
   }
 
+  const detailsRef = useRef<ScrollBoxRenderable>(null);
+
   return (
     <box flexGrow={1}>
       {traceSpans.isError ? (
         <Placeholder text="Failed to load trace" variant="error" />
-      ) : root === undefined || detailed === undefined ? (
+      ) : root === undefined || deferredSelected === undefined ? (
         <Placeholder text="This trace is no longer available" />
       ) : (
         <>
@@ -123,7 +123,12 @@ export function TraceSpansPage({
                 criticalPath={showCriticalPath ? criticalPath(spans) : undefined}
               />
             </FocusScope>
-            <SpanDetails key={detailed.span_id} ref={detailsRef} traceId={traceId} span={detailed}>
+            <SpanDetails
+              key={deferredSelected.span_id}
+              ref={detailsRef}
+              traceId={traceId}
+              span={deferredSelected}
+            >
               <FocusScope focused={region === "links"} onFocusRequest={() => focusRegion("links")}>
                 <LinkList
                   links={links}

@@ -1,5 +1,5 @@
 import type { BoxRenderable } from "@opentui/core";
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
@@ -13,7 +13,6 @@ import { Placeholder } from "#ui/placeholder.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { THEME } from "#ui/theme.ts";
-import { useDeferredState } from "#ui/use-deferred-state.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { cycle, findNextIndex } from "#utils/cycle.ts";
@@ -53,20 +52,20 @@ export function TracesPage({
   onBack,
 }: TracesPageProps) {
   const search = useSearch();
-  const [errorsOnly, setErrorsOnly] = useDeferredState(false);
-  const [timeRange, setTimeRange] = useDeferredState<HistogramRange | undefined>(undefined);
-  const [sort, setSort] = useDeferredState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
-
-  const pageRef = useRef<BoxRenderable>(null);
-  const [height, setHeight] = useState(0);
+  const [errorsOnly, setErrorsOnly] = useState(false);
+  const deferredErrorsOnly = useDeferredValue(errorsOnly);
+  const [timeRange, setTimeRange] = useState<HistogramRange | undefined>(undefined);
+  const deferredTimeRange = useDeferredValue(timeRange);
+  const [sort, setSort] = useState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
+  const deferredSort = useDeferredValue(sort);
 
   const [traceList, traceTimeline] = useTraces({
-    search: search.query,
-    errorsOnly,
+    search: search.deferredText,
+    errorsOnly: deferredErrorsOnly,
     serviceName: service,
     operationName: operation,
-    timeRange,
-    sort,
+    timeRange: deferredTimeRange,
+    sort: deferredSort,
   });
 
   const { traces, totalCount } = traceList.data;
@@ -76,8 +75,14 @@ export function TracesPage({
   const selected = traces[selectedIndex];
 
   const filtered =
-    search.query !== "" || errorsOnly || timeRange !== undefined || service !== undefined;
+    search.deferredText !== "" ||
+    deferredErrorsOnly ||
+    deferredTimeRange !== undefined ||
+    service !== undefined;
   const browsing = !search.isEditing;
+
+  const pageRef = useRef<BoxRenderable>(null);
+  const [height, setHeight] = useState(0);
 
   return (
     <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>
@@ -111,7 +116,7 @@ export function TracesPage({
             traces={traces}
             selectedIndex={selectedIndex}
             onSelect={(action) => select(action)}
-            sort={sort}
+            sort={deferredSort}
           />
         </FocusScope>
       )}

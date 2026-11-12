@@ -131,8 +131,6 @@ export function LineChart({
 }: LineChartProps) {
   const [width, setWidth] = useState(0);
 
-  const chartRef = useRef<BoxRenderable>(null);
-
   const columns = Math.max(0, width - LABEL_WIDTH - LABEL_GAP);
 
   function renderPlot() {
@@ -173,6 +171,8 @@ export function LineChart({
       </box>
     ));
   }
+
+  const chartRef = useRef<BoxRenderable>(null);
 
   return (
     <box ref={chartRef} onSizeChange={() => setWidth(chartRef.current?.width ?? 0)}>

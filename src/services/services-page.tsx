@@ -1,4 +1,4 @@
-import { useDeferredValue } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
@@ -10,7 +10,6 @@ import { Placeholder } from "#ui/placeholder.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
 import { THEME } from "#ui/theme.ts";
-import { useDeferredState } from "#ui/use-deferred-state.ts";
 import { useRegion } from "#ui/use-region.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
@@ -39,16 +38,17 @@ interface ServicesPageProps {
 
 export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
   const search = useSearch();
-  const [sort, setSort] = useDeferredState(BUSIEST_FIRST);
+  const [sort, setSort] = useState(BUSIEST_FIRST);
+  const deferredSort = useDeferredValue(sort);
 
-  const serviceList = useServices({ search: search.query, sort });
+  const serviceList = useServices({ search: search.deferredText, sort: deferredSort });
   const { data: services } = serviceList;
 
   const [selectedIndex, select] = useSelection(services, (service) => service.service_name);
   const selected = services[selectedIndex];
-  const detailed = useDeferredValue(selected);
+  const deferredSelected = useDeferredValue(selected);
 
-  const { data: operations = [] } = useServiceOperations(detailed?.service_name);
+  const { data: operations = [] } = useServiceOperations(deferredSelected?.service_name);
   const [operationIndex, selectOperation] = useSelection(operations, (operation) => operation.name);
   const operation = operations[operationIndex];
 
@@ -67,10 +67,12 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
       </PageHeader>
       {serviceList.isError ? (
         <Placeholder text="Failed to load services" variant="error" />
-      ) : selected === undefined || detailed === undefined ? (
+      ) : selected === undefined || deferredSelected === undefined ? (
         <Placeholder
           text={
-            search.query !== "" ? "No services match" : "Waiting for server or consumer spans..."
+            search.deferredText !== ""
+              ? "No services match"
+              : "Waiting for server or consumer spans..."
           }
         />
       ) : (
@@ -84,10 +86,10 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
                 services={services}
                 selectedIndex={selectedIndex}
                 onSelect={(action) => select(action)}
-                sort={sort}
+                sort={deferredSort}
               />
             </FocusScope>
-            <ServiceDetails key={detailed.service_name} service={detailed}>
+            <ServiceDetails key={deferredSelected.service_name} service={deferredSelected}>
               <FocusScope
                 focused={region === "operations"}
                 onFocusRequest={() => focusRegion("operations")}
@@ -98,7 +100,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
                   }
                 >
                   <OperationTable
-                    serviceName={detailed.service_name}
+                    serviceName={deferredSelected.service_name}
                     selectedIndex={operationIndex}
                     onSelect={(action) => selectOperation(action)}
                   />

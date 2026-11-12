@@ -34,8 +34,6 @@ interface BucketBarsProps {
 export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
   const [width, setWidth] = useState(0);
 
-  const barsRef = useRef<BoxRenderable>(null);
-
   const buckets = nonEmptyRange(bucketsOf(limitBuckets(distribution, 16)));
   const maxCount = Math.max(...buckets.map((bucket) => bucket.count));
   const barColumns = Math.max(0, width - COLUMN_LABEL_WIDTH - COLUMN_COUNT_WIDTH - 2 * COLUMN_GAP);
@@ -43,6 +41,8 @@ export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
   function barLength(count: number) {
     return count > 0 ? Math.max(1, Math.round((count / maxCount) * barColumns)) : 0;
   }
+
+  const barsRef = useRef<BoxRenderable>(null);
 
   return (
     <box ref={barsRef} onSizeChange={() => setWidth(barsRef.current?.width ?? 0)}>

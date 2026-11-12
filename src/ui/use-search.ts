@@ -2,12 +2,12 @@ import { useDeferredValue, useState } from "react";
 
 export function useSearch() {
   const [text, setText] = useState("");
-  const query = useDeferredValue(text);
+  const deferredText = useDeferredValue(text);
   const [isEditing, setIsEditing] = useState(false);
 
   return {
     text,
-    query,
+    deferredText,
     isEditing,
     setText,
     edit() {

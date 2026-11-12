@@ -33,8 +33,6 @@ export function Rows<T>({
 
   const [visibleRowCount, setVisibleRowCount] = useState(0);
 
-  const rowsRef = useRef<BoxRenderable>(null);
-
   const firstVisibleIndex = clamp(
     selectedIndex - Math.floor(visibleRowCount / 2),
     0,
@@ -92,6 +90,8 @@ export function Rows<T>({
     }),
     [focused, keysEnabled, halfPageKeys],
   );
+
+  const rowsRef = useRef<BoxRenderable>(null);
 
   return (
     <box

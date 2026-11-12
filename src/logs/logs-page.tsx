@@ -1,5 +1,5 @@
 import type { BoxRenderable, ScrollBoxRenderable } from "@opentui/core";
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
@@ -13,7 +13,6 @@ import { Placeholder } from "#ui/placeholder.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
-import { useDeferredState } from "#ui/use-deferred-state.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { cycle, findNextIndex } from "#utils/cycle.ts";
@@ -51,19 +50,17 @@ interface LogsPageProps {
 
 export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }: LogsPageProps) {
   const search = useSearch();
-  const [minSeverity, setMinSeverity] = useDeferredState<MinSeverity>(undefined);
-  const [timeRange, setTimeRange] = useDeferredState<HistogramRange | undefined>(undefined);
-
-  const pageRef = useRef<BoxRenderable>(null);
-  const detailsRef = useRef<ScrollBoxRenderable>(null);
-  const [height, setHeight] = useState(0);
+  const [minSeverity, setMinSeverity] = useState<MinSeverity>(undefined);
+  const deferredMinSeverity = useDeferredValue(minSeverity);
+  const [timeRange, setTimeRange] = useState<HistogramRange | undefined>(undefined);
+  const deferredTimeRange = useDeferredValue(timeRange);
 
   const [logList, logTimeline] = useLogs({
-    search: search.query,
-    minSeverity,
+    search: search.deferredText,
+    minSeverity: deferredMinSeverity,
     traceId,
     spanId,
-    timeRange,
+    timeRange: deferredTimeRange,
   });
 
   const { logs, totalCount } = logList.data;
@@ -74,11 +71,15 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   const selectedTraceId = selected?.trace_id ?? null;
 
   const filtered =
-    search.query !== "" ||
-    minSeverity !== undefined ||
+    search.deferredText !== "" ||
+    deferredMinSeverity !== undefined ||
     traceId !== undefined ||
-    timeRange !== undefined;
+    deferredTimeRange !== undefined;
   const browsing = !search.isEditing;
+
+  const pageRef = useRef<BoxRenderable>(null);
+  const detailsRef = useRef<ScrollBoxRenderable>(null);
+  const [height, setHeight] = useState(0);
 
   return (
     <box ref={pageRef} flexGrow={1} onSizeChange={() => setHeight(pageRef.current?.height ?? 0)}>

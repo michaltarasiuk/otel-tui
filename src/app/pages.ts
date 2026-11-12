@@ -119,12 +119,13 @@ function restart(history: History): History {
 }
 
 export function usePages() {
-  const [current, setHistory] = useState<History>({ location: START_LOCATION, previous: [] });
-  const { location, previous } = useDeferredValue(current);
+  const [history, setHistory] = useState<History>({ location: START_LOCATION, previous: [] });
+  const deferredHistory = useDeferredValue(history);
+  const { location, previous } = deferredHistory;
 
   return {
     page: pageAt(location),
-    tab: current.location.tab,
+    tab: history.location.tab,
     tracesService: location.tracesService,
     tracesOperation: location.tracesOperation,
     trace: location.trace,

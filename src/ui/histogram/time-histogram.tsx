@@ -34,8 +34,6 @@ interface TimeHistogramProps {
 export function TimeHistogram({ title, occupied, newestBucketMs, selected }: TimeHistogramProps) {
   const [width, setWidth] = useState(0);
 
-  const histogramRef = useRef<BoxRenderable>(null);
-
   const columnCount = Math.max(
     0,
     Math.floor((width - 2 * HISTOGRAM_PADDING_X) / HISTOGRAM_COLUMN_WIDTH),
@@ -96,6 +94,8 @@ export function TimeHistogram({ title, occupied, newestBucketMs, selected }: Tim
       </>
     );
   }
+
+  const histogramRef = useRef<BoxRenderable>(null);
 
   return (
     <box

@@ -44,8 +44,6 @@ interface MetricSeriesPageProps {
 export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPageProps) {
   const [chartWindow, setChartWindow] = useState<(typeof CHART_WINDOWS)[number]>();
 
-  const detailsRef = useRef<ScrollBoxRenderable>(null);
-
   const metricSeries = useMetricSeries(metric);
   const { data: series } = metricSeries;
   const columns = attributeColumns(series);
@@ -54,9 +52,9 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
 
   const [selectedIndex, select] = useSelection(rows, (row) => row.series_id);
   const selected = rows[selectedIndex];
-  const detailed = useDeferredValue(selected);
+  const deferredSelected = useDeferredValue(selected);
 
-  const { data: exemplars = [] } = useSeriesExemplars(metric, detailed?.series_id);
+  const { data: exemplars = [] } = useSeriesExemplars(metric, deferredSelected?.series_id);
   const [exemplarIndex, selectExemplar] = useSelection(exemplars, (exemplar) =>
     exemplarKey(exemplar),
   );
@@ -67,11 +65,13 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
     exemplars.length > 0 ? SERIES_AND_EXEMPLARS : SERIES_ONLY,
   );
 
+  const detailsRef = useRef<ScrollBoxRenderable>(null);
+
   return (
     <box flexGrow={1}>
       {metricSeries.isError ? (
         <Placeholder text="Failed to load metric" variant="error" />
-      ) : selected === undefined || detailed === undefined ? (
+      ) : selected === undefined || deferredSelected === undefined ? (
         <Placeholder text="This metric is no longer available" />
       ) : (
         <>
@@ -89,11 +89,11 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
               />
             </FocusScope>
             <SeriesDetails
-              key={detailed.series_id}
+              key={deferredSelected.series_id}
               ref={detailsRef}
               metric={metric}
-              series={detailed}
-              label={seriesLabel(detailed, columns)}
+              series={deferredSelected}
+              label={seriesLabel(deferredSelected, columns)}
               windowStart={windowStart}
               windowMs={chartWindow}
             >
@@ -108,7 +108,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
                 >
                   <ExemplarList
                     metric={metric}
-                    seriesId={detailed.series_id}
+                    seriesId={deferredSelected.series_id}
                     selectedIndex={exemplarIndex}
                     onSelect={(index) => selectExemplar(index)}
                   />

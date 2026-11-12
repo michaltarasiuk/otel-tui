@@ -1,5 +1,5 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
-import { useDeferredValue, useRef } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
@@ -10,7 +10,6 @@ import { Placeholder } from "#ui/placeholder.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
-import { useDeferredState } from "#ui/use-deferred-state.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { cycle } from "#utils/cycle.ts";
@@ -44,18 +43,19 @@ interface MetricsPageProps {
 
 export function MetricsPage({ onOpen }: MetricsPageProps) {
   const search = useSearch();
-  const [sort, setSort] = useDeferredState(BY_NAME);
+  const [sort, setSort] = useState(BY_NAME);
+  const deferredSort = useDeferredValue(sort);
 
-  const detailsRef = useRef<ScrollBoxRenderable>(null);
-
-  const metricList = useMetrics({ search: search.query, sort });
+  const metricList = useMetrics({ search: search.deferredText, sort: deferredSort });
   const { metrics, totalCount } = metricList.data;
 
   const [selectedIndex, select] = useSelection(metrics, (metric) => metric.metric_id);
   const selected = metrics[selectedIndex];
-  const detailed = useDeferredValue(selected);
+  const deferredSelected = useDeferredValue(selected);
 
   const browsing = !search.isEditing;
+
+  const detailsRef = useRef<ScrollBoxRenderable>(null);
 
   return (
     <box flexGrow={1}>
@@ -65,8 +65,10 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
       </PageHeader>
       {metricList.isError ? (
         <Placeholder text="Failed to load metrics" variant="error" />
-      ) : selected === undefined || detailed === undefined ? (
-        <Placeholder text={search.query !== "" ? "No metrics match" : "Waiting for metrics..."} />
+      ) : selected === undefined || deferredSelected === undefined ? (
+        <Placeholder
+          text={search.deferredText !== "" ? "No metrics match" : "Waiting for metrics..."}
+        />
       ) : (
         <FocusScope focused={browsing}>
           <Split>
@@ -74,9 +76,13 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
               metrics={metrics}
               selectedIndex={selectedIndex}
               onSelect={(action) => select(action)}
-              sort={sort}
+              sort={deferredSort}
             />
-            <MetricDetails key={detailed.metric_id} ref={detailsRef} metric={detailed} />
+            <MetricDetails
+              key={deferredSelected.metric_id}
+              ref={detailsRef}
+              metric={deferredSelected}
+            />
           </Split>
         </FocusScope>
       )}
