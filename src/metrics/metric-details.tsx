@@ -1,5 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { useConnection } from "#query/connection.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
 import { Description, ScopeName } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
@@ -11,7 +13,7 @@ import { formatInteger } from "#utils/number.ts";
 
 import { attributeValues } from "./attribute-values.ts";
 import { MetricHeader } from "./metric-header.tsx";
-import { useMetricSeries } from "./metric-queries.ts";
+import { metricSeriesQuery } from "./metric-queries.ts";
 import type { Metric } from "./metric.ts";
 import type { Series } from "./series.ts";
 
@@ -46,7 +48,8 @@ interface SeriesSummaryProps {
 }
 
 function SeriesSummary({ metric }: SeriesSummaryProps) {
-  const { data: series } = useMetricSeries(metric);
+  const connection = useConnection();
+  const { data: series } = useSuspenseQuery(metricSeriesQuery(connection, metric));
   const attributes = summarize(series.map(({ attributes }) => attributes));
   const resourceAttributes = summarize(
     series.map(({ resource_attributes }) => resource_attributes),

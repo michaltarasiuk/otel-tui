@@ -70,6 +70,14 @@ export async function countTraces(connection: DuckDBConnection) {
   return z.number().parse(reader.value(0, 0));
 }
 
+export async function readTraceList(connection: DuckDBConnection, query: TraceQuery) {
+  const [traces, totalCount] = await Promise.all([
+    listTraces(connection, query),
+    countTraces(connection),
+  ]);
+  return { traces, totalCount };
+}
+
 export async function readTraceSpans(connection: DuckDBConnection, traceId: string) {
   const reader = await connection.runAndReadAll(traceSpans, { traceId });
   return Span.array().parse(reader.getRowObjectsJS());

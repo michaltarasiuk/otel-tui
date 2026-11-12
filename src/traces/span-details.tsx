@@ -1,5 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { useConnection } from "#query/connection.ts";
 import { Description, DetailsHeader, Id, Meta, Fact, ScopeName, Title } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { KeyValueList } from "#ui/key-value-list.tsx";
@@ -10,7 +12,7 @@ import { THEME } from "#ui/theme.ts";
 import { formatDuration, formatOffset, formatTime } from "#utils/time.ts";
 
 import type { Span } from "./span.ts";
-import { useSuspenseSpanContent } from "./trace-queries.ts";
+import { spanContentQuery } from "./trace-queries.ts";
 
 const NESTED_INDENT = 2;
 
@@ -21,7 +23,8 @@ interface SpanSectionsProps {
 }
 
 function SpanSections({ traceId, spanId, children }: SpanSectionsProps) {
-  const { data: content } = useSuspenseSpanContent(traceId, spanId);
+  const connection = useConnection();
+  const { data: content } = useSuspenseQuery(spanContentQuery(connection, traceId, spanId));
 
   if (content === null) {
     return <Description>Span is no longer stored</Description>;

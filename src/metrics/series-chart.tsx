@@ -1,5 +1,7 @@
 import { RGBA } from "@opentui/core";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { useConnection } from "#query/connection.ts";
 import { COLUMN_GAP } from "#ui/columns.ts";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { Section } from "#ui/section.tsx";
@@ -8,7 +10,7 @@ import { MINUTE_MS, formatTime } from "#utils/time.ts";
 
 import { counterIntervals, distributionIntervals } from "./intervals.ts";
 import { LineChart } from "./line-chart.tsx";
-import { useSeriesPoints } from "./metric-queries.ts";
+import { seriesPointsQuery } from "./metric-queries.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
 import { isDelta, type Metric } from "./metric.ts";
 import { type ChartWindow, gapSlots, meanLine, quantileLines, rateLine } from "./series-lines.ts";
@@ -113,7 +115,10 @@ interface SeriesPlotProps {
 }
 
 function SeriesPlot({ metric, series, color, windowStart, windowMs }: SeriesPlotProps) {
-  const { data, dataUpdatedAt } = useSeriesPoints(metric, series.series_id);
+  const connection = useConnection();
+  const { data, dataUpdatedAt } = useSuspenseQuery(
+    seriesPointsQuery(connection, metric, series.series_id),
+  );
 
   const end = dataUpdatedAt;
   const start =

@@ -1,5 +1,7 @@
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { type HistogramRange, stepSelection } from "#ui/histogram/bars.ts";
@@ -18,7 +20,7 @@ import { useSelection } from "#ui/use-selection.ts";
 import { cycle, findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
-import { useTraces } from "./trace-queries.ts";
+import { traceListQuery, traceTimelineQuery } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
 import { TRACE_SORT_COLUMNS, type Trace, type TraceSort } from "./trace.ts";
 
@@ -59,13 +61,16 @@ export function TracesPage({
   const [sort, setSort] = useState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
   const deferredSort = useDeferredValue(sort);
 
-  const [traceList, traceTimeline] = useTraces({
+  const connection = useConnection();
+  const filter = {
     search: search.deferredText,
     errorsOnly: deferredErrorsOnly,
     serviceName: service,
     operationName: operation,
-    timeRange: deferredTimeRange,
-    sort: deferredSort,
+  };
+  const query = { ...filter, timeRange: deferredTimeRange, sort: deferredSort };
+  const [traceList, traceTimeline] = useSuspenseQueries({
+    queries: [traceListQuery(connection, query), traceTimelineQuery(connection, filter)],
   });
 
   const { traces, totalCount } = traceList.data;

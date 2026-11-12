@@ -1,6 +1,8 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { useDeferredValue, useRef, useState } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { type HistogramRange, stepSelection } from "#ui/histogram/bars.ts";
@@ -20,7 +22,7 @@ import { cycle, findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
 import { LogDetails } from "./log-details.tsx";
-import { useLogs } from "./log-queries.ts";
+import { logListQuery, logTimelineQuery } from "./log-queries.ts";
 import { LogTable } from "./log-table.tsx";
 import type { Log } from "./log.ts";
 import { severityColor } from "./severity-color.ts";
@@ -56,12 +58,11 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   const [timeRange, setTimeRange] = useState<HistogramRange | undefined>(undefined);
   const deferredTimeRange = useDeferredValue(timeRange);
 
-  const [logList, logTimeline] = useLogs({
-    search: search.deferredText,
-    minSeverity: deferredMinSeverity,
-    traceId,
-    spanId,
-    timeRange: deferredTimeRange,
+  const connection = useConnection();
+  const filter = { search: search.deferredText, minSeverity: deferredMinSeverity, traceId, spanId };
+  const query = { ...filter, timeRange: deferredTimeRange };
+  const [logList, logTimeline] = useSuspenseQueries({
+    queries: [logListQuery(connection, query), logTimelineQuery(connection, filter)],
   });
 
   const { logs, totalCount } = logList.data;

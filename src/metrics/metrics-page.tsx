@@ -1,6 +1,8 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useRef, useState } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints } from "#ui/key-hints.tsx";
@@ -16,7 +18,7 @@ import { cycle } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
 import { MetricDetails } from "./metric-details.tsx";
-import { useMetrics } from "./metric-queries.ts";
+import { metricListQuery } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
 import {
   METRIC_SORT_COLUMNS,
@@ -46,7 +48,9 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
   const [sort, setSort] = useState(BY_NAME);
   const deferredSort = useDeferredValue(sort);
 
-  const metricList = useMetrics({ search: search.deferredText, sort: deferredSort });
+  const connection = useConnection();
+  const query = { search: search.deferredText, sort: deferredSort };
+  const metricList = useSuspenseQuery(metricListQuery(connection, query));
   const { metrics, totalCount } = metricList.data;
 
   const [selectedIndex, select] = useSelection(metrics, (metric) => metric.metric_id);

@@ -1,6 +1,8 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useRef, useState } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
@@ -17,7 +19,7 @@ import { MINUTE_MS } from "#utils/time.ts";
 
 import { ExemplarList } from "./exemplar-list.tsx";
 import { MetricHeader } from "./metric-header.tsx";
-import { useMetricSeries, useSeriesExemplars } from "./metric-queries.ts";
+import { metricSeriesQuery, seriesExemplarsQuery } from "./metric-queries.ts";
 import type { Metric } from "./metric.ts";
 import { attributeColumns, seriesLabel, sortByColumns } from "./series-columns.ts";
 import { SeriesDetails } from "./series-details.tsx";
@@ -44,7 +46,8 @@ interface MetricSeriesPageProps {
 export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPageProps) {
   const [chartWindow, setChartWindow] = useState<(typeof CHART_WINDOWS)[number]>();
 
-  const metricSeries = useMetricSeries(metric);
+  const connection = useConnection();
+  const metricSeries = useSuspenseQuery(metricSeriesQuery(connection, metric));
   const { data: series } = metricSeries;
   const columns = attributeColumns(series);
   const rows = sortByColumns(series, columns);
@@ -54,7 +57,12 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
   const selected = rows[selectedIndex];
   const deferredSelected = useDeferredValue(selected);
 
-  const { data: exemplars = [] } = useSeriesExemplars(metric, deferredSelected?.series_id);
+  const seriesId = deferredSelected?.series_id;
+  const exemplarsOptions = seriesExemplarsQuery(connection, metric, seriesId);
+  const { data: exemplars = [] } = useQuery({
+    ...exemplarsOptions,
+    enabled: seriesId !== undefined,
+  });
   const [exemplarIndex, selectExemplar] = useSelection(exemplars, (exemplar) =>
     exemplarKey(exemplar),
   );

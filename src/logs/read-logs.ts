@@ -65,3 +65,11 @@ export async function countLogs(connection: DuckDBConnection) {
   const reader = await connection.runAndReadAll(logCount);
   return z.number().parse(reader.value(0, 0));
 }
+
+export async function readLogList(connection: DuckDBConnection, query: LogQuery) {
+  const [logs, totalCount] = await Promise.all([
+    listLogs(connection, query),
+    countLogs(connection),
+  ]);
+  return { logs, totalCount };
+}

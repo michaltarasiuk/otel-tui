@@ -1,6 +1,8 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useRef, useState } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
@@ -24,7 +26,7 @@ import {
 import { SpanWaterfall } from "./span-waterfall.tsx";
 import type { Span, SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
-import { useSpanContent, useTraceSpans } from "./trace-queries.ts";
+import { spanContentQuery, traceSpansQuery } from "./trace-queries.ts";
 
 const REGION_KEYS_PRIORITY = 1;
 
@@ -57,7 +59,8 @@ export function TraceSpansPage({
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [showCriticalPath, setShowCriticalPath] = useState(false);
 
-  const traceSpans = useTraceSpans(traceId);
+  const connection = useConnection();
+  const traceSpans = useSuspenseQuery(traceSpansQuery(connection, traceId));
   const { data: spans } = traceSpans;
   const [root] = spans;
   const durationMs = traceDuration(spans);
@@ -67,7 +70,9 @@ export function TraceSpansPage({
   const selected = shown[selectedIndex];
   const deferredSelected = useDeferredValue(selected);
 
-  const spanContent = useSpanContent(traceId, deferredSelected?.span_id);
+  const selectedSpanId = deferredSelected?.span_id;
+  const spanContentOptions = spanContentQuery(connection, traceId, selectedSpanId);
+  const spanContent = useQuery({ ...spanContentOptions, enabled: selectedSpanId !== undefined });
   const links = spanContent.data?.links ?? [];
   const [linkIndex, selectLink] = useSelection(links, (link) => linkKey(link));
   const link = links[linkIndex];

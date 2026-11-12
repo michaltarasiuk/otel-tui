@@ -1,69 +1,42 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
-import {
-  queryOptions,
-  useQuery,
-  useSuspenseQueries,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 
-import { useConnection } from "#query/connection.ts";
 import { POLL_INTERVAL_MS } from "#query/polling.ts";
 
 import {
-  countTraces,
-  listTraces,
   readSpanContent,
+  readTraceList,
   readTraceSpans,
   readTraceTimeline,
+  type TraceFilter,
   type TraceQuery,
 } from "./read-traces.ts";
 
-async function readTraceList(connection: DuckDBConnection, query: TraceQuery) {
-  const [traces, totalCount] = await Promise.all([
-    listTraces(connection, query),
-    countTraces(connection),
-  ]);
-  return { traces, totalCount };
-}
-
-export function useTraces({
-  search,
-  errorsOnly,
-  serviceName,
-  operationName,
-  timeRange,
-  sort,
-}: TraceQuery) {
-  const connection = useConnection();
-  const filter = { search, errorsOnly, serviceName, operationName };
-
-  return useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["traces", { ...filter, timeRange, sort }],
-        queryFn: () => readTraceList(connection, { ...filter, timeRange, sort }),
-        refetchInterval: POLL_INTERVAL_MS,
-      },
-      {
-        queryKey: ["traces", "timeline", filter],
-        queryFn: () => readTraceTimeline(connection, filter),
-        refetchInterval: POLL_INTERVAL_MS,
-      },
-    ],
+export function traceListQuery(connection: DuckDBConnection, query: TraceQuery) {
+  return queryOptions({
+    queryKey: ["traces", query],
+    queryFn: () => readTraceList(connection, query),
+    refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
-export function useTraceSpans(traceId: string) {
-  const connection = useConnection();
+export function traceTimelineQuery(connection: DuckDBConnection, filter: TraceFilter) {
+  return queryOptions({
+    queryKey: ["traces", "timeline", filter],
+    queryFn: () => readTraceTimeline(connection, filter),
+    refetchInterval: POLL_INTERVAL_MS,
+  });
+}
 
-  return useSuspenseQuery({
+export function traceSpansQuery(connection: DuckDBConnection, traceId: string) {
+  return queryOptions({
     queryKey: ["traces", traceId, "spans"],
     queryFn: () => readTraceSpans(connection, traceId),
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
 
-function spanContentQuery(
+export function spanContentQuery(
   connection: DuckDBConnection,
   traceId: string,
   spanId: string | undefined,
@@ -73,14 +46,4 @@ function spanContentQuery(
     queryFn: () => (spanId === undefined ? null : readSpanContent(connection, traceId, spanId)),
     staleTime: Infinity,
   });
-}
-
-export function useSpanContent(traceId: string, spanId: string | undefined) {
-  const options = spanContentQuery(useConnection(), traceId, spanId);
-
-  return useQuery({ ...options, enabled: spanId !== undefined });
-}
-
-export function useSuspenseSpanContent(traceId: string, spanId: string) {
-  return useSuspenseQuery(spanContentQuery(useConnection(), traceId, spanId));
 }

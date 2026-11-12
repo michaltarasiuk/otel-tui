@@ -1,5 +1,7 @@
 import { MouseButton } from "@opentui/core";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { useConnection } from "#query/connection.ts";
 import { COLUMN_TIME_WIDTH } from "#ui/columns.ts";
 import { Description } from "#ui/details.tsx";
 import { useFocusRequest } from "#ui/focus.tsx";
@@ -8,7 +10,7 @@ import { Cell, Row, SelectedContext } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
 import { formatTime } from "#utils/time.ts";
 
-import { useSuspenseSeriesExemplars } from "./metric-queries.ts";
+import { seriesExemplarsQuery } from "./metric-queries.ts";
 import { formatMetricValue } from "./metric-value.ts";
 import type { Metric } from "./metric.ts";
 import type { Exemplar } from "./series.ts";
@@ -32,7 +34,10 @@ interface ExemplarListProps {
 
 export function ExemplarList({ metric, seriesId, selectedIndex, onSelect }: ExemplarListProps) {
   const requestFocus = useFocusRequest();
-  const { data: exemplars, isError } = useSuspenseSeriesExemplars(metric, seriesId);
+  const connection = useConnection();
+  const { data: exemplars, isError } = useSuspenseQuery(
+    seriesExemplarsQuery(connection, metric, seriesId),
+  );
 
   if (isError) {
     return <Description color={THEME.textError}>Failed to load exemplars</Description>;

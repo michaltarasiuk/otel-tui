@@ -1,5 +1,7 @@
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
@@ -19,7 +21,7 @@ import { formatCount } from "#utils/number.ts";
 import { OperationTable } from "./operation-table.tsx";
 import { SERVICE_WINDOW_MS } from "./read-services.ts";
 import { ServiceDetails } from "./service-details.tsx";
-import { useServiceOperations, useServices } from "./service-queries.ts";
+import { serviceListQuery, serviceOperationsQuery } from "./service-queries.ts";
 import { ServiceTable } from "./service-table.tsx";
 import { SERVICE_SORT_COLUMNS, type ServiceSort } from "./service.ts";
 
@@ -41,14 +43,21 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
   const [sort, setSort] = useState(BUSIEST_FIRST);
   const deferredSort = useDeferredValue(sort);
 
-  const serviceList = useServices({ search: search.deferredText, sort: deferredSort });
+  const connection = useConnection();
+  const query = { search: search.deferredText, sort: deferredSort };
+  const serviceList = useSuspenseQuery(serviceListQuery(connection, query));
   const { data: services } = serviceList;
 
   const [selectedIndex, select] = useSelection(services, (service) => service.service_name);
   const selected = services[selectedIndex];
   const deferredSelected = useDeferredValue(selected);
 
-  const { data: operations = [] } = useServiceOperations(deferredSelected?.service_name);
+  const serviceName = deferredSelected?.service_name;
+  const operationsOptions = serviceOperationsQuery(connection, serviceName);
+  const { data: operations = [] } = useQuery({
+    ...operationsOptions,
+    enabled: serviceName !== undefined,
+  });
   const [operationIndex, selectOperation] = useSelection(operations, (operation) => operation.name);
   const operation = operations[operationIndex];
 

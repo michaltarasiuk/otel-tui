@@ -1,5 +1,7 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { SetStateAction } from "react";
 
+import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
 import { Rows } from "#ui/rows.tsx";
 import { SPLIT_PADDING_X } from "#ui/split.tsx";
@@ -8,7 +10,7 @@ import { THEME } from "#ui/theme.ts";
 import { formatInteger, formatPercent, formatRate } from "#utils/number.ts";
 import { formatDuration } from "#utils/time.ts";
 
-import { useSuspenseServiceOperations } from "./service-queries.ts";
+import { serviceOperationsQuery } from "./service-queries.ts";
 import {
   COLUMN_DURATION_WIDTH,
   COLUMN_ERRORS_WIDTH,
@@ -23,7 +25,10 @@ interface OperationTableProps {
 }
 
 export function OperationTable({ serviceName, selectedIndex, onSelect }: OperationTableProps) {
-  const { data: operations, isError } = useSuspenseServiceOperations(serviceName);
+  const connection = useConnection();
+  const { data: operations, isError } = useSuspenseQuery(
+    serviceOperationsQuery(connection, serviceName),
+  );
 
   if (isError) {
     return <Description color={THEME.textError}>Failed to load operations</Description>;

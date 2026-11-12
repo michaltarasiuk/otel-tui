@@ -55,6 +55,14 @@ export async function countMetrics(connection: DuckDBConnection) {
   return z.number().parse(reader.value(0, 0));
 }
 
+export async function readMetricList(connection: DuckDBConnection, query: MetricQuery) {
+  const [metrics, totalCount] = await Promise.all([
+    listMetrics(connection, query),
+    countMetrics(connection),
+  ]);
+  return { metrics, totalCount };
+}
+
 export async function readMetricSeries(connection: DuckDBConnection, metric: Metric) {
   const identity = metricIdentity(metric);
   switch (metric.type) {
