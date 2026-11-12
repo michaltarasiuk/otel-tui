@@ -8,9 +8,9 @@ import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
+import { RegionKeys, useRegion } from "#ui/region.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
 import { Split } from "#ui/split.tsx";
-import { useRegion } from "#ui/use-region.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { findNextIndex } from "#utils/cycle.ts";
 
@@ -27,11 +27,6 @@ import { SpanWaterfall } from "./span-waterfall.tsx";
 import type { Span, SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
 import { spanContentQuery, traceSpansQuery } from "./trace-queries.ts";
-
-const REGION_KEYS_PRIORITY = 1;
-
-const SPANS_ONLY = ["spans"] as const;
-const SPANS_AND_LINKS = ["spans", "links"] as const;
 
 function linkKey(link: SpanLink) {
   return `${link.trace_id}:${link.span_id}`;
@@ -81,9 +76,8 @@ export function TraceSpansPage({
       ? spans.some((span) => span.span_id === link.span_id)
       : link?.has_trace === true;
 
-  const [region, stepRegion, focusRegion] = useRegion(
-    links.length > 0 ? SPANS_AND_LINKS : SPANS_ONLY,
-  );
+  const regions = links.length > 0 ? (["spans", "links"] as const) : (["spans"] as const);
+  const [region, setRegion] = useRegion(regions);
 
   function toggleCollapsed(spanId: string) {
     setCollapsed((collapsed) => {
@@ -100,7 +94,7 @@ export function TraceSpansPage({
       const ancestors = new Set(ancestorIds(spans, link.span_id));
       setCollapsed((collapsed) => new Set([...collapsed].filter((id) => !ancestors.has(id))));
       selectKey(link.span_id);
-      stepRegion(-1);
+      setRegion("spans");
     } else {
       onOpenTrace(link.trace_id, link.span_id);
     }
@@ -118,7 +112,7 @@ export function TraceSpansPage({
         <>
           <TraceHeader traceId={traceId} root={root} spans={spans} durationMs={durationMs} />
           <Split>
-            <FocusScope focused={region === "spans"} onFocusRequest={() => focusRegion("spans")}>
+            <FocusScope focused={region === "spans"} onFocusRequest={() => setRegion("spans")}>
               <SpanWaterfall
                 spans={shown}
                 selectedIndex={selectedIndex}
@@ -134,7 +128,7 @@ export function TraceSpansPage({
               traceId={traceId}
               span={deferredSelected}
             >
-              <FocusScope focused={region === "links"} onFocusRequest={() => focusRegion("links")}>
+              <FocusScope focused={region === "links"} onFocusRequest={() => setRegion("links")}>
                 <LinkList
                   links={links}
                   traceId={traceId}
@@ -225,14 +219,7 @@ export function TraceSpansPage({
           )}
         </FocusScope>
         <PauseKey />
-        <StepKeys
-          forward="tab"
-          backward="shift+tab"
-          priority={REGION_KEYS_PRIORITY}
-          description="next region"
-          backwardDescription="previous region"
-          onStep={(step) => stepRegion(step)}
-        />
+        <RegionKeys regions={regions} region={region} onChange={(region) => setRegion(region)} />
       </KeyHints>
     </box>
   );

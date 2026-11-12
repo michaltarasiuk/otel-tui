@@ -131,6 +131,30 @@ test("moves between services and operations with tab", async () => {
   expect(keyHints(frame)).toContain("return traces");
 });
 
+test("cycles focus through the tab bar, services, and operations", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderServices(receiver);
+  await app.waitForSelection("cart");
+  const onServices = (frame: string) => keyHints(frame).includes("o sort");
+  const onOperations = (frame: string) =>
+    keyHints(frame).includes("return traces") && !onServices(frame);
+  const onTabBar = (frame: string) => keyHints(frame) === "tab next region ? help";
+
+  app.mockInput.pressTab();
+  await app.waitForFrame(onOperations);
+  app.mockInput.pressTab();
+  await app.waitForFrame(onTabBar);
+  app.mockInput.pressTab();
+  await app.waitForFrame(onServices);
+
+  app.mockInput.pressTab();
+  await app.waitForFrame(onOperations);
+  app.mockInput.pressTab({ shift: true });
+  await app.waitForFrame(onServices);
+  app.mockInput.pressTab({ shift: true });
+  await app.waitForFrame(onTabBar);
+});
+
 test("opens the selected service's traces and comes back", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderServices(receiver);

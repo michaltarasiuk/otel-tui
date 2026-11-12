@@ -10,7 +10,9 @@ import { TraceSpansPage } from "#traces/trace-spans-page.tsx";
 import { TracesPage } from "#traces/traces-page.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope, KeysScope } from "#ui/focus.tsx";
-import { AppKeys, Key, StepKeys } from "#ui/key-hints.tsx";
+import { AppKeys, Key } from "#ui/key-hints.tsx";
+import { RegionKeys, useRegion } from "#ui/region.tsx";
+import { cycle } from "#utils/cycle.ts";
 
 import { activeHelp, Help, type HelpEntry } from "./help.tsx";
 import { PageError, PageLoading } from "./page-fallback.tsx";
@@ -18,9 +20,10 @@ import { ReceiverStatus } from "./receiver-status.tsx";
 import { Screen } from "./screen.tsx";
 import { Tabs } from "./tabs.tsx";
 import { useEditing } from "./use-editing.ts";
-import { useFocusedRegion } from "./use-focused-region.ts";
 import { usePages } from "./use-pages.ts";
 import { Content, TopBar, Window } from "./window.tsx";
+
+const REGIONS = ["tabs", "content"] as const;
 
 interface AppProps {
   httpUrl: string;
@@ -45,7 +48,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
     reset,
     back,
   } = usePages();
-  const { region, focus, focusStep } = useFocusedRegion();
+  const [region, setRegion] = useRegion(REGIONS);
   const [clears, setClears] = useState(0);
   const [help, setHelp] = useState<HelpEntry[]>();
 
@@ -69,14 +72,9 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
     <AppKeys
       value={
         <>
-          <StepKeys
-            forward="tab"
-            backwardDescription="previous region"
-            backward="shift+tab"
-            onStep={(step) => focusStep(step)}
-          >
+          <RegionKeys regions={REGIONS} region={region} onChange={(region) => setRegion(region)}>
             next region
-          </StepKeys>
+          </RegionKeys>
           {!editing && (
             <Key name="?" onPress={() => setHelp(activeHelp(keymap))}>
               help
@@ -89,7 +87,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
       <Window>
         <KeysScope enabled={help === undefined}>
           <TopBar>
-            <FocusScope focused={region === "tabs"} onFocusRequest={() => focus("tabs")}>
+            <FocusScope focused={region === "tabs"} onFocusRequest={() => setRegion("tabs")}>
               <Tabs current={tab} onSelect={(tab) => selectTab(tab)} />
             </FocusScope>
             <ReceiverStatus httpUrl={httpUrl} grpcUrl={grpcUrl} mcpUrl={mcpUrl} />
@@ -97,7 +95,8 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
           <FocusScope
             key={clears}
             focused={region === "content"}
-            onFocusRequest={() => focus("content")}
+            onFocusRequest={() => setRegion("content")}
+            onStepOut={(step) => setRegion(cycle(REGIONS, "content", step))}
           >
             <Content>
               <Suspense fallback={<PageLoading />}>

@@ -20,7 +20,7 @@ export function activeHelp(keymap: Keymap<Renderable, KeyEvent>): HelpEntry[] {
   const byDesc = Map.groupBy(described, (key) => key.desc);
 
   return [...byDesc].map(([desc, group]) => ({
-    key: group.map((key) => key.display).join(", "),
+    key: [...new Set(group.map((key) => key.display))].join(", "),
     desc,
   }));
 }

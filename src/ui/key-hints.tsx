@@ -40,7 +40,15 @@ export function Key({ name, priority = 0, description, onPress, children }: KeyP
     () => ({
       enabled: focused && keysEnabled,
       priority,
-      commands: [{ name: command, ...(desc === undefined ? {} : { desc }), run: () => press() }],
+      commands: [
+        {
+          name: command,
+          ...(desc === undefined ? {} : { desc }),
+          run: () => {
+            press();
+          },
+        },
+      ],
       bindings: [{ key: name, cmd: command }],
     }),
     [focused, keysEnabled, priority, command, desc, name],
@@ -61,10 +69,10 @@ interface StepKeysProps {
   forward: string;
   backward: string;
   priority?: number | undefined;
-  description?: string;
+  description?: string | undefined;
   backwardDescription: string;
   onStep: (step: 1 | -1) => void;
-  children?: string;
+  children?: string | undefined;
 }
 
 export function StepKeys({

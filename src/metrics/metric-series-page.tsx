@@ -9,10 +9,10 @@ import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
+import { RegionKeys, useRegion } from "#ui/region.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
 import { Split } from "#ui/split.tsx";
 import { THEME } from "#ui/theme.ts";
-import { useRegion } from "#ui/use-region.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { cycle } from "#utils/cycle.ts";
 import { MINUTE_MS } from "#utils/time.ts";
@@ -26,12 +26,7 @@ import { SeriesDetails } from "./series-details.tsx";
 import { SeriesTable } from "./series-table.tsx";
 import type { Exemplar } from "./series.ts";
 
-const REGION_KEYS_PRIORITY = 1;
-
 const CHART_WINDOWS = [undefined, 15 * MINUTE_MS, 5 * MINUTE_MS, MINUTE_MS] as const;
-
-const SERIES_ONLY = ["series"] as const;
-const SERIES_AND_EXEMPLARS = ["series", "exemplars"] as const;
 
 function exemplarKey(exemplar: Exemplar) {
   return `${exemplar.time}:${exemplar.value}:${exemplar.span_id}`;
@@ -69,9 +64,8 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
   const exemplar = exemplars[exemplarIndex];
   const exemplarTraceId = exemplar?.has_trace === true ? exemplar.trace_id : null;
 
-  const [region, stepRegion, focusRegion] = useRegion(
-    exemplars.length > 0 ? SERIES_AND_EXEMPLARS : SERIES_ONLY,
-  );
+  const regions = exemplars.length > 0 ? (["series", "exemplars"] as const) : (["series"] as const);
+  const [region, setRegion] = useRegion(regions);
 
   const detailsRef = useRef<ScrollBoxRenderable>(null);
 
@@ -87,7 +81,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
             <MetricHeader metric={metric} seriesCount={series.length} />
           </box>
           <Split>
-            <FocusScope focused={region === "series"} onFocusRequest={() => focusRegion("series")}>
+            <FocusScope focused={region === "series"} onFocusRequest={() => setRegion("series")}>
               <SeriesTable
                 series={rows}
                 selectedIndex={selectedIndex}
@@ -107,7 +101,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
             >
               <FocusScope
                 focused={region === "exemplars"}
-                onFocusRequest={() => focusRegion("exemplars")}
+                onFocusRequest={() => setRegion("exemplars")}
               >
                 <ErrorBoundary
                   fallback={
@@ -167,14 +161,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
         )}
         {selected !== undefined && <ScrollKeys target={detailsRef} />}
         <PauseKey />
-        <StepKeys
-          forward="tab"
-          description="next region"
-          backwardDescription="previous region"
-          backward="shift+tab"
-          priority={REGION_KEYS_PRIORITY}
-          onStep={(step) => stepRegion(step)}
-        />
+        <RegionKeys regions={regions} region={region} onChange={(region) => setRegion(region)} />
       </KeyHints>
     </box>
   );

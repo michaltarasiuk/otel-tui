@@ -5,14 +5,14 @@ import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
+import { Key, KeyHints } from "#ui/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
+import { RegionKeys, useRegion } from "#ui/region.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
 import { THEME } from "#ui/theme.ts";
-import { useRegion } from "#ui/use-region.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { cycle } from "#utils/cycle.ts";
@@ -24,11 +24,6 @@ import { ServiceDetails } from "./service-details.tsx";
 import { serviceListQuery, serviceOperationsQuery } from "./service-queries.ts";
 import { ServiceTable } from "./service-table.tsx";
 import { SERVICE_SORT_COLUMNS, type ServiceSort } from "./service.ts";
-
-const REGION_KEYS_PRIORITY = 1;
-
-const SERVICES_ONLY = ["services"] as const;
-const SERVICES_AND_OPERATIONS = ["services", "operations"] as const;
 
 const BUSIEST_FIRST: ServiceSort = { column: "rate", descending: true };
 
@@ -53,17 +48,16 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
   const deferredSelected = useDeferredValue(selected);
 
   const serviceName = deferredSelected?.service_name;
-  const operationsOptions = serviceOperationsQuery(connection, serviceName);
   const { data: operations = [] } = useQuery({
-    ...operationsOptions,
+    ...serviceOperationsQuery(connection, serviceName),
     enabled: serviceName !== undefined,
   });
   const [operationIndex, selectOperation] = useSelection(operations, (operation) => operation.name);
   const operation = operations[operationIndex];
 
-  const [region, stepRegion, focusRegion] = useRegion(
-    operations.length > 0 ? SERVICES_AND_OPERATIONS : SERVICES_ONLY,
-  );
+  const regions =
+    operations.length > 0 ? (["services", "operations"] as const) : (["services"] as const);
+  const [region, setRegion] = useRegion(regions);
 
   const browsing = !search.isEditing;
 
@@ -89,7 +83,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
           <Split>
             <FocusScope
               focused={region === "services"}
-              onFocusRequest={() => focusRegion("services")}
+              onFocusRequest={() => setRegion("services")}
             >
               <ServiceTable
                 services={services}
@@ -101,7 +95,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
             <ServiceDetails key={deferredSelected.service_name} service={deferredSelected}>
               <FocusScope
                 focused={region === "operations"}
-                onFocusRequest={() => focusRegion("operations")}
+                onFocusRequest={() => setRegion("operations")}
               >
                 <ErrorBoundary
                   fallback={
@@ -156,14 +150,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
         </FocusScope>
         <FocusScope focused={browsing}>
           <PauseKey />
-          <StepKeys
-            forward="tab"
-            description="next region"
-            backwardDescription="previous region"
-            backward="shift+tab"
-            priority={REGION_KEYS_PRIORITY}
-            onStep={(step) => stepRegion(step)}
-          />
+          <RegionKeys regions={regions} region={region} onChange={(region) => setRegion(region)} />
         </FocusScope>
       </KeyHints>
     </box>
