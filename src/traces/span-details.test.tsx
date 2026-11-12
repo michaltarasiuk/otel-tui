@@ -15,7 +15,7 @@ import {
   openTrace,
   PLACE_ORDER,
 } from "#testing/traces.ts";
-import spanDetails from "#traces/sql/span-details.sql" with { type: "text" };
+import spanContent from "#traces/sql/span-content.sql" with { type: "text" };
 
 test("shows the selected span's attributes, resource, and scope", async () => {
   await using receiver = await startTestReceiver();
@@ -152,7 +152,7 @@ test("loads a span's details again after they failed to load", async () => {
   const runAndReadAll = connection.runAndReadAll.bind(connection);
   let failures = 1;
   spyOn(connection, "runAndReadAll").mockImplementation((...args) => {
-    if (args[0] === spanDetails && failures > 0) {
+    if (args[0] === spanContent && failures > 0) {
       failures--;
       return Promise.reject(new Error("span details are unavailable"));
     }

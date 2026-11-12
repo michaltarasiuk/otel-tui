@@ -14,12 +14,12 @@ import { AppKeys, Key, StepKeys } from "#ui/key-hints.tsx";
 
 import { activeHelp, Help, type HelpEntry } from "./help.tsx";
 import { PageError, PageLoading } from "./page-fallback.tsx";
-import { usePages } from "./pages.ts";
 import { ReceiverStatus } from "./receiver-status.tsx";
 import { Screen } from "./screen.tsx";
 import { Tabs } from "./tabs.tsx";
 import { useEditing } from "./use-editing.ts";
 import { useFocusedRegion } from "./use-focused-region.ts";
+import { usePages } from "./use-pages.ts";
 import { Content, TopBar, Window } from "./window.tsx";
 
 interface AppProps {

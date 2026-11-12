@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useFocused, useFocusRequest, useKeysEnabled } from "#ui/focus.tsx";
 import { THEME } from "#ui/theme.ts";
 
-import type { Tab } from "./pages.ts";
+import type { Tab } from "./use-pages.ts";
 
 const TAB_WIDTH = 10;
 

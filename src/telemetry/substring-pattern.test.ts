@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { substringPattern } from "./like-pattern.ts";
+import { substringPattern } from "./substring-pattern.ts";
 
 test("matches the search anywhere in the text", () => {
   expect(substringPattern("cart")).toBe("%cart%");

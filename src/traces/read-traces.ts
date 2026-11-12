@@ -8,7 +8,7 @@ import {
   TimeBucket,
   type TimeRange,
 } from "#telemetry/time-buckets.ts";
-import spanDetails from "#traces/sql/span-details.sql" with { type: "text" };
+import spanContent from "#traces/sql/span-content.sql" with { type: "text" };
 import traceCount from "#traces/sql/trace-count.sql" with { type: "text" };
 import traceList from "#traces/sql/trace-list.sql" with { type: "text" };
 import traceSpans from "#traces/sql/trace-spans.sql" with { type: "text" };
@@ -88,7 +88,7 @@ export async function readSpanContent(
   traceId: string,
   spanId: string,
 ) {
-  const reader = await connection.runAndReadAll(spanDetails, { traceId, spanId });
+  const reader = await connection.runAndReadAll(spanContent, { traceId, spanId });
   const [row] = reader.getRowObjectsJS();
   return row === undefined ? null : SpanContent.parse(row);
 }

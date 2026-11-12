@@ -1,6 +1,6 @@
 import { parseDuration } from "#utils/time.ts";
 
-import { substringPattern } from "./like-pattern.ts";
+import { substringPattern } from "./substring-pattern.ts";
 
 const OPERATORS = ["=", "!=", ">", ">=", "<", "<="] as const;
 type Operator = (typeof OPERATORS)[number];
