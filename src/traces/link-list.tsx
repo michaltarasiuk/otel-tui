@@ -35,7 +35,7 @@ export function LinkList({ links, traceId, selectedIndex, onSelect }: LinkListPr
     <Section title="Links">
       {links.map((link, index) => (
         <box
-          key={`${link.trace_id}:${link.span_id}`}
+          key={link.span_id}
           onMouseDown={(event) => {
             if (event.button === MouseButton.LEFT) {
               requestFocus();

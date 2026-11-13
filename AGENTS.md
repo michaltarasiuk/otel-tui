@@ -20,6 +20,7 @@
 - A page file shows its screen top to bottom: page header, regions, `KeyHints`. Layout shells (`Split`, `PageHeader`, `DetailsHeader`, `Section`) only arrange `children`, without config props.
 - Order a component body by data flow, as React's own code does: each value comes right after what it reads, hooks and plain values alike. A ref comes just before the effect or JSX that uses it.
 - Custom hooks return `[value, set]` like `useState` and accept updaters.
+- Key rows by a field that is already unique (`span_id`, `bucket.lower`), never a string built in JSX. Only when no field is unique does the SQL add an `*_id` from `hash(...)::VARCHAR`, like `series_id`. When identity spans values from different levels of JSX, nest keyed `Fragment`s.
 - Key binding handlers go through `useEffectEvent`.
 - Declare keys with `<Key name onPress>label</Key>` inside `KeyHints`; JSX order is hint order, JSX conditions decide when a key is active, and `FocusScope` disables a group.
 - Keep hidden screens alive with `Screen` (`Activity`), not visibility flags. `Screen` mounts a page the first time it shows.

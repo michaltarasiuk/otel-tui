@@ -48,6 +48,7 @@ WITH points AS MATERIALIZED (
 )
 SELECT
   series_id,
+  hash(latest.scope_name, latest.scope_version)::VARCHAR AS scope_id,
   latest.scope_name,
   latest.scope_version,
   attribute_entries(latest.metric_attributes) AS attributes,

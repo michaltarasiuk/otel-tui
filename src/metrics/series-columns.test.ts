@@ -20,6 +20,7 @@ function series(
 ): Series {
   return {
     series_id: seriesId,
+    scope_id: "",
     scope_name: null,
     scope_version: null,
     attributes: toAttributes(attributes),

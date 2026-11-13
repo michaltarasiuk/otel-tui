@@ -32,11 +32,11 @@ function summarize(attributeSets: Attributes[]) {
 }
 
 function distinctScopes(series: Series[]) {
-  const scopes = new Map<string, { name: string; version: string | null }>();
+  const scopes = new Map<string, { id: string; name: string; version: string | null }>();
 
-  for (const { scope_name, scope_version } of series) {
+  for (const { scope_id, scope_name, scope_version } of series) {
     if (scope_name !== null) {
-      scopes.set(`${scope_name} ${scope_version}`, { name: scope_name, version: scope_version });
+      scopes.set(scope_id, { id: scope_id, name: scope_name, version: scope_version });
     }
   }
 
@@ -70,8 +70,8 @@ function SeriesSummary({ metric }: SeriesSummaryProps) {
       )}
       {scopes.length > 0 && (
         <Section title="Scope">
-          {scopes.map(({ name, version }) => (
-            <ScopeName key={`${name} ${version}`} name={name} version={version} />
+          {scopes.map(({ id, name, version }) => (
+            <ScopeName key={id} name={name} version={version} />
           ))}
         </Section>
       )}

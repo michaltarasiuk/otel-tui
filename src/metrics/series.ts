@@ -87,6 +87,7 @@ export type SeriesPoints =
 
 const SeriesIdentity = z.object({
   series_id: z.string(),
+  scope_id: z.string(),
   scope_name: z.string().nullable(),
   scope_version: z.string().nullable(),
   attributes: Attributes,
@@ -129,6 +130,7 @@ export type Series =
   | z.infer<typeof ExponentialHistogramSeries>;
 
 export const Exemplar = z.object({
+  exemplar_id: z.string(),
   time: Timestamp,
   value: z.number(),
   trace_id: z.string().nullable(),

@@ -50,7 +50,7 @@ export function ExemplarList({ metric, seriesId, selectedIndex, onSelect }: Exem
     <Section title="Exemplars">
       {exemplars.map((exemplar, index) => (
         <box
-          key={index}
+          key={exemplar.exemplar_id}
           onMouseDown={(event) => {
             if (event.button === MouseButton.LEFT) {
               requestFocus();

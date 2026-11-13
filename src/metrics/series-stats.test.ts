@@ -6,6 +6,7 @@ import { HistogramSeries, NumberSeries } from "./series.ts";
 
 const seriesIdentity = {
   series_id: "1",
+  scope_id: "1",
   scope_name: null,
   scope_version: null,
   attributes: [],

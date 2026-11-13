@@ -1,4 +1,4 @@
-import type { SetStateAction } from "react";
+import { Fragment, type SetStateAction } from "react";
 
 import { Rows } from "#ui/rows.tsx";
 import { Cell, Column, Row, TableHeader } from "#ui/table.tsx";
@@ -25,14 +25,20 @@ export function SeriesTable({
   metric,
   columns,
 }: SeriesTableProps) {
+  const columnGroups = [...Map.groupBy(columns, (column) => column.source)];
+
   return (
     <>
       <TableHeader>
         {columns.length === 0 && <Column grow={1}>Attributes</Column>}
-        {columns.map(({ key, source, weight }) => (
-          <Column key={`${source}.${key}`} grow={weight}>
-            {key}
-          </Column>
+        {columnGroups.map(([source, group]) => (
+          <Fragment key={source}>
+            {group.map(({ key, weight }) => (
+              <Column key={key} grow={weight}>
+                {key}
+              </Column>
+            ))}
+          </Fragment>
         ))}
         {statKeys(metric.type).map((key) => (
           <Column key={key} width={COLUMN_STAT_WIDTH} align="right">
@@ -55,10 +61,14 @@ export function SeriesTable({
                   none
                 </Cell>
               )}
-              {columns.map((column) => (
-                <Cell key={`${column.source}.${column.key}`} grow={column.weight}>
-                  {cellValue(row, column)}
-                </Cell>
+              {columnGroups.map(([source, group]) => (
+                <Fragment key={source}>
+                  {group.map((column) => (
+                    <Cell key={column.key} grow={column.weight}>
+                      {cellValue(row, column)}
+                    </Cell>
+                  ))}
+                </Fragment>
               ))}
               {statKeys(metric.type).map((key) => (
                 <Cell key={key} width={COLUMN_STAT_WIDTH} align="right">

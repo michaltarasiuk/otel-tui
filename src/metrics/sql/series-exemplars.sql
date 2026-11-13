@@ -39,6 +39,7 @@ WITH metric_points AS MATERIALIZED (
     AND hash(resource_attributes, scope_name, scope_version, metric_attributes)::VARCHAR = $seriesId
 )
 SELECT
+  hash(time_unix_nano, value, trace_id, span_id)::VARCHAR AS exemplar_id,
   make_timestamp(time_unix_nano // 1000) AS time,
   value,
   nullif(trace_id, '') AS trace_id,

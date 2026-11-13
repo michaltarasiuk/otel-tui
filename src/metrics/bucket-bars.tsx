@@ -45,7 +45,7 @@ export function BucketBars({ distribution, unit, color }: BucketBarsProps) {
   return (
     <box>
       {buckets.map((bucket) => (
-        <box key={`${bucket.lower} ${bucket.upper}`} flexDirection="row" gap={COLUMN_GAP}>
+        <box key={bucket.lower} flexDirection="row" gap={COLUMN_GAP}>
           <text
             width={COLUMN_LABEL_WIDTH}
             flexShrink={0}

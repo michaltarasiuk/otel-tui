@@ -135,16 +135,20 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                     <ErrorBoundary
                       fallback={<PageError text="Failed to load trace" onBack={() => back()} />}
                     >
-                      <TraceSpansPage
-                        key={`${trace.traceId}:${trace.spanId}`}
-                        traceId={trace.traceId}
-                        spanId={trace.spanId}
-                        onBack={() => back()}
-                        onOpenLogs={(spanId) =>
-                          open({ name: "logs", traceId: trace.traceId, spanId })
-                        }
-                        onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                      />
+                      <Fragment key={trace.traceId}>
+                        <TraceSpansPage
+                          key={trace.spanId}
+                          traceId={trace.traceId}
+                          spanId={trace.spanId}
+                          onBack={() => back()}
+                          onOpenLogs={(spanId) =>
+                            open({ name: "logs", traceId: trace.traceId, spanId })
+                          }
+                          onOpenTrace={(traceId, spanId) =>
+                            open({ name: "trace", traceId, spanId })
+                          }
+                        />
+                      </Fragment>
                     </ErrorBoundary>
                   </Screen>
                 )}

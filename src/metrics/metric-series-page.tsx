@@ -24,13 +24,8 @@ import type { Metric } from "./metric.ts";
 import { attributeColumns, seriesLabel, sortByColumns } from "./series-columns.ts";
 import { SeriesDetails } from "./series-details.tsx";
 import { SeriesTable } from "./series-table.tsx";
-import type { Exemplar } from "./series.ts";
 
 const CHART_WINDOWS = [undefined, 15 * MINUTE_MS, 5 * MINUTE_MS, MINUTE_MS] as const;
-
-function exemplarKey(exemplar: Exemplar) {
-  return `${exemplar.time}:${exemplar.value}:${exemplar.span_id}`;
-}
 
 interface MetricSeriesPageProps {
   metric: Metric;
@@ -58,8 +53,9 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
     ...exemplarsOptions,
     enabled: seriesId !== undefined,
   });
-  const [exemplarIndex, selectExemplar] = useSelection(exemplars, (exemplar) =>
-    exemplarKey(exemplar),
+  const [exemplarIndex, selectExemplar] = useSelection(
+    exemplars,
+    (exemplar) => exemplar.exemplar_id,
   );
   const exemplar = exemplars[exemplarIndex];
   const exemplarTraceId = exemplar?.has_trace === true ? exemplar.trace_id : null;

@@ -40,6 +40,7 @@ WITH points AS MATERIALIZED (
 )
 SELECT
   series_id,
+  hash(any_value(scope_name), any_value(scope_version))::VARCHAR AS scope_id,
   any_value(scope_name) AS scope_name,
   any_value(scope_version) AS scope_version,
   attribute_entries(any_value(metric_attributes)) AS attributes,

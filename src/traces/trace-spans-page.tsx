@@ -28,10 +28,6 @@ import type { Span, SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
 import { spanContentQuery, traceSpansQuery } from "./trace-queries.ts";
 
-function linkKey(link: SpanLink) {
-  return `${link.trace_id}:${link.span_id}`;
-}
-
 function traceDuration(spans: Span[]) {
   return spans.reduce((end, span) => Math.max(end, span.offset_ms + span.duration_ms), 0);
 }
@@ -69,7 +65,7 @@ export function TraceSpansPage({
   const spanContentOptions = spanContentQuery(connection, traceId, selectedSpanId);
   const spanContent = useQuery({ ...spanContentOptions, enabled: selectedSpanId !== undefined });
   const links = spanContent.data?.links ?? [];
-  const [linkIndex, selectLink] = useSelection(links, (link) => linkKey(link));
+  const [linkIndex, selectLink] = useSelection(links, (link) => link.span_id);
   const link = links[linkIndex];
   const canOpenLink =
     link?.trace_id === traceId
