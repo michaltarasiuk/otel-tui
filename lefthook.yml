@@ -8,6 +8,16 @@ pre-commit:
     format:
       run: bunx oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
+    images:
+      glob: "*.png"
+      run: |
+        command -v pngquant >/dev/null && command -v oxipng >/dev/null || {
+          echo "Install pngquant and oxipng to compress screenshots: brew install pngquant oxipng"
+          exit 1
+        }
+        pngquant --quality=80-95 --skip-if-larger --force --ext .png {staged_files} || { code=$?; [ $code -eq 98 ] || [ $code -eq 99 ]; }
+        oxipng -o max --strip safe -q {staged_files}
+      stage_fixed: true
 
 pre-push:
   commands:
