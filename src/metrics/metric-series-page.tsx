@@ -6,7 +6,7 @@ import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
+import { Key, KeyHints, ListKeys, StepKeys } from "#ui/key-hints.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
@@ -121,18 +121,9 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
           back
         </Key>
         <FocusScope focused={region === "exemplars"}>
-          <StepKeys
-            forward="down"
+          <ListKeys
             description="next exemplar"
             backwardDescription="previous exemplar"
-            backward="up"
-            onStep={(step) => selectExemplar((index) => index + step)}
-          />
-          <StepKeys
-            forward="j"
-            description="next exemplar"
-            backwardDescription="previous exemplar"
-            backward="k"
             onStep={(step) => selectExemplar((index) => index + step)}
           />
           {exemplarTraceId !== null && (

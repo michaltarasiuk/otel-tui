@@ -5,7 +5,7 @@ import { useDeferredValue, useRef, useState } from "react";
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
+import { Key, KeyHints, ListKeys, StepKeys } from "#ui/key-hints.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
@@ -173,16 +173,7 @@ export function TraceSpansPage({
           </>
         )}
         <FocusScope focused={region === "links"}>
-          <StepKeys
-            forward="down"
-            backward="up"
-            description="next link"
-            backwardDescription="previous link"
-            onStep={(step) => selectLink((index) => index + step)}
-          />
-          <StepKeys
-            forward="j"
-            backward="k"
+          <ListKeys
             description="next link"
             backwardDescription="previous link"
             onStep={(step) => selectLink((index) => index + step)}

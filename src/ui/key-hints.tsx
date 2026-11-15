@@ -98,3 +98,30 @@ export function StepKeys({
     </>
   );
 }
+
+interface ListKeysProps {
+  description: string;
+  backwardDescription: string;
+  onStep: (step: 1 | -1) => void;
+}
+
+export function ListKeys({ description, backwardDescription, onStep }: ListKeysProps) {
+  return (
+    <>
+      <StepKeys
+        forward="down"
+        backward="up"
+        description={description}
+        backwardDescription={backwardDescription}
+        onStep={(step) => onStep(step)}
+      />
+      <StepKeys
+        forward="j"
+        backward="k"
+        description={description}
+        backwardDescription={backwardDescription}
+        onStep={(step) => onStep(step)}
+      />
+    </>
+  );
+}
