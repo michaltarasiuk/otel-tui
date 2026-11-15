@@ -13,24 +13,22 @@ import { ScrollKeys } from "#ui/scroll-box.tsx";
 import { Split } from "#ui/split.tsx";
 import { useSelection } from "#ui/use-selection.ts";
 import { findNextIndex } from "#utils/cycle.ts";
+import { toggle } from "#utils/set.ts";
 
-import { LinkList } from "./link-list.tsx";
+import { canOpenLink, LinkList } from "./link-list.tsx";
 import { SpanDetails } from "./span-details.tsx";
 import {
-  ancestorIds,
   criticalPath,
   descendantCount,
+  expandTo,
   hiddenCounts,
+  traceDuration,
   visibleSpans,
 } from "./span-tree.ts";
 import { SpanWaterfall } from "./span-waterfall.tsx";
-import type { Span, SpanLink } from "./span.ts";
+import type { SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
 import { spanContentQuery, traceSpansQuery } from "./trace-queries.ts";
-
-function traceDuration(spans: Span[]) {
-  return spans.reduce((end, span) => Math.max(end, span.offset_ms + span.duration_ms), 0);
-}
 
 interface TraceSpansPageProps {
   traceId: string;
@@ -61,34 +59,17 @@ export function TraceSpansPage({
   const selected = shown[selectedIndex];
   const deferredSelected = useDeferredValue(selected);
 
-  const selectedSpanId = deferredSelected?.span_id;
-  const spanContentOptions = spanContentQuery(connection, traceId, selectedSpanId);
-  const spanContent = useQuery({ ...spanContentOptions, enabled: selectedSpanId !== undefined });
+  const spanContent = useQuery(spanContentQuery(connection, traceId, deferredSelected?.span_id));
   const links = spanContent.data?.links ?? [];
   const [linkIndex, selectLink] = useSelection(links, (link) => link.span_id);
   const link = links[linkIndex];
-  const canOpenLink =
-    link?.trace_id === traceId
-      ? spans.some((span) => span.span_id === link.span_id)
-      : link?.has_trace === true;
 
   const regions = links.length > 0 ? (["spans", "links"] as const) : (["spans"] as const);
   const [region, setRegion] = useRegion(regions);
 
-  function toggleCollapsed(spanId: string) {
-    setCollapsed((collapsed) => {
-      const next = new Set(collapsed);
-      if (!next.delete(spanId)) {
-        next.add(spanId);
-      }
-      return next;
-    });
-  }
-
   function openLink(link: SpanLink) {
     if (link.trace_id === traceId) {
-      const ancestors = new Set(ancestorIds(spans, link.span_id));
-      setCollapsed((collapsed) => new Set([...collapsed].filter((id) => !ancestors.has(id))));
+      setCollapsed((collapsed) => expandTo(spans, collapsed, link.span_id));
       selectKey(link.span_id);
       setRegion("spans");
     } else {
@@ -143,56 +124,54 @@ export function TraceSpansPage({
         <Key name="l" onPress={() => onOpenLogs()}>
           logs
         </Key>
-        <FocusScope focused={region === "spans"}>
-          {selected !== undefined && (
-            <Key
-              name="shift+l"
-              description="logs of the selected span"
-              onPress={() => onOpenLogs(selected.span_id)}
-            />
-          )}
-          {shown.some((span) => span.is_error) && (
-            <StepKeys
-              forward="e"
-              backward="shift+e"
-              backwardDescription="previous error"
-              onStep={(step) =>
-                select((index) => findNextIndex(shown, index, step, (span) => span.is_error))
-              }
-            >
-              next error
-            </StepKeys>
-          )}
-          {selected !== undefined && descendantCount(spans, spans.indexOf(selected)) > 0 && (
-            <Key
-              name="space"
-              description={
-                collapsed.has(selected.span_id)
-                  ? "expand the span's children"
-                  : "collapse the span's children"
-              }
-              onPress={() => toggleCollapsed(selected.span_id)}
-            >
-              {collapsed.has(selected.span_id) ? "unfold" : "fold"}
-            </Key>
-          )}
-          <Key
-            name="c"
-            description={showCriticalPath ? "show every span" : "highlight the critical path"}
-            onPress={() => setShowCriticalPath((show) => !show)}
-          >
-            {showCriticalPath ? "all spans" : "critical"}
-          </Key>
-          {selected !== undefined && (
-            <>
+        {selected !== undefined && (
+          <>
+            <FocusScope focused={region === "spans"}>
+              <Key
+                name="shift+l"
+                description="logs of the selected span"
+                onPress={() => onOpenLogs(selected.span_id)}
+              />
+              {shown.some((span) => span.is_error) && (
+                <StepKeys
+                  forward="e"
+                  backward="shift+e"
+                  backwardDescription="previous error"
+                  onStep={(step) =>
+                    select((index) => findNextIndex(shown, index, step, (span) => span.is_error))
+                  }
+                >
+                  next error
+                </StepKeys>
+              )}
+              {descendantCount(spans, spans.indexOf(selected)) > 0 && (
+                <Key
+                  name="space"
+                  description={
+                    collapsed.has(selected.span_id)
+                      ? "expand the span's children"
+                      : "collapse the span's children"
+                  }
+                  onPress={() => setCollapsed((collapsed) => toggle(collapsed, selected.span_id))}
+                >
+                  {collapsed.has(selected.span_id) ? "unfold" : "fold"}
+                </Key>
+              )}
+              <Key
+                name="c"
+                description={showCriticalPath ? "show every span" : "highlight the critical path"}
+                onPress={() => setShowCriticalPath((show) => !show)}
+              >
+                {showCriticalPath ? "all spans" : "critical"}
+              </Key>
               <CopyKey name="y" text={selected.span_id} description="copy the span's ID">
                 copy id
               </CopyKey>
               <CopyKey name="shift+y" text={traceId} description="copy the trace's ID" />
-            </>
-          )}
-        </FocusScope>
-        {selected !== undefined && <ScrollKeys target={detailsRef} />}
+            </FocusScope>
+            <ScrollKeys target={detailsRef} />
+          </>
+        )}
         <FocusScope focused={region === "links"}>
           <StepKeys
             forward="down"
@@ -208,7 +187,7 @@ export function TraceSpansPage({
             backwardDescription="previous link"
             onStep={(step) => selectLink((index) => index + step)}
           />
-          {link !== undefined && canOpenLink && (
+          {link !== undefined && canOpenLink(link, traceId, spans) && (
             <Key name="return" onPress={() => openLink(link)}>
               open link
             </Key>

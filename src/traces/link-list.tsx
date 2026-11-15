@@ -5,7 +5,7 @@ import { KeyValueList } from "#ui/key-value-list.tsx";
 import { Section } from "#ui/section.tsx";
 import { Cell, Row, SelectedContext } from "#ui/table.tsx";
 
-import type { SpanLink } from "./span.ts";
+import type { Span, SpanLink } from "./span.ts";
 
 const NESTED_INDENT = 2;
 
@@ -15,6 +15,13 @@ function linkLabel(link: SpanLink, traceId: string) {
     return `${ids} (this trace)`;
   }
   return link.has_trace ? ids : `${ids} (not stored)`;
+}
+
+export function canOpenLink(link: SpanLink, traceId: string, spans: Span[]) {
+  if (link.trace_id === traceId) {
+    return spans.some((span) => span.span_id === link.span_id);
+  }
+  return link.has_trace;
 }
 
 interface LinkListProps {

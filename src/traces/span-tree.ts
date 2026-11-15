@@ -4,6 +4,10 @@ function spanEnd(span: Span) {
   return span.offset_ms + span.duration_ms;
 }
 
+export function traceDuration(spans: Span[]) {
+  return spans.reduce((end, span) => Math.max(end, spanEnd(span)), 0);
+}
+
 export function descendantCount(spans: Span[], index: number) {
   const depth = spans[index]?.depth ?? 0;
   let count = 0;
@@ -48,6 +52,10 @@ export function ancestorIds(spans: Span[], spanId: string) {
     parentId = byId.get(parentId)?.parent_span_id ?? null;
   }
   return ancestors;
+}
+
+export function expandTo(spans: Span[], collapsed: ReadonlySet<string>, spanId: string) {
+  return collapsed.difference(new Set(ancestorIds(spans, spanId)));
 }
 
 export function criticalPath(spans: Span[]) {
