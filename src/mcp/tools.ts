@@ -6,7 +6,7 @@ import type { Log } from "#logs/log.ts";
 import { readLogList } from "#logs/read-logs.ts";
 import { quantile } from "#metrics/distribution.ts";
 import { latestRate } from "#metrics/intervals.ts";
-import type { Metric, MetricSort } from "#metrics/metric.ts";
+import { BY_NAME, type Metric } from "#metrics/metric.ts";
 import { readMetricList, readMetricSeries } from "#metrics/read-metrics.ts";
 import type { Series } from "#metrics/series.ts";
 import { readServiceOperations, readServiceList } from "#services/read-services.ts";
@@ -27,8 +27,6 @@ const SEARCH_HELP =
   "key=value, key!=value, and key>number (also >=, <, <=) match span, log, metric, " +
   "or resource attributes. " +
   "On traces, duration>500ms compares span durations.";
-
-const BY_NAME: MetricSort = { column: "name", descending: false };
 
 const Limit = z.number().int().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT);
 

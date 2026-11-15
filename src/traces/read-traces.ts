@@ -13,6 +13,7 @@ import traceCount from "#traces/sql/trace-count.sql" with { type: "text" };
 import traceList from "#traces/sql/trace-list.sql" with { type: "text" };
 import traceSpans from "#traces/sql/trace-spans.sql" with { type: "text" };
 import traceTimeline from "#traces/sql/trace-timeline.sql" with { type: "text" };
+import { sortParams } from "#utils/sort.ts";
 
 import { Span, SpanContent } from "./span.ts";
 import { Trace, type TraceSort } from "./trace.ts";
@@ -49,8 +50,7 @@ export async function readTraceList(
     ...filterParams(filter),
     minTimeMs: timeRange?.from ?? null,
     maxTimeMs: timeRange?.to ?? null,
-    sortBy: sort.column,
-    direction: sort.descending ? -1 : 1,
+    ...sortParams(sort),
   });
   return Trace.array().parse(reader.getRowObjectsJS());
 }

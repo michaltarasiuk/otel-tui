@@ -1,12 +1,11 @@
 import { z } from "zod";
 
+import type { Sort } from "#utils/sort.ts";
+
 export const SERVICE_SORT_COLUMNS = ["rate", "error_ratio", "p95_ms"] as const;
 type ServiceSortColumn = (typeof SERVICE_SORT_COLUMNS)[number];
 
-export interface ServiceSort {
-  column: ServiceSortColumn;
-  descending: boolean;
-}
+export type ServiceSort = Sort<ServiceSortColumn>;
 
 export const Service = z.object({
   service_name: z.string(),

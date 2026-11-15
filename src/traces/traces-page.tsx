@@ -7,7 +7,7 @@ import { FocusScope } from "#ui/focus.tsx";
 import { type HistogramRange, stepSelection } from "#ui/histogram/bars.ts";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
-import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
+import { Key, KeyHints, SortKeys, StepKeys } from "#ui/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
@@ -17,7 +17,7 @@ import { useRegionSize } from "#ui/size.tsx";
 import { THEME } from "#ui/theme.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
-import { cycle, findNextIndex } from "#utils/cycle.ts";
+import { findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
 import { traceListQuery, traceTimelineQuery } from "./trace-queries.ts";
@@ -188,23 +188,7 @@ export function TracesPage({
           <Key name="s" onPress={() => setErrorsOnly((errorsOnly) => !errorsOnly)}>
             status
           </Key>
-          <Key
-            name="o"
-            onPress={() =>
-              setSort((sort) => ({
-                column: cycle(TRACE_SORT_COLUMNS, sort.column, 1),
-                descending: true,
-              }))
-            }
-          >
-            sort
-          </Key>
-          <Key
-            name="shift+o"
-            onPress={() => setSort((sort) => ({ ...sort, descending: !sort.descending }))}
-          >
-            reverse
-          </Key>
+          <SortKeys columns={TRACE_SORT_COLUMNS} onChange={(action) => setSort(action)} />
           <PauseKey />
         </FocusScope>
       </KeyHints>

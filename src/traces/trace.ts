@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { Timestamp } from "#telemetry/timestamp.ts";
+import type { Sort } from "#utils/sort.ts";
 
 export const Trace = z.object({
   trace_id: z.string(),
@@ -22,7 +23,4 @@ export const TRACE_SORT_COLUMNS = [
 ] as const;
 export type TraceSortColumn = (typeof TRACE_SORT_COLUMNS)[number];
 
-export interface TraceSort {
-  column: TraceSortColumn;
-  descending: boolean;
-}
+export type TraceSort = Sort<TraceSortColumn>;

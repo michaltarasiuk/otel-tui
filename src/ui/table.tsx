@@ -1,6 +1,8 @@
 import { type ColorInput, TextAttributes } from "@opentui/core";
 import { createContext, use } from "react";
 
+import type { Sort } from "#utils/sort.ts";
+
 import { COLUMN_GAP } from "./columns.ts";
 import { useFocused } from "./focus.tsx";
 import { THEME } from "./theme.ts";
@@ -10,10 +12,7 @@ export type SortDirection = "ascending" | "descending";
 
 const SORT_ARROWS = { ascending: "▲", descending: "▼" } satisfies Record<SortDirection, string>;
 
-export function sortDirection<C>(
-  sort: { column: C; descending: boolean },
-  column: C,
-): SortDirection | undefined {
+export function sortDirection<C>(sort: Sort<C>, column: C): SortDirection | undefined {
   if (sort.column !== column) {
     return undefined;
   }

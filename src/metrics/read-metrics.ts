@@ -11,6 +11,7 @@ import numberPoints from "#metrics/sql/number-points.sql" with { type: "text" };
 import numberSeries from "#metrics/sql/number-series.sql" with { type: "text" };
 import seriesExemplars from "#metrics/sql/series-exemplars.sql" with { type: "text" };
 import { searchParams } from "#telemetry/search.ts";
+import { sortParams } from "#utils/sort.ts";
 
 import { Metric, type MetricSort } from "./metric.ts";
 import {
@@ -44,8 +45,7 @@ export async function readMetricList(connection: DuckDBConnection, { search, sor
   const reader = await connection.runAndReadAll(metricList, {
     limit: METRIC_LIMIT,
     ...searchParams(search),
-    sortBy: sort.column,
-    direction: sort.descending ? -1 : 1,
+    ...sortParams(sort),
   });
   return Metric.array().parse(reader.getRowObjectsJS());
 }

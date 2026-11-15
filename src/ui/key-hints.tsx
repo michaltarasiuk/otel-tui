@@ -1,5 +1,8 @@
 import { useBindings } from "@opentui/keymap/react";
-import { createContext, use, useEffectEvent, useId } from "react";
+import { createContext, type SetStateAction, use, useEffectEvent, useId } from "react";
+
+import { cycle } from "#utils/cycle.ts";
+import type { Sort } from "#utils/sort.ts";
 
 import { COLUMN_GAP } from "./columns.ts";
 import { FocusRoot, useFocused, useKeysEnabled } from "./focus.tsx";
@@ -122,6 +125,33 @@ export function ListKeys({ description, backwardDescription, onStep }: ListKeysP
         backwardDescription={backwardDescription}
         onStep={(step) => onStep(step)}
       />
+    </>
+  );
+}
+
+interface SortKeysProps<C> {
+  columns: readonly [C, ...C[]];
+  ascending?: readonly NoInfer<C>[];
+  onChange: (action: SetStateAction<Sort<C>>) => void;
+}
+
+export function SortKeys<C>({ columns, ascending = [], onChange }: SortKeysProps<C>) {
+  function next({ column }: Sort<C>) {
+    const nextColumn = cycle(columns, column, 1);
+    return { column: nextColumn, descending: !ascending.includes(nextColumn) };
+  }
+
+  return (
+    <>
+      <Key name="o" onPress={() => onChange((sort) => next(sort))}>
+        sort
+      </Key>
+      <Key
+        name="shift+o"
+        onPress={() => onChange((sort) => ({ ...sort, descending: !sort.descending }))}
+      >
+        reverse
+      </Key>
     </>
   );
 }

@@ -5,7 +5,7 @@ import { useDeferredValue, useRef, useState } from "react";
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { Key, KeyHints } from "#ui/key-hints.tsx";
+import { Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
 import { Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
@@ -14,30 +14,12 @@ import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
-import { cycle } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 
 import { MetricDetails } from "./metric-details.tsx";
 import { metricListQuery } from "./metric-queries.ts";
 import { MetricTable } from "./metric-table.tsx";
-import {
-  METRIC_SORT_COLUMNS,
-  type Metric,
-  type MetricSort,
-  type MetricSortColumn,
-} from "./metric.ts";
-
-const BY_NAME: MetricSort = { column: "name", descending: false };
-
-const DESCENDING_FIRST = { name: false, series_count: true, last_time: true } satisfies Record<
-  MetricSortColumn,
-  boolean
->;
-
-function nextSort(column: MetricSortColumn) {
-  const next = cycle(METRIC_SORT_COLUMNS, column, 1);
-  return { column: next, descending: DESCENDING_FIRST[next] };
-}
+import { BY_NAME, METRIC_SORT_COLUMNS, type Metric } from "./metric.ts";
 
 interface MetricsPageProps {
   onOpen: (metric: Metric) => void;
@@ -105,15 +87,11 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
         </FocusScope>
         <SearchKeys search={search} />
         <FocusScope focused={browsing}>
-          <Key name="o" onPress={() => setSort((sort) => nextSort(sort.column))}>
-            sort
-          </Key>
-          <Key
-            name="shift+o"
-            onPress={() => setSort((sort) => ({ ...sort, descending: !sort.descending }))}
-          >
-            reverse
-          </Key>
+          <SortKeys
+            columns={METRIC_SORT_COLUMNS}
+            ascending={["name"]}
+            onChange={(action) => setSort(action)}
+          />
           {selected !== undefined && <ScrollKeys target={detailsRef} />}
           <PauseKey />
         </FocusScope>

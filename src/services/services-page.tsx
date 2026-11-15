@@ -5,7 +5,7 @@ import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { Key, KeyHints } from "#ui/key-hints.tsx";
+import { Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
@@ -15,7 +15,6 @@ import { Split } from "#ui/split.tsx";
 import { THEME } from "#ui/theme.ts";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
-import { cycle } from "#utils/cycle.ts";
 import { formatCount } from "#utils/number.ts";
 
 import { OperationTable } from "./operation-table.tsx";
@@ -130,23 +129,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
         </FocusScope>
         <SearchKeys search={search} />
         <FocusScope focused={browsing && region === "services"}>
-          <Key
-            name="o"
-            onPress={() =>
-              setSort((sort) => ({
-                column: cycle(SERVICE_SORT_COLUMNS, sort.column, 1),
-                descending: true,
-              }))
-            }
-          >
-            sort
-          </Key>
-          <Key
-            name="shift+o"
-            onPress={() => setSort((sort) => ({ ...sort, descending: !sort.descending }))}
-          >
-            reverse
-          </Key>
+          <SortKeys columns={SERVICE_SORT_COLUMNS} onChange={(action) => setSort(action)} />
         </FocusScope>
         <FocusScope focused={browsing}>
           <PauseKey />

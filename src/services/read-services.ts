@@ -3,6 +3,7 @@ import type { DuckDBConnection } from "@duckdb/node-api";
 import serviceList from "#services/sql/service-list.sql" with { type: "text" };
 import serviceOperations from "#services/sql/service-operations.sql" with { type: "text" };
 import { substringPattern } from "#telemetry/substring-pattern.ts";
+import { sortParams } from "#utils/sort.ts";
 import { MINUTE_MS } from "#utils/time.ts";
 
 import { Operation, Service, type ServiceSort } from "./service.ts";
@@ -27,8 +28,7 @@ export async function readServiceList(
   const reader = await connection.runAndReadAll(serviceList, {
     ...windowParams(),
     pattern: substringPattern(search),
-    sortBy: sort.column,
-    direction: sort.descending ? -1 : 1,
+    ...sortParams(sort),
   });
   return Service.array().parse(reader.getRowObjectsJS());
 }

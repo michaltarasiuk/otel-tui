@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { Timestamp } from "#telemetry/timestamp.ts";
+import type { Sort } from "#utils/sort.ts";
 
 const METRIC_TYPES = [
   "gauge",
@@ -38,10 +39,9 @@ export type Metric = z.infer<typeof Metric>;
 export const METRIC_SORT_COLUMNS = ["name", "series_count", "last_time"] as const;
 export type MetricSortColumn = (typeof METRIC_SORT_COLUMNS)[number];
 
-export interface MetricSort {
-  column: MetricSortColumn;
-  descending: boolean;
-}
+export type MetricSort = Sort<MetricSortColumn>;
+
+export const BY_NAME: MetricSort = { column: "name", descending: false };
 
 export function typeLabel(type: MetricType) {
   return TYPE_LABELS[type];
