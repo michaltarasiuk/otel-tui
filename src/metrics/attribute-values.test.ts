@@ -19,8 +19,8 @@ test("collects the distinct values of each attribute across sets", () => {
   ];
 
   expect(attributeValues(attributeSets)).toEqual([
-    { key: "http.route", values: ["/api/cart", "/api/currency"], setCount: 3 },
-    { key: "rpc.grpc.status_code", values: ["2", "14"], setCount: 2 },
-    { key: "error.type", values: ["null"], setCount: 1 },
+    { key: "http.route", values: ["/api/cart", "/api/currency"], count: 3 },
+    { key: "rpc.grpc.status_code", values: ["2", "14"], count: 2 },
+    { key: "error.type", values: ["null"], count: 1 },
   ]);
 });

@@ -2,22 +2,11 @@ import type { Attributes } from "#telemetry/attributes.ts";
 import { compareText } from "#utils/text.ts";
 
 export function attributeValues(attributeSets: Attributes[]) {
-  const byKey = new Map<string, { values: Set<string>; setCount: number }>();
-
-  for (const attributes of attributeSets) {
-    for (const { key, value } of attributes) {
-      const entry = byKey.getOrInsertComputed(key, () => ({
-        values: new Set<string>(),
-        setCount: 0,
-      }));
-      entry.values.add(value ?? "null");
-      entry.setCount++;
-    }
-  }
-
-  return [...byKey].map(([key, { values, setCount }]) => ({
-    key,
-    values: [...values].sort((a, b) => compareText(a, b)),
-    setCount,
-  }));
+  const attributesByKey = Map.groupBy(attributeSets.flat(), (attribute) => attribute.key);
+  return [...attributesByKey].map(([key, attributes]) => {
+    const values = new Set(attributes.map((attribute) => attribute.value ?? "null"));
+    return { key, values: [...values].sort((a, b) => compareText(a, b)), count: attributes.length };
+  });
 }
+
+export type AttributeValues = ReturnType<typeof attributeValues>[number];
