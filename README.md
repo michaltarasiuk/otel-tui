@@ -4,7 +4,7 @@ A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
 Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
-![Trace details with a span waterfall across five services and the selected span's attributes](docs/trace-details.png)
+![Trace details with a span waterfall across five services and the selected span's attributes](docs/trace-spans-page.png)
 
 ## Install
 
@@ -52,7 +52,7 @@ trace.
 
 ### Services
 
-![Services view listing each service's rate, error rate, and p50, p95, and p99 latency, with the selected service's operations below](docs/services-view.png)
+![Services view listing each service's rate, error rate, and p50, p95, and p99 latency, with the selected service's operations below](docs/services-page.png)
 
 Each service's rate, error rate, and p50, p95, and p99
 latency over the last 5 minutes come from its server and consumer spans, with
@@ -63,7 +63,7 @@ slowest first. A trace opened from there starts at the operation's span.
 
 ### Traces
 
-![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-view.png)
+![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-page.png)
 
 A histogram above the list charts the traces over time in 10-second columns,
 with the errors in red, so a spike or a gap stands out. `←` or `→` marks the
@@ -85,8 +85,8 @@ the linked span when it is in the same trace.
 ### Metrics
 
 <p>
-  <img src="docs/metrics-list.png" width="49%" alt="Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource">
-  <img src="docs/metrics-view.png" width="49%" alt="Metric details with a series table, a value chart, and the selected series' resource and scope">
+  <img src="docs/metrics-page.png" width="49%" alt="Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource">
+  <img src="docs/metric-series-page.png" width="49%" alt="Metric details with a series table, a value chart, and the selected series' resource and scope">
 </p>
 
 The metric list shows each metric's type, unit, and series count, with a
@@ -104,7 +104,7 @@ trace at its span; exemplars whose trace otel-tui never received are marked
 
 ### Logs
 
-![Logs view filtered to errors, with a chart of logs over time above the severity, service, and body columns and the selected log's body, attributes, resource, and trace ID](docs/logs-view.png)
+![Logs view filtered to errors, with a chart of logs over time above the severity, service, and body columns and the selected log's body, attributes, resource, and trace ID](docs/logs-page.png)
 
 The log table comes with a panel for the selected log's body, attributes,
 resource, and trace ID. `e` jumps to the next error, `return` opens the
