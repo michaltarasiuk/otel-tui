@@ -1,1 +1,3 @@
-export class StartupError extends Error {}
+export class StartupError extends Error {
+  override name = "StartupError";
+}
