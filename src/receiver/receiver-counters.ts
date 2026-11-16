@@ -1,7 +1,7 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
 import { z } from "zod";
 
-import receiverCounters from "./receiver-counters.sql" with { type: "text" };
+import receiverCounters from "./sql/receiver-counters.sql" with { type: "text" };
 
 const ReceiverCounters = z.object({
   total_rows: z.number(),
