@@ -5,9 +5,9 @@ import { useDeferredValue, useRef, useState } from "react";
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { type HistogramRange, stepSelection } from "#ui/histogram/bars.ts";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
+import { useTimeRange } from "#ui/histogram/use-time-range.ts";
 import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
@@ -55,12 +55,11 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   const search = useSearch();
   const [minSeverity, setMinSeverity] = useState<MinSeverity>(undefined);
   const deferredMinSeverity = useDeferredValue(minSeverity);
-  const [timeRange, setTimeRange] = useState<HistogramRange | undefined>(undefined);
-  const deferredTimeRange = useDeferredValue(timeRange);
+  const timeRange = useTimeRange();
 
   const connection = useConnection();
   const filter = { search: search.deferredText, minSeverity: deferredMinSeverity, traceId, spanId };
-  const query = { ...filter, timeRange: deferredTimeRange };
+  const query = { ...filter, timeRange: timeRange.deferredSelected };
   const [logList, logTimeline] = useSuspenseQueries({
     queries: [logListQuery(connection, query), logTimelineQuery(connection, filter)],
   });
@@ -76,7 +75,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
     search.deferredText !== "" ||
     deferredMinSeverity !== undefined ||
     traceId !== undefined ||
-    deferredTimeRange !== undefined;
+    timeRange.deferredSelected !== undefined;
   const browsing = !search.isEditing;
 
   const { height = 0 } = useRegionSize();
@@ -92,7 +91,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
         {minSeverity !== undefined && (
           <Chip color={severityColor(minSeverity)}>≥ {minSeverity}</Chip>
         )}
-        {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
+        {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
         <Count>{formatShownCount(logs.length, totalCount, "log")}</Count>
       </PageHeader>
       {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
@@ -100,7 +99,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
           title="Logs over time"
           occupied={timeline.occupied}
           newestBucketMs={timeline.newestBucketMs}
-          selected={timeRange}
+          selected={timeRange.selected}
         />
       )}
       {logList.isError ? (
@@ -155,8 +154,8 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
         </FocusScope>
         <SearchKeys search={search} />
         <FocusScope focused={browsing}>
-          {search.text === "" && timeRange !== undefined && (
-            <Key name="escape" onPress={() => setTimeRange(undefined)}>
+          {search.text === "" && timeRange.selected !== undefined && (
+            <Key name="escape" onPress={() => timeRange.clear()}>
               any time
             </Key>
           )}
@@ -166,20 +165,18 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
               backward="left"
               description="later range"
               backwardDescription="earlier range"
-              onStep={(step) =>
-                setTimeRange((range) => stepSelection(timeline.occupied, range, step))
-              }
+              onStep={(step) => timeRange.step(timeline.occupied, step)}
             >
               range
             </StepKeys>
           )}
-          {search.text === "" && timeRange === undefined && onBack !== undefined && (
+          {search.text === "" && timeRange.selected === undefined && onBack !== undefined && (
             <Key name="escape" onPress={() => onBack()}>
               back
             </Key>
           )}
           {search.text === "" &&
-            timeRange === undefined &&
+            timeRange.selected === undefined &&
             onBack === undefined &&
             traceId !== undefined && (
               <Key name="escape" onPress={() => onTraceChange(undefined)}>

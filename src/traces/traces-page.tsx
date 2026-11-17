@@ -4,9 +4,9 @@ import { useDeferredValue, useState } from "react";
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { type HistogramRange, stepSelection } from "#ui/histogram/bars.ts";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
+import { useTimeRange } from "#ui/histogram/use-time-range.ts";
 import { Key, KeyHints, SortKeys, StepKeys } from "#ui/key-hints.tsx";
 import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
@@ -56,8 +56,7 @@ export function TracesPage({
   const search = useSearch();
   const [errorsOnly, setErrorsOnly] = useState(false);
   const deferredErrorsOnly = useDeferredValue(errorsOnly);
-  const [timeRange, setTimeRange] = useState<HistogramRange | undefined>(undefined);
-  const deferredTimeRange = useDeferredValue(timeRange);
+  const timeRange = useTimeRange();
   const [sort, setSort] = useState(operation === undefined ? NEWEST_FIRST : SLOWEST_FIRST);
   const deferredSort = useDeferredValue(sort);
 
@@ -68,7 +67,7 @@ export function TracesPage({
     serviceName: service,
     operationName: operation,
   };
-  const query = { ...filter, timeRange: deferredTimeRange, sort: deferredSort };
+  const query = { ...filter, timeRange: timeRange.deferredSelected, sort: deferredSort };
   const [traceList, traceTimeline] = useSuspenseQueries({
     queries: [traceListQuery(connection, query), traceTimelineQuery(connection, filter)],
   });
@@ -82,7 +81,7 @@ export function TracesPage({
   const filtered =
     search.deferredText !== "" ||
     deferredErrorsOnly ||
-    deferredTimeRange !== undefined ||
+    timeRange.deferredSelected !== undefined ||
     service !== undefined;
   const browsing = !search.isEditing;
 
@@ -99,7 +98,7 @@ export function TracesPage({
         )}
         {operation !== undefined && <Chip>{operation}</Chip>}
         {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
-        {timeRange !== undefined && <Chip>{timeRangeLabel(timeRange)}</Chip>}
+        {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
         <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
       </PageHeader>
       {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
@@ -107,7 +106,7 @@ export function TracesPage({
           title="Traces over time"
           occupied={timeline.occupied}
           newestBucketMs={timeline.newestBucketMs}
-          selected={timeRange}
+          selected={timeRange.selected}
         />
       )}
       {traceList.isError ? (
@@ -151,18 +150,18 @@ export function TracesPage({
         </FocusScope>
         <SearchKeys search={search} />
         <FocusScope focused={browsing}>
-          {search.text === "" && timeRange !== undefined && (
-            <Key name="escape" onPress={() => setTimeRange(undefined)}>
+          {search.text === "" && timeRange.selected !== undefined && (
+            <Key name="escape" onPress={() => timeRange.clear()}>
               any time
             </Key>
           )}
-          {search.text === "" && timeRange === undefined && onBack !== undefined && (
+          {search.text === "" && timeRange.selected === undefined && onBack !== undefined && (
             <Key name="escape" onPress={() => onBack()}>
               back
             </Key>
           )}
           {search.text === "" &&
-            timeRange === undefined &&
+            timeRange.selected === undefined &&
             onBack === undefined &&
             service !== undefined && (
               <Key name="escape" onPress={() => onServiceChange(undefined)}>
@@ -175,9 +174,7 @@ export function TracesPage({
               description="later range"
               backwardDescription="earlier range"
               backward="left"
-              onStep={(step) =>
-                setTimeRange((range) => stepSelection(timeline.occupied, range, step))
-              }
+              onStep={(step) => timeRange.step(timeline.occupied, step)}
             >
               range
             </StepKeys>
