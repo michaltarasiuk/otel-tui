@@ -6,6 +6,7 @@ import { LogsPage } from "#logs/logs-page.tsx";
 import { MetricSeriesPage } from "#metrics/metric-series-page.tsx";
 import { MetricsPage } from "#metrics/metrics-page.tsx";
 import { ServicesPage } from "#services/services-page.tsx";
+import { TraceComparePage } from "#traces/trace-compare-page.tsx";
 import { TraceSpansPage } from "#traces/trace-spans-page.tsx";
 import { TracesPage } from "#traces/traces-page.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
@@ -33,8 +34,20 @@ interface AppProps {
 }
 
 export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
-  const { tab, services, traces, trace, metrics, series, logs, selectTab, open, replace, reset } =
-    usePages();
+  const {
+    tab,
+    services,
+    traces,
+    trace,
+    compare,
+    metrics,
+    series,
+    logs,
+    selectTab,
+    open,
+    replace,
+    reset,
+  } = usePages();
   const [region, setRegion] = useRegion(REGIONS);
   const [clears, setClears] = useState(0);
   const [help, setHelp] = useState<HelpEntry[]>();
@@ -107,11 +120,31 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                         operation={traces.operation}
                         onServiceChange={(service) => replace({ name: "traces", service })}
                         onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+                        onCompare={(before, after) => open({ name: "compare", before, after })}
                         onBack={traces.back}
                       />
                     </Fragment>
                   </ErrorBoundary>
                 </Screen>
+                {compare !== undefined && (
+                  <Screen mode={compare.mode}>
+                    <ErrorBoundary
+                      fallback={<PageError text="Failed to load traces" onBack={compare.back} />}
+                    >
+                      <Fragment key={compare.before}>
+                        <TraceComparePage
+                          key={compare.after}
+                          before={compare.before}
+                          after={compare.after}
+                          onBack={compare.back}
+                          onOpenTrace={(traceId, spanId) =>
+                            open({ name: "trace", traceId, spanId })
+                          }
+                        />
+                      </Fragment>
+                    </ErrorBoundary>
+                  </Screen>
+                )}
                 {trace !== undefined && (
                   <Screen mode={trace.mode}>
                     <ErrorBoundary

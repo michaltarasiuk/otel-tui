@@ -16,6 +16,11 @@ interface TraceLocation {
   spanId: string | undefined;
 }
 
+interface CompareLocation {
+  before: string;
+  after: string;
+}
+
 interface SeriesLocation {
   metric: Metric;
 }
@@ -29,6 +34,7 @@ interface Location {
   tab: Tab;
   traces: TracesLocation;
   trace: TraceLocation | undefined;
+  compare: CompareLocation | undefined;
   series: SeriesLocation | undefined;
   logs: LogsLocation;
 }
@@ -38,11 +44,12 @@ interface History {
   previous: Location[];
 }
 
-type PageName = "services" | "traces" | "trace" | "metrics" | "series" | "logs";
+type PageName = "services" | "traces" | "trace" | "compare" | "metrics" | "series" | "logs";
 
 type Destination =
   | { name: "traces"; service: string | undefined; operation?: string | undefined }
   | { name: "trace"; traceId: string; spanId?: string | undefined }
+  | { name: "compare"; before: string; after: string }
   | { name: "series"; metric: Metric }
   | { name: "logs"; traceId: string | undefined; spanId?: string | undefined };
 
@@ -53,16 +60,20 @@ const START_LOCATION: Location = {
   tab: "services",
   traces: ALL_TRACES,
   trace: undefined,
+  compare: undefined,
   series: undefined,
   logs: ALL_LOGS,
 };
 
-function pageAt({ tab, trace, series }: Location): PageName {
+function pageAt({ tab, trace, compare, series }: Location): PageName {
   switch (tab) {
     case "services":
       return "services";
     case "traces":
-      return trace === undefined ? "traces" : "trace";
+      if (trace !== undefined) {
+        return "trace";
+      }
+      return compare === undefined ? "traces" : "compare";
     case "metrics":
       return series === undefined ? "metrics" : "series";
     case "logs":
@@ -74,11 +85,20 @@ function changeTo(destination: Destination): Partial<Location> {
   switch (destination.name) {
     case "traces": {
       const { service, operation } = destination;
-      return { tab: "traces", traces: { service, operation }, trace: undefined };
+      return {
+        tab: "traces",
+        traces: { service, operation },
+        trace: undefined,
+        compare: undefined,
+      };
     }
     case "trace": {
       const { traceId, spanId } = destination;
       return { tab: "traces", trace: { traceId, spanId } };
+    }
+    case "compare": {
+      const { before, after } = destination;
+      return { tab: "traces", trace: undefined, compare: { before, after } };
     }
     case "series":
       return { tab: "metrics", series: { metric: destination.metric } };
@@ -89,12 +109,12 @@ function changeTo(destination: Destination): Partial<Location> {
   }
 }
 
-function closeChange(tab: Tab): Partial<Location> {
+function closeChange({ tab, trace }: Location): Partial<Location> {
   switch (tab) {
     case "services":
       return {};
     case "traces":
-      return { trace: undefined };
+      return trace === undefined ? { compare: undefined } : { trace: undefined };
     case "metrics":
       return { series: undefined };
     case "logs":
@@ -113,7 +133,7 @@ function push({ location, previous }: History, change: Partial<Location>): Histo
 function back(history: History): History {
   const location = history.previous.at(-1);
   if (location === undefined) {
-    return replace(history, closeChange(history.location.tab));
+    return replace(history, closeChange(history.location));
   }
   return { location, previous: history.previous.slice(0, -1) };
 }
@@ -154,6 +174,10 @@ export function usePages() {
       location.trace === undefined
         ? undefined
         : { ...location.trace, mode: mode("trace"), back: goBack },
+    compare:
+      location.compare === undefined
+        ? undefined
+        : { ...location.compare, mode: mode("compare"), back: goBack },
     metrics: { mode: mode("metrics") },
     series:
       location.series === undefined

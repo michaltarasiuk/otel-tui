@@ -72,6 +72,10 @@ export function spanRows(frame: string) {
   return rowsAbovePanel(frame, "Duration");
 }
 
+export function spanDiffRows(frame: string) {
+  return rowsAbovePanel(frame, "Change").map((line) => collapseWhitespace(line));
+}
+
 export function keyHints(frame: string) {
   return textLines(frame).at(-1) ?? "";
 }

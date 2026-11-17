@@ -2,7 +2,7 @@ import { type AppOptions, renderPage, selectRow } from "./app.tsx";
 import { at } from "./clock.ts";
 import { SPAN_KIND, STATUS_CODE, tracesRequest } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
-import { onDetails, tableRows } from "./screen.ts";
+import { onDetails, pageHeader, spanDiffRows, tableRows } from "./screen.ts";
 
 export const cartTraceId = "1".repeat(32);
 export const checkoutTraceId = "2".repeat(32);
@@ -164,5 +164,76 @@ export async function openTrace(receiver: TestReceiver, row: string, options?: A
   await selectRow(app, NEWEST_FIRST, row);
   app.mockInput.pressEnter();
   await app.waitForFrame(onDetails);
+  return app;
+}
+
+export const slowCartTraceId = "6".repeat(32);
+
+export const SLOW_CART_ROW = "12:00:04.000 ● frontend GET /api/cart 4 300.0ms";
+
+export const slowCartTraces = tracesRequest(
+  {
+    service: "frontend",
+    spans: [
+      {
+        traceId: slowCartTraceId,
+        spanId: "6a".repeat(8),
+        name: "GET /api/cart",
+        kind: SPAN_KIND.server,
+        start: at(4000),
+        end: at(4300),
+      },
+    ],
+  },
+  {
+    service: "cart",
+    spans: [
+      {
+        traceId: slowCartTraceId,
+        spanId: "6b".repeat(8),
+        parentSpanId: "6a".repeat(8),
+        name: GET_CART,
+        kind: SPAN_KIND.server,
+        start: at(4010),
+        end: at(4250),
+      },
+      {
+        traceId: slowCartTraceId,
+        spanId: "6c".repeat(8),
+        parentSpanId: "6b".repeat(8),
+        name: "valkey-cart:6379",
+        kind: SPAN_KIND.client,
+        start: at(4020),
+        end: at(4080),
+      },
+      {
+        traceId: slowCartTraceId,
+        spanId: "6d".repeat(8),
+        parentSpanId: "6b".repeat(8),
+        name: "valkey-cart:6379",
+        kind: SPAN_KIND.client,
+        start: at(4100),
+        end: at(4240),
+      },
+    ],
+  },
+);
+
+export const WITH_SLOW_CART = [SLOW_CART_ROW, ...NEWEST_FIRST];
+
+export async function renderCartComparison(receiver: TestReceiver, options?: AppOptions) {
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await receiver.sendHttp("/v1/traces", slowCartTraces);
+  const app = await renderPage(receiver, "traces", options);
+  await app.waitForRows(WITH_SLOW_CART);
+  await selectRow(app, WITH_SLOW_CART, CART_ROW);
+  app.mockInput.pressKey("m");
+  await app.waitForFrame((frame) => pageHeader(frame).includes("vs GET /api/cart 120.0ms"));
+  for (const row of WITH_SLOW_CART.slice(0, WITH_SLOW_CART.indexOf(CART_ROW)).toReversed()) {
+    app.mockInput.pressArrow("up");
+    await app.waitForSelection(row);
+  }
+  app.mockInput.pressKey("c");
+  await app.waitForFrame((frame) => spanDiffRows(frame).length > 0);
   return app;
 }

@@ -19,6 +19,7 @@ import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
 import { findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
+import { formatDuration } from "#utils/time.ts";
 
 import { traceListQuery, traceTimelineQuery } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
@@ -34,8 +35,14 @@ const NEWEST_FIRST: TraceSort = { column: "start_time", descending: true };
 
 const SLOWEST_FIRST: TraceSort = { column: "duration_ms", descending: true };
 
+const SHORT_ID_LENGTH = 8;
+
 function hasErrors(trace: Trace) {
   return trace.error_count > 0;
+}
+
+function sameRoot(a: Trace, b: Trace) {
+  return a.service_name === b.service_name && a.name === b.name;
 }
 
 interface TracesPageProps {
@@ -43,6 +50,7 @@ interface TracesPageProps {
   operation: string | undefined;
   onServiceChange: (service: string | undefined) => void;
   onOpen: (traceId: string, spanId: string | undefined) => void;
+  onCompare: (before: string, after: string) => void;
   onBack: (() => void) | undefined;
 }
 
@@ -51,6 +59,7 @@ export function TracesPage({
   operation,
   onServiceChange,
   onOpen,
+  onCompare,
   onBack,
 }: TracesPageProps) {
   const search = useSearch();
@@ -77,6 +86,13 @@ export function TracesPage({
 
   const selection = useSelection(traces, (trace) => trace.trace_id);
   const { selected } = selection;
+  const [markedId, setMarkedId] = useState<string>();
+  const marked = traces.find((trace) => trace.trace_id === markedId);
+  const comparable =
+    marked !== undefined &&
+    selected !== undefined &&
+    marked.trace_id !== selected.trace_id &&
+    sameRoot(marked, selected);
 
   const filtered =
     search.deferredText !== "" ||
@@ -99,6 +115,13 @@ export function TracesPage({
         {operation !== undefined && <Chip>{operation}</Chip>}
         {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
         {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
+        {marked !== undefined ? (
+          <Chip>
+            vs {marked.name} {formatDuration(marked.duration_ms)}
+          </Chip>
+        ) : (
+          markedId !== undefined && <Chip>vs {markedId.slice(0, SHORT_ID_LENGTH)}</Chip>
+        )}
         <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
       </PageHeader>
       {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
@@ -128,6 +151,30 @@ export function TracesPage({
               >
                 open
               </Key>
+              <Key
+                name="m"
+                description={
+                  markedId === selected.trace_id
+                    ? "unmark the trace to compare with"
+                    : "mark the trace to compare with"
+                }
+                onPress={() =>
+                  setMarkedId((markedId) =>
+                    markedId === selected.trace_id ? undefined : selected.trace_id,
+                  )
+                }
+              >
+                {markedId === selected.trace_id ? "unmark" : "mark"}
+              </Key>
+              {comparable && (
+                <Key
+                  name="c"
+                  description="compare with the marked trace, which has the same root span"
+                  onPress={() => onCompare(marked.trace_id, selected.trace_id)}
+                >
+                  compare
+                </Key>
+              )}
               <CopyKey name="y" text={selected.trace_id}>
                 copy id
               </CopyKey>
