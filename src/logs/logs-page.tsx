@@ -9,10 +9,11 @@ import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
 import { useTimeRange } from "#ui/histogram/use-time-range.ts";
 import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
-import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
+import { Chip, Count, PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
+import { SearchInput } from "#ui/search-input.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { useRegionSize } from "#ui/size.tsx";
 import { Split } from "#ui/split.tsx";
@@ -85,7 +86,6 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <SearchInput search={search} placeholder="body, service, trace ID or key=value" />
         {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_ID_LENGTH)}</Chip>}
         {spanId !== undefined && <Chip>span {spanId.slice(0, SHORT_ID_LENGTH)}</Chip>}
         {minSeverity !== undefined && (
@@ -115,6 +115,8 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
         </FocusScope>
       )}
       <KeyHints>
+        <SearchInput search={search} placeholder="body, service, trace ID or key=value" />
+        <SearchKeys search={search} />
         <FocusScope focused={browsing}>
           {logs.some((log) => isError(log)) && (
             <StepKeys
@@ -152,7 +154,6 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
             </CopyKey>
           )}
         </FocusScope>
-        <SearchKeys search={search} />
         <FocusScope focused={browsing}>
           {search.text === "" && timeRange.selected !== undefined && (
             <Key name="escape" onPress={() => timeRange.clear()}>

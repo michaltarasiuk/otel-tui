@@ -123,7 +123,8 @@ test("keeps an applied search while browsing", async () => {
   app.mockInput.pressArrow("down");
 
   expect(await app.waitForSelection("Payment request failed")).toBe(WARN_ROW);
-  await app.waitForFrame((frame) => pageHeader(frame) === "/payment 2 of 7 logs");
+  const frame = await app.waitForFrame((frame) => pageHeader(frame) === "2 of 7 logs");
+  expect(keyHints(frame)).toStartWith("/payment ");
 });
 
 test("jumps between errors in both directions", async () => {
@@ -180,7 +181,7 @@ test("offers trace actions only for logs with a trace", async () => {
   app.mockInput.pressKey("e");
   frame = await app.waitForFrame((frame) => frame.includes("t trace"));
   expect(keyHints(frame)).toStartWith(
-    "e next error return open trace t trace y copy body / search",
+    "/ search e next error return open trace t trace y copy body",
   );
 });
 

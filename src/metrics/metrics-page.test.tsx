@@ -15,7 +15,14 @@ import {
 } from "#testing/metrics.ts";
 import { metricsRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
-import { detailsLines, onList, pageHeader, tableRows, textLines } from "#testing/screen.ts";
+import {
+  detailsLines,
+  keyHints,
+  onList,
+  pageHeader,
+  tableRows,
+  textLines,
+} from "#testing/screen.ts";
 
 beforeEach(() => {
   fakeClock(atSecond(60));
@@ -100,7 +107,8 @@ test("keeps an applied search while browsing", async () => {
   app.mockInput.pressArrow("down");
 
   expect(await app.waitForSelection("http.server.request.duration")).toBe(DURATION_ROW);
-  await app.waitForFrame((frame) => pageHeader(frame) === "/http 2 of 6 metrics");
+  const frame = await app.waitForFrame((frame) => pageHeader(frame) === "2 of 6 metrics");
+  expect(keyHints(frame)).toStartWith("/http ");
 });
 
 test("summarizes the selected metric's attribute values", async () => {

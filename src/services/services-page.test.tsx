@@ -45,7 +45,7 @@ test("waits for server or consumer spans", async () => {
   const frame = await app.waitForFrame((frame) =>
     frame.includes("Waiting for server or consumer spans..."),
   );
-  expect(pageHeader(frame)).toBe("last 5 min 0 services");
+  expect(pageHeader(frame)).toBe("last 5 min · 0 services");
 });
 
 test("lists each service's rate, errors, and latency from its entry spans", async () => {
@@ -54,7 +54,7 @@ test("lists each service's rate, errors, and latency from its entry spans", asyn
 
   const frame = await app.waitForFrame(() => true);
 
-  expect(pageHeader(frame)).toBe("last 5 min 4 services");
+  expect(pageHeader(frame)).toBe("last 5 min · 4 services");
   expect(textLines(frame)).toContain("Service ▼ Rate Errors p50 p95 p99 Spans");
   expect(serviceRows(frame)).toEqual([CART_ROW, CHECKOUT_ROW, FRAUD_ROW, FRONTEND_ROW]);
 });
@@ -114,7 +114,7 @@ test("opens an operation's traces, slowest first, at the operation's span", asyn
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => pageHeader(frame).endsWith("1 of 3 traces"));
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min · 4 services");
 });
 
 test("moves between services and operations with tab", async () => {
@@ -167,7 +167,7 @@ test("opens the selected service's traces and comes back", async () => {
   expect(keyHints(frame)).toContain("escape back");
 
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min · 4 services");
 });
 
 test("never shows the previous service's traces over time", async () => {
@@ -179,7 +179,7 @@ test("never shows the previous service's traces over time", async () => {
   let frame = await app.waitForFrame((frame) => chartLines(frame).length > 0);
   const cartChart = chartLines(frame);
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min · 4 services");
 
   app.mockInput.pressArrow("down");
   await app.waitForSelection("checkout");

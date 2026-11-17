@@ -6,10 +6,11 @@ import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
-import { Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
+import { Count, PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { ScrollKeys } from "#ui/scroll-box.tsx";
+import { SearchInput } from "#ui/search-input.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
 import { useSearch } from "#ui/use-search.ts";
@@ -46,7 +47,6 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <SearchInput search={search} placeholder="name, description, service or key=value" />
         <Count>{formatShownCount(metrics.length, totalCount, "metric")}</Count>
       </PageHeader>
       {metricList.isError ? (
@@ -68,6 +68,8 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
         </FocusScope>
       )}
       <KeyHints>
+        <SearchInput search={search} placeholder="name, description, service or key=value" />
+        <SearchKeys search={search} />
         <FocusScope focused={browsing}>
           {selected !== undefined && (
             <>
@@ -80,7 +82,6 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
             </>
           )}
         </FocusScope>
-        <SearchKeys search={search} />
         <FocusScope focused={browsing}>
           <SortKeys
             columns={METRIC_SORT_COLUMNS}

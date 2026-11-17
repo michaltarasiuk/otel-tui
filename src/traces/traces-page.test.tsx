@@ -61,7 +61,8 @@ test("searches trace names, services, and IDs", async () => {
 
   app.mockInput.pressEnter();
   frame = await app.waitForFrame(onList);
-  expect(pageHeader(frame)).toBe("/cart 1 of 3 traces");
+  expect(pageHeader(frame)).toBe("1 of 3 traces");
+  expect(keyHints(frame)).toStartWith("/cart / search escape clear");
 
   app.mockInput.pressEscape();
   frame = await app.waitForFrame((frame) => tableRows(frame).length === 3);
@@ -159,7 +160,8 @@ test("keeps the search and sort when switching tabs", async () => {
   app.mockInput.pressArrow("left");
 
   const frame = await app.waitForFrame((frame) => tableRows(frame).length === 1);
-  expect(pageHeader(frame)).toBe("/cart 1 of 3 traces");
+  expect(pageHeader(frame)).toBe("1 of 3 traces");
+  expect(keyHints(frame)).toStartWith("/cart ");
   expect(textLines(frame)).toContain("Time Service Name ▼ Spans Errors Duration");
   expect(tableRows(frame)).toEqual([CART_ROW]);
 });
@@ -253,7 +255,7 @@ test("highlights the selected row only while its region has focus", async () => 
 async function searchTraces(app: TestApp, text: string) {
   await search(app, text);
   app.mockInput.pressEnter();
-  return app.waitForFrame((frame) => pageHeader(frame).startsWith(`/${text} `));
+  return app.waitForFrame((frame) => keyHints(frame).startsWith(`/${text} `));
 }
 
 async function clearSearch(app: TestApp) {

@@ -6,7 +6,7 @@ import { renderPage, search, type TestApp } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
-import { chartLines, pageHeader, tableRows } from "#testing/screen.ts";
+import { chartLines, keyHints, pageHeader, tableRows } from "#testing/screen.ts";
 import { PLACE_ORDER } from "#testing/traces.ts";
 import { HISTOGRAM_COLUMN_WIDTH } from "#ui/histogram/time-histogram.tsx";
 import { THEME } from "#ui/theme.ts";
@@ -235,7 +235,8 @@ test("keeps the selected bucket when the search leaves it without traces", async
   await search(app, "cart");
 
   const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
-  expect(pageHeader(frame)).toBe("/cart 12:00:40–12:00:50 0 of 3 traces");
+  expect(pageHeader(frame)).toBe("12:00:40–12:00:50 0 of 3 traces");
+  expect(keyHints(frame)).toStartWith("/cart ");
   expect(frame).toContain("Traces over time");
 });
 

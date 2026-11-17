@@ -6,10 +6,11 @@ import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
-import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
+import { Count, PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
+import { SearchInput } from "#ui/search-input.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
 import { THEME } from "#ui/theme.ts";
@@ -62,9 +63,7 @@ export function ServicesPage({ onOpenTraces, onOpenMap }: ServicesPageProps) {
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <SearchInput search={search} placeholder="service name" />
-        <Chip>{SERVICE_WINDOW_LABEL}</Chip>
-        <Count>{formatCount(services.length, "service")}</Count>
+        <Count>{`${SERVICE_WINDOW_LABEL} · ${formatCount(services.length, "service")}`}</Count>
       </PageHeader>
       {serviceList.isError ? (
         <Placeholder text="Failed to load services" variant="error" />
@@ -106,6 +105,8 @@ export function ServicesPage({ onOpenTraces, onOpenMap }: ServicesPageProps) {
         </FocusScope>
       )}
       <KeyHints>
+        <SearchInput search={search} placeholder="service name" />
+        <SearchKeys search={search} />
         <FocusScope focused={browsing && region === "services"}>
           {selected !== undefined && (
             <Key name="return" onPress={() => onOpenTraces(selected.service_name)}>
@@ -120,7 +121,6 @@ export function ServicesPage({ onOpenTraces, onOpenMap }: ServicesPageProps) {
             </Key>
           )}
         </FocusScope>
-        <SearchKeys search={search} />
         <FocusScope focused={browsing && region === "services"}>
           <SortKeys columns={SERVICE_SORT_COLUMNS} onChange={(action) => setSort(action)} />
         </FocusScope>

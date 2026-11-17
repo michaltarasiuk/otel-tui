@@ -39,7 +39,7 @@ test("waits for spans that call another service", async () => {
   const frame = await app.waitForFrame((frame) =>
     frame.includes("Waiting for spans that call another service..."),
   );
-  expect(pageHeader(frame)).toBe("last 5 min 0 dependencies");
+  expect(pageHeader(frame)).toBe("last 5 min · 0 dependencies");
 });
 
 test("nests each service's calls under it, with external peers as hollow leaves", async () => {
@@ -49,7 +49,7 @@ test("nests each service's calls under it, with external peers as hollow leaves"
 
   const frame = await app.waitForFrame((frame) => mapRows(frame).length === MAP_ROWS.length);
 
-  expect(pageHeader(frame)).toBe("last 5 min 3 dependencies");
+  expect(pageHeader(frame)).toBe("last 5 min · 3 dependencies");
   expect(mapRows(frame)).toEqual(MAP_ROWS);
   expect(frame).toContain("    ○ redis");
 });
@@ -102,7 +102,7 @@ test("opens a called service's traces and comes back to the map", async () => {
   app.mockInput.pressEscape();
   await app.waitForFrame((frame) => / dependenc(y|ies)$/.test(pageHeader(frame)));
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min 4 services");
+  await app.waitForFrame((frame) => pageHeader(frame) === "last 5 min · 4 services");
 });
 
 test("has no traces key on an external peer", async () => {

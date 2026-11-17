@@ -8,9 +8,10 @@ import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
 import { useTimeRange } from "#ui/histogram/use-time-range.ts";
 import { Key, KeyHints, SortKeys, StepKeys } from "#ui/key-hints.tsx";
-import { Chip, Count, PageHeader, SearchInput } from "#ui/page-header.tsx";
+import { Chip, Count, PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
+import { SearchInput } from "#ui/search-input.tsx";
 import { SearchKeys } from "#ui/search-keys.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { useRegionSize } from "#ui/size.tsx";
@@ -109,7 +110,6 @@ export function TracesPage({
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <SearchInput search={search} placeholder="trace name, service, ID or key=value" />
         {service !== undefined && (
           <Chip>
             <ServiceName name={service} />
@@ -145,6 +145,8 @@ export function TracesPage({
         </FocusScope>
       )}
       <KeyHints>
+        <SearchInput search={search} placeholder="trace name, service, ID or key=value" />
+        <SearchKeys search={search} />
         <FocusScope focused={browsing}>
           {selected !== undefined && (
             <>
@@ -203,7 +205,6 @@ export function TracesPage({
             </StepKeys>
           )}
         </FocusScope>
-        <SearchKeys search={search} />
         <FocusScope focused={browsing}>
           {search.text === "" && timeRange.selected !== undefined && (
             <Key name="escape" onPress={() => timeRange.clear()}>
