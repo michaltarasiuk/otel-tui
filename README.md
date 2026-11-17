@@ -82,6 +82,8 @@ that sets how long the trace takes. `e` there jumps to the next span with errors
 moves into the span's links, where `return` opens the linked trace, or selects
 the linked span when it is in the same trace.
 
+![Two traces of GET /v1/titles/{id} compared span by span, with each span's self time before and after, a bar for the change, and three removed spans, above each operation's span count and self time in both traces](docs/trace-comparison-page.png)
+
 To see why one trace took longer than another, `m` marks a trace in the list
 or on its waterfall, and `v` compares it with the selected or open trace when
 both have the same root span. The comparison pairs the spans of both traces by
