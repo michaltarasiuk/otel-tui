@@ -77,13 +77,19 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
     <AppKeys
       value={
         <>
-          <RegionKeys regions={REGIONS} region={region} onChange={(region) => setRegion(region)}>
-            next region
-          </RegionKeys>
           {!editing && (
-            <Key name="?" onPress={() => setHelp(activeHelp(keymap))}>
-              help
-            </Key>
+            <>
+              <RegionKeys
+                regions={REGIONS}
+                region={region}
+                onChange={(region) => setRegion(region)}
+              >
+                next region
+              </RegionKeys>
+              <Key name="?" onPress={() => setHelp(activeHelp(keymap))}>
+                help
+              </Key>
+            </>
           )}
           <Key name="ctrl+l" description="clear telemetry" onPress={() => clear()} />
         </>

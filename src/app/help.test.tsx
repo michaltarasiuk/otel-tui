@@ -42,3 +42,20 @@ test("types ? into the search instead of opening help", async () => {
   const frame = await app.waitForFrame((frame) => frame.includes("/?"));
   expect(frame).not.toContain("Keys");
 });
+
+test("offers only the search's keys while typing a search", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await renderApp(receiver);
+  await openTab(app, "traces");
+  app.mockInput.pressTab();
+  await app.waitForFrame(onList);
+  await search(app, "cart");
+
+  let frame = await app.waitForFrame((frame) => keyHints(frame).startsWith("/cart"));
+  expect(keyHints(frame)).toEndWith("return apply escape clear");
+
+  app.mockInput.pressTab();
+  await app.mockInput.typeText("s");
+  frame = await app.waitForFrame((frame) => keyHints(frame).startsWith("/carts"));
+  expect(keyHints(frame)).toEndWith("return apply escape clear");
+});
