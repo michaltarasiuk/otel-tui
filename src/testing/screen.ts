@@ -58,14 +58,18 @@ export function detailsLines(frame: string) {
   return border === -1 ? [] : lines.slice(border + 1, -1);
 }
 
-export function spanRows(frame: string) {
+function rowsAbovePanel(frame: string, column: string) {
   const lines = frame.split("\n");
-  const header = lines.findIndex((line) => line.includes("Service") && line.includes("Duration"));
+  const header = lines.findIndex((line) => line.includes("Service") && line.includes(column));
   const panel = lines.findIndex((line) => line.startsWith(DETAILS_BORDER));
   if (header === -1 || panel === -1) {
     return [];
   }
   return lines.slice(header + 1, panel).filter((line) => line.trim() !== "");
+}
+
+export function spanRows(frame: string) {
+  return rowsAbovePanel(frame, "Duration");
 }
 
 export function keyHints(frame: string) {
