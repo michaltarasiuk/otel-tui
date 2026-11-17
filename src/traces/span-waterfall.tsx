@@ -4,6 +4,7 @@ import { ServiceName } from "#ui/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
 import type { Selection } from "#ui/use-selection.ts";
+import { indent } from "#utils/text.ts";
 import { formatDuration } from "#utils/time.ts";
 
 import type { Span } from "./span.ts";
@@ -12,12 +13,6 @@ import { Scale, WaterfallBar } from "./waterfall-bar.tsx";
 const COLUMN_NAME_GROW = 2;
 const COLUMN_DURATION_WIDTH = 8;
 const COLUMN_TIMELINE_GROW = 3;
-
-const INDENT_WIDTH = 2;
-
-function indent(depth: number) {
-  return " ".repeat(depth * INDENT_WIDTH);
-}
 
 interface SpanWaterfallProps {
   spans: Span[];

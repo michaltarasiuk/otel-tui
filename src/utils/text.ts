@@ -1,7 +1,13 @@
+const INDENT_WIDTH = 2;
+
 const collator = new Intl.Collator("en-US", { numeric: true });
 
 export function collapseWhitespace(text: string) {
   return text.trim().replace(/\s+/g, " ");
+}
+
+export function indent(depth: number) {
+  return " ".repeat(depth * INDENT_WIDTH);
 }
 
 export function compareText(a: string, b: string) {

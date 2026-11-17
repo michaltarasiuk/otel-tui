@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { collapseWhitespace, compareText, formatJson } from "./text.ts";
+import { collapseWhitespace, compareText, formatJson, indent } from "./text.ts";
 
 test("collapseWhitespace joins lines and runs of spaces into one line", () => {
   const error =
@@ -41,4 +41,9 @@ test("formatJson keeps scalars and text that isn't JSON as written", () => {
   expect(formatJson("null")).toBe("null");
   expect(formatJson("API request completed")).toBe("API request completed");
   expect(formatJson('{"url.path":')).toBe('{"url.path":');
+});
+
+test("indent puts two spaces per tree level", () => {
+  expect(indent(0)).toBe("");
+  expect(indent(2)).toBe("    ");
 });
