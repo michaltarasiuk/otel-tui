@@ -19,7 +19,7 @@ interface SpanWaterfallProps {
   selection: Selection<Span>;
   traceDurationMs: number;
   hiddenCounts: ReadonlyMap<string, number>;
-  criticalPath: ReadonlySet<string> | undefined;
+  highlighted: ReadonlySet<string> | undefined;
 }
 
 export function SpanWaterfall({
@@ -27,10 +27,14 @@ export function SpanWaterfall({
   selection,
   traceDurationMs,
   hiddenCounts,
-  criticalPath,
+  highlighted,
 }: SpanWaterfallProps) {
+  function dimmed(span: Span) {
+    return highlighted !== undefined && !highlighted.has(span.span_id);
+  }
+
   function nameColor(span: Span) {
-    if (criticalPath !== undefined && !criticalPath.has(span.span_id)) {
+    if (dimmed(span)) {
       return THEME.textMuted;
     }
     return span.is_error ? THEME.textError : THEME.text;
@@ -66,7 +70,7 @@ export function SpanWaterfall({
                 grow={COLUMN_TIMELINE_GROW}
                 span={span}
                 traceDurationMs={traceDurationMs}
-                dimmed={criticalPath !== undefined && !criticalPath.has(span.span_id)}
+                dimmed={dimmed(span)}
               />
             </Row>
           );

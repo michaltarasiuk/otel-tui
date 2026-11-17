@@ -129,7 +129,7 @@ function createDiagnosedKeymap(renderer: CliRenderer) {
 
 function firstSelectedLine({ lines }: CapturedFrame) {
   for (const [line, { spans }] of lines.entries()) {
-    if (spans.some((span) => span.bg.equals(selectedBackground))) {
+    if (spans.some((span) => span.text.trim() !== "" && span.bg.equals(selectedBackground))) {
       return { line, text: collapseWhitespace(spans.map((span) => span.text).join("")) };
     }
   }

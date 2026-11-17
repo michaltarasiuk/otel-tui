@@ -66,6 +66,11 @@ export function WaterfallPage({
   const { selected } = selection;
   const deferredSelected = useDeferredValue(selected);
 
+  function selectSpan(spanId: string) {
+    setCollapsed((collapsed) => expandTo(spans, collapsed, spanId));
+    selection.selectKey(spanId);
+  }
+
   const spanContent = useQuery(spanContentQuery(connection, traceId, deferredSelected?.span_id));
   const links = spanContent.data?.links ?? [];
   const linkSelection = useSelection(links, (link) => link.span_id);
@@ -76,8 +81,7 @@ export function WaterfallPage({
 
   function openLink(link: SpanLink) {
     if (link.trace_id === traceId) {
-      setCollapsed((collapsed) => expandTo(spans, collapsed, link.span_id));
-      selection.selectKey(link.span_id);
+      selectSpan(link.span_id);
       setRegion("spans");
     } else {
       onOpenTrace(link.trace_id, link.span_id);
@@ -102,7 +106,7 @@ export function WaterfallPage({
                 selection={selection}
                 traceDurationMs={durationMs}
                 hiddenCounts={hiddenCounts(spans, collapsed)}
-                criticalPath={showCriticalPath ? criticalPath(spans) : undefined}
+                highlighted={showCriticalPath ? criticalPath(spans) : undefined}
               />
             </FocusScope>
             <SpanDetails
