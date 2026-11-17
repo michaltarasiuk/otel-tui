@@ -3,14 +3,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 
 import { LogsPage } from "#logs/logs-page.tsx";
-import { MetricSeriesPage } from "#metrics/metric-series-page.tsx";
 import { MetricsPage } from "#metrics/metrics-page.tsx";
+import { SeriesPage } from "#metrics/series-page.tsx";
 import { ServiceMapPage } from "#services/service-map-page.tsx";
 import { ServicesPage } from "#services/services-page.tsx";
 import { TraceComparePage } from "#traces/trace-compare-page.tsx";
-import { TraceSpansPage } from "#traces/trace-spans-page.tsx";
 import type { MarkedTrace } from "#traces/trace.ts";
 import { TracesPage } from "#traces/traces-page.tsx";
+import { WaterfallPage } from "#traces/waterfall-page.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope, KeysScope } from "#ui/focus.tsx";
 import { AppKeys, Key } from "#ui/key-hints.tsx";
@@ -173,7 +173,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                       fallback={<PageError text="Failed to load trace" onBack={trace.back} />}
                     >
                       <Fragment key={trace.traceId}>
-                        <TraceSpansPage
+                        <WaterfallPage
                           key={trace.spanId}
                           traceId={trace.traceId}
                           spanId={trace.spanId}
@@ -202,7 +202,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                     <ErrorBoundary
                       fallback={<PageError text="Failed to load metric" onBack={series.back} />}
                     >
-                      <MetricSeriesPage
+                      <SeriesPage
                         key={series.metric.metric_id}
                         metric={series.metric}
                         onBack={series.back}

@@ -27,13 +27,13 @@ import { SeriesTable } from "./series-table.tsx";
 
 const CHART_WINDOWS = [undefined, 15 * MINUTE_MS, 5 * MINUTE_MS, MINUTE_MS] as const;
 
-interface MetricSeriesPageProps {
+interface SeriesPageProps {
   metric: Metric;
   onBack: () => void;
   onOpenTrace: (traceId: string, spanId: string | undefined) => void;
 }
 
-export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPageProps) {
+export function SeriesPage({ metric, onBack, onOpenTrace }: SeriesPageProps) {
   const [chartWindow, setChartWindow] = useState<(typeof CHART_WINDOWS)[number]>();
 
   const connection = useConnection();

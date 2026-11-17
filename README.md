@@ -4,7 +4,7 @@ A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
 Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 
-![Trace details with a span waterfall across five services and the selected span's attributes](docs/trace-spans-page.png)
+![Trace details with a span waterfall across five services and the selected span's attributes](docs/waterfall-page.png)
 
 ## Install
 
@@ -110,7 +110,7 @@ traces, and `return` opens a span in the trace where it took longer.
 
 <p>
   <img src="docs/metrics-page.png" width="49%" alt="Metrics view listing each metric's type, unit, and series count, with the selected metric's attributes and resource">
-  <img src="docs/metric-series-page.png" width="49%" alt="Metric details with a series table, a value chart, and the selected series' resource and scope">
+  <img src="docs/series-page.png" width="49%" alt="Metric details with a series table, a value chart, and the selected series' resource and scope">
 </p>
 
 The metric list shows each metric's type, unit, and series count, with a

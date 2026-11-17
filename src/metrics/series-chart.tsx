@@ -4,12 +4,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useConnection } from "#query/connection.ts";
 import { COLUMN_GAP } from "#ui/columns.ts";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
+import { LineChart } from "#ui/line-chart.tsx";
 import { Section } from "#ui/section.tsx";
 import { THEME } from "#ui/theme.ts";
 import { MINUTE_MS, formatTime } from "#utils/time.ts";
 
 import { counterIntervals, distributionIntervals } from "./intervals.ts";
-import { LineChart } from "./line-chart.tsx";
 import { seriesPointsQuery } from "./metric-queries.ts";
 import { formatMetricRate, formatMetricValue } from "./metric-value.ts";
 import { isDelta, type Metric } from "./metric.ts";

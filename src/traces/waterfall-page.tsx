@@ -31,7 +31,7 @@ import { TraceHeader } from "./trace-header.tsx";
 import { spanContentQuery, traceSpansQuery } from "./trace-queries.ts";
 import { type MarkedTrace, sameRoot } from "./trace.ts";
 
-interface TraceSpansPageProps {
+interface WaterfallPageProps {
   traceId: string;
   spanId: string | undefined;
   marked: MarkedTrace | undefined;
@@ -42,7 +42,7 @@ interface TraceSpansPageProps {
   onOpenTrace: (traceId: string, spanId: string) => void;
 }
 
-export function TraceSpansPage({
+export function WaterfallPage({
   traceId,
   spanId,
   marked,
@@ -51,7 +51,7 @@ export function TraceSpansPage({
   onCompare,
   onOpenLogs,
   onOpenTrace,
-}: TraceSpansPageProps) {
+}: WaterfallPageProps) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [showCriticalPath, setShowCriticalPath] = useState(false);
 
