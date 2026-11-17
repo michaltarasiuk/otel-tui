@@ -33,21 +33,8 @@ interface AppProps {
 }
 
 export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
-  const {
-    page,
-    tab,
-    tracesService,
-    tracesOperation,
-    trace,
-    metric,
-    logsTrace,
-    canGoBack,
-    selectTab,
-    open,
-    replace,
-    reset,
-    back,
-  } = usePages();
+  const { tab, services, traces, trace, metrics, series, logs, selectTab, open, replace, reset } =
+    usePages();
   const [region, setRegion] = useRegion(REGIONS);
   const [clears, setClears] = useState(0);
   const [help, setHelp] = useState<HelpEntry[]>();
@@ -100,7 +87,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
           >
             <Content>
               <Suspense fallback={<PageLoading />}>
-                <Screen mode={page === "services" ? "visible" : "hidden"}>
+                <Screen mode={services.mode}>
                   <ErrorBoundary fallback={<PageError text="Failed to load services" />}>
                     <ServicesPage
                       onOpenTraces={(service, operation) =>
@@ -109,38 +96,33 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                     />
                   </ErrorBoundary>
                 </Screen>
-                <Screen mode={page === "traces" ? "visible" : "hidden"}>
+                <Screen mode={traces.mode}>
                   <ErrorBoundary
-                    fallback={
-                      <PageError
-                        text="Failed to load traces"
-                        onBack={canGoBack ? () => back() : undefined}
-                      />
-                    }
+                    fallback={<PageError text="Failed to load traces" onBack={traces.back} />}
                   >
-                    <Fragment key={tracesService}>
+                    <Fragment key={traces.service}>
                       <TracesPage
-                        key={tracesOperation}
-                        service={tracesService}
-                        operation={tracesOperation}
+                        key={traces.operation}
+                        service={traces.service}
+                        operation={traces.operation}
                         onServiceChange={(service) => replace({ name: "traces", service })}
                         onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                        onBack={canGoBack ? () => back() : undefined}
+                        onBack={traces.back}
                       />
                     </Fragment>
                   </ErrorBoundary>
                 </Screen>
                 {trace !== undefined && (
-                  <Screen mode={page === "trace" ? "visible" : "hidden"}>
+                  <Screen mode={trace.mode}>
                     <ErrorBoundary
-                      fallback={<PageError text="Failed to load trace" onBack={() => back()} />}
+                      fallback={<PageError text="Failed to load trace" onBack={trace.back} />}
                     >
                       <Fragment key={trace.traceId}>
                         <TraceSpansPage
                           key={trace.spanId}
                           traceId={trace.traceId}
                           spanId={trace.spanId}
-                          onBack={() => back()}
+                          onBack={trace.back}
                           onOpenLogs={(spanId) =>
                             open({ name: "logs", traceId: trace.traceId, spanId })
                           }
@@ -152,40 +134,35 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                     </ErrorBoundary>
                   </Screen>
                 )}
-                <Screen mode={page === "metrics" ? "visible" : "hidden"}>
+                <Screen mode={metrics.mode}>
                   <ErrorBoundary fallback={<PageError text="Failed to load metrics" />}>
-                    <MetricsPage onOpen={(metric) => open({ name: "metric", metric })} />
+                    <MetricsPage onOpen={(metric) => open({ name: "series", metric })} />
                   </ErrorBoundary>
                 </Screen>
-                {metric !== undefined && (
-                  <Screen mode={page === "metric" ? "visible" : "hidden"}>
+                {series !== undefined && (
+                  <Screen mode={series.mode}>
                     <ErrorBoundary
-                      fallback={<PageError text="Failed to load metric" onBack={() => back()} />}
+                      fallback={<PageError text="Failed to load metric" onBack={series.back} />}
                     >
                       <MetricSeriesPage
-                        key={metric.metric_id}
-                        metric={metric}
-                        onBack={() => back()}
+                        key={series.metric.metric_id}
+                        metric={series.metric}
+                        onBack={series.back}
                         onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
                       />
                     </ErrorBoundary>
                   </Screen>
                 )}
-                <Screen mode={page === "logs" ? "visible" : "hidden"}>
+                <Screen mode={logs.mode}>
                   <ErrorBoundary
-                    fallback={
-                      <PageError
-                        text="Failed to load logs"
-                        onBack={canGoBack ? () => back() : undefined}
-                      />
-                    }
+                    fallback={<PageError text="Failed to load logs" onBack={logs.back} />}
                   >
                     <LogsPage
-                      traceId={logsTrace?.traceId}
-                      spanId={logsTrace?.spanId}
+                      traceId={logs.traceId}
+                      spanId={logs.spanId}
                       onTraceChange={(traceId) => replace({ name: "logs", traceId })}
                       onOpenTrace={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
-                      onBack={canGoBack ? () => back() : undefined}
+                      onBack={logs.back}
                     />
                   </ErrorBoundary>
                 </Screen>

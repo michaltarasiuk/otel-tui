@@ -2,20 +2,35 @@ import { useDeferredValue, useState } from "react";
 
 import type { Metric } from "#metrics/metric.ts";
 
+import type { ScreenMode } from "./screen.tsx";
+
 export type Tab = "services" | "traces" | "metrics" | "logs";
+
+interface TracesLocation {
+  service: string | undefined;
+  operation: string | undefined;
+}
 
 interface TraceLocation {
   traceId: string;
   spanId: string | undefined;
 }
 
+interface SeriesLocation {
+  metric: Metric;
+}
+
+interface LogsLocation {
+  traceId: string | undefined;
+  spanId: string | undefined;
+}
+
 interface Location {
   tab: Tab;
-  tracesService: string | undefined;
-  tracesOperation: string | undefined;
+  traces: TracesLocation;
   trace: TraceLocation | undefined;
-  metric: Metric | undefined;
-  logsTrace: TraceLocation | undefined;
+  series: SeriesLocation | undefined;
+  logs: LogsLocation;
 }
 
 interface History {
@@ -23,31 +38,33 @@ interface History {
   previous: Location[];
 }
 
-type PageName = "services" | "traces" | "trace" | "metrics" | "metric" | "logs";
+type PageName = "services" | "traces" | "trace" | "metrics" | "series" | "logs";
 
 type Destination =
   | { name: "traces"; service: string | undefined; operation?: string | undefined }
   | { name: "trace"; traceId: string; spanId?: string | undefined }
-  | { name: "metric"; metric: Metric }
+  | { name: "series"; metric: Metric }
   | { name: "logs"; traceId: string | undefined; spanId?: string | undefined };
+
+const ALL_TRACES: TracesLocation = { service: undefined, operation: undefined };
+const ALL_LOGS: LogsLocation = { traceId: undefined, spanId: undefined };
 
 const START_LOCATION: Location = {
   tab: "services",
-  tracesService: undefined,
-  tracesOperation: undefined,
+  traces: ALL_TRACES,
   trace: undefined,
-  metric: undefined,
-  logsTrace: undefined,
+  series: undefined,
+  logs: ALL_LOGS,
 };
 
-function pageAt({ tab, trace, metric }: Location): PageName {
+function pageAt({ tab, trace, series }: Location): PageName {
   switch (tab) {
     case "services":
       return "services";
     case "traces":
       return trace === undefined ? "traces" : "trace";
     case "metrics":
-      return metric === undefined ? "metrics" : "metric";
+      return series === undefined ? "metrics" : "series";
     case "logs":
       return "logs";
   }
@@ -55,25 +72,20 @@ function pageAt({ tab, trace, metric }: Location): PageName {
 
 function changeTo(destination: Destination): Partial<Location> {
   switch (destination.name) {
-    case "traces":
-      return {
-        tab: "traces",
-        tracesService: destination.service,
-        tracesOperation: destination.operation,
-        trace: undefined,
-      };
-    case "trace":
-      return { tab: "traces", trace: { traceId: destination.traceId, spanId: destination.spanId } };
-    case "metric":
-      return { tab: "metrics", metric: destination.metric };
-    case "logs":
-      return {
-        tab: "logs",
-        logsTrace:
-          destination.traceId === undefined
-            ? undefined
-            : { traceId: destination.traceId, spanId: destination.spanId },
-      };
+    case "traces": {
+      const { service, operation } = destination;
+      return { tab: "traces", traces: { service, operation }, trace: undefined };
+    }
+    case "trace": {
+      const { traceId, spanId } = destination;
+      return { tab: "traces", trace: { traceId, spanId } };
+    }
+    case "series":
+      return { tab: "metrics", series: { metric: destination.metric } };
+    case "logs": {
+      const { traceId, spanId } = destination;
+      return { tab: "logs", logs: { traceId, spanId } };
+    }
   }
 }
 
@@ -84,9 +96,9 @@ function closeChange(tab: Tab): Partial<Location> {
     case "traces":
       return { trace: undefined };
     case "metrics":
-      return { metric: undefined };
+      return { series: undefined };
     case "logs":
-      return { logsTrace: undefined };
+      return { logs: ALL_LOGS };
   }
 }
 
@@ -122,16 +134,32 @@ export function usePages() {
   const [history, setHistory] = useState<History>({ location: START_LOCATION, previous: [] });
   const deferredHistory = useDeferredValue(history);
   const { location, previous } = deferredHistory;
+  const page = pageAt(location);
+
+  function mode(name: PageName): ScreenMode {
+    return name === page ? "visible" : "hidden";
+  }
+
+  function goBack() {
+    setHistory((history) => back(history));
+  }
+
+  const historyBack = previous.length > 0 ? goBack : undefined;
 
   return {
-    page: pageAt(location),
     tab: history.location.tab,
-    tracesService: location.tracesService,
-    tracesOperation: location.tracesOperation,
-    trace: location.trace,
-    metric: location.metric,
-    logsTrace: location.logsTrace,
-    canGoBack: previous.length > 0,
+    services: { mode: mode("services") },
+    traces: { ...location.traces, mode: mode("traces"), back: historyBack },
+    trace:
+      location.trace === undefined
+        ? undefined
+        : { ...location.trace, mode: mode("trace"), back: goBack },
+    metrics: { mode: mode("metrics") },
+    series:
+      location.series === undefined
+        ? undefined
+        : { ...location.series, mode: mode("series"), back: goBack },
+    logs: { ...location.logs, mode: mode("logs"), back: historyBack },
     selectTab: (tab: Tab) => {
       setHistory((history) => switchTab(history, tab));
     },
@@ -143,9 +171,6 @@ export function usePages() {
     },
     reset: () => {
       setHistory((history) => restart(history));
-    },
-    back: () => {
-      setHistory((history) => back(history));
     },
   };
 }

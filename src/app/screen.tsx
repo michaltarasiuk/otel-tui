@@ -1,7 +1,9 @@
 import { Activity, useState } from "react";
 
+export type ScreenMode = "visible" | "hidden";
+
 interface ScreenProps {
-  mode: "visible" | "hidden";
+  mode: ScreenMode;
   children: React.ReactNode;
 }
 
