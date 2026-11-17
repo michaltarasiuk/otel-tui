@@ -8,6 +8,7 @@ import { MetricsPage } from "#metrics/metrics-page.tsx";
 import { ServicesPage } from "#services/services-page.tsx";
 import { TraceComparePage } from "#traces/trace-compare-page.tsx";
 import { TraceSpansPage } from "#traces/trace-spans-page.tsx";
+import type { MarkedTrace } from "#traces/trace.ts";
 import { TracesPage } from "#traces/traces-page.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope, KeysScope } from "#ui/focus.tsx";
@@ -51,6 +52,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
   const [region, setRegion] = useRegion(REGIONS);
   const [clears, setClears] = useState(0);
   const [help, setHelp] = useState<HelpEntry[]>();
+  const [marked, setMarked] = useState<MarkedTrace>();
 
   const queryClient = useQueryClient();
   const keymap = useKeymap();
@@ -64,6 +66,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
       return;
     }
     reset();
+    setMarked(undefined);
     setClears((clears) => clears + 1);
     await queryClient.resetQueries();
   }
@@ -118,8 +121,10 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                         key={traces.operation}
                         service={traces.service}
                         operation={traces.operation}
+                        marked={marked}
                         onServiceChange={(service) => replace({ name: "traces", service })}
                         onOpen={(traceId, spanId) => open({ name: "trace", traceId, spanId })}
+                        onMark={(marked) => setMarked(marked)}
                         onCompare={(before, after) => open({ name: "compare", before, after })}
                         onBack={traces.back}
                       />
@@ -155,7 +160,10 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                           key={trace.spanId}
                           traceId={trace.traceId}
                           spanId={trace.spanId}
+                          marked={marked}
                           onBack={trace.back}
+                          onMark={(marked) => setMarked(marked)}
+                          onCompare={(before, after) => open({ name: "compare", before, after })}
                           onOpenLogs={(spanId) =>
                             open({ name: "logs", traceId: trace.traceId, spanId })
                           }

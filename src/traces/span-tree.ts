@@ -8,6 +8,29 @@ export function traceDuration(spans: Span[]) {
   return spans.reduce((end, span) => Math.max(end, spanEnd(span)), 0);
 }
 
+export function selfTimes(spans: Span[]) {
+  const children = Map.groupBy(spans, (span) => span.parent_span_id);
+  return new Map(
+    spans.map((span) => {
+      const end = spanEnd(span);
+      const earliestFirst = (children.get(span.span_id) ?? []).toSorted(
+        (a, b) => a.offset_ms - b.offset_ms,
+      );
+      let cursor = span.offset_ms;
+      let covered = 0;
+      for (const child of earliestFirst) {
+        const from = Math.max(child.offset_ms, cursor);
+        const to = Math.min(spanEnd(child), end);
+        if (to > from) {
+          covered += to - from;
+          cursor = to;
+        }
+      }
+      return [span.span_id, span.duration_ms - covered];
+    }),
+  );
+}
+
 export function descendantCount(spans: Span[], index: number) {
   const depth = spans[index]?.depth ?? 0;
   let count = 0;

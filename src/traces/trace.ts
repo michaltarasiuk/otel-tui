@@ -15,6 +15,17 @@ export const Trace = z.object({
 });
 export type Trace = z.infer<typeof Trace>;
 
+type RootName = Pick<Trace, "service_name" | "name">;
+
+export interface MarkedTrace {
+  traceId: string;
+  root: RootName;
+}
+
+export function sameRoot(a: RootName, b: RootName) {
+  return a.service_name === b.service_name && a.name === b.name;
+}
+
 export const TRACE_SORT_COLUMNS = [
   "start_time",
   "span_count",

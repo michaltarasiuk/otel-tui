@@ -1,3 +1,4 @@
+import { selfTimes } from "./span-tree.ts";
 import type { Span } from "./span.ts";
 
 const CHANGE_RATIO = 0.1;
@@ -9,6 +10,8 @@ export interface SpanDiff {
   name: string;
   before: Span | undefined;
   after: Span | undefined;
+  beforeSelfMs: number;
+  afterSelfMs: number;
 }
 
 export interface OperationDiff {
@@ -52,11 +55,17 @@ function byDiffId(siblings: Span[], parentId: string) {
   );
 }
 
+function selfTime(self: Map<string, number>, span: Span | undefined) {
+  return span === undefined ? 0 : (self.get(span.span_id) ?? 0);
+}
+
 function startOffset({ before, after }: SpanDiff) {
   return (after ?? before)?.offset_ms ?? 0;
 }
 
 export function diffSpans(before: Span[], after: Span[]) {
+  const beforeSelf = selfTimes(before);
+  const afterSelf = selfTimes(after);
   const beforeChildren = childrenById(before);
   const afterChildren = childrenById(after);
   const rows: SpanDiff[] = [];
@@ -69,7 +78,16 @@ export function diffSpans(before: Span[], after: Span[]) {
         const beforeSpan = beforeById.get(id);
         const afterSpan = afterById.get(id);
         const { service_name: serviceName, name } = (afterSpan ?? beforeSpan)!;
-        return { id, depth, serviceName, name, before: beforeSpan, after: afterSpan };
+        return {
+          id,
+          depth,
+          serviceName,
+          name,
+          before: beforeSpan,
+          after: afterSpan,
+          beforeSelfMs: selfTime(beforeSelf, beforeSpan),
+          afterSelfMs: selfTime(afterSelf, afterSpan),
+        };
       },
     );
     for (const row of siblings.toSorted((a, b) => startOffset(a) - startOffset(b))) {
@@ -89,8 +107,8 @@ export function diffSpans(before: Span[], after: Span[]) {
   return rows;
 }
 
-export function durationDelta({ before, after }: SpanDiff) {
-  return (after?.duration_ms ?? 0) - (before?.duration_ms ?? 0);
+export function selfDelta({ beforeSelfMs, afterSelfMs }: SpanDiff) {
+  return afterSelfMs - beforeSelfMs;
 }
 
 export function isAddedOrRemoved({ before, after }: SpanDiff) {
@@ -98,11 +116,16 @@ export function isAddedOrRemoved({ before, after }: SpanDiff) {
 }
 
 export function hasChanged(row: SpanDiff) {
-  const longer = Math.max(row.before?.duration_ms ?? 0, row.after?.duration_ms ?? 0);
-  return isAddedOrRemoved(row) || Math.abs(durationDelta(row)) > longer * CHANGE_RATIO;
+  const longer = Math.max(row.beforeSelfMs, row.afterSelfMs);
+  return isAddedOrRemoved(row) || Math.abs(selfDelta(row)) > longer * CHANGE_RATIO;
+}
+
+export function operationDelta({ beforeMs, afterMs }: OperationDiff) {
+  return afterMs - beforeMs;
 }
 
 export function diffOperations(before: Span[], after: Span[]) {
+  const self = { before: selfTimes(before), after: selfTimes(after) };
   const operations = new Map<string, OperationDiff>();
 
   function add(span: Span, side: "before" | "after") {
@@ -117,7 +140,7 @@ export function diffOperations(before: Span[], after: Span[]) {
       afterMs: 0,
     };
     operation[`${side}Count`]++;
-    operation[`${side}Ms`] += span.duration_ms;
+    operation[`${side}Ms`] += selfTime(self[side], span);
     operations.set(id, operation);
   }
 
@@ -128,6 +151,6 @@ export function diffOperations(before: Span[], after: Span[]) {
     add(span, "after");
   }
   return [...operations.values()].toSorted(
-    (a, b) => Math.abs(b.afterMs - b.beforeMs) - Math.abs(a.afterMs - a.beforeMs),
+    (a, b) => Math.abs(operationDelta(b)) - Math.abs(operationDelta(a)),
   );
 }

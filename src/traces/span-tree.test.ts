@@ -5,6 +5,7 @@ import {
   criticalPath,
   descendantCount,
   hiddenCounts,
+  selfTimes,
   visibleSpans,
 } from "./span-tree.ts";
 import type { Span } from "./span.ts";
@@ -84,4 +85,22 @@ test("leaves out a child that runs alongside a longer one", () => {
   ];
 
   expect([...criticalPath(spans)].sort()).toEqual(["root", "slow"]);
+});
+
+test("leaves each span the time none of its children cover", () => {
+  const spans = [
+    span("root", null, 0, 0, 100),
+    span("a", "root", 1, 10, 40),
+    span("b", "root", 1, 30, 40),
+    span("late", "root", 1, 90, 30),
+  ];
+
+  expect(selfTimes(spans)).toEqual(
+    new Map([
+      ["root", 30],
+      ["a", 40],
+      ["b", 40],
+      ["late", 30],
+    ]),
+  );
 });

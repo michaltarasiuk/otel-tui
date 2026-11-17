@@ -12,13 +12,23 @@ import type { Series } from "#metrics/series.ts";
 import { readServiceOperations, readServiceList } from "#services/read-services.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
 import { readTraceList, readSpanContent, readTraceSpans } from "#traces/read-traces.ts";
-import type { SpanContent } from "#traces/span.ts";
+import {
+  diffOperations,
+  diffSpans,
+  hasChanged,
+  type OperationDiff,
+  selfDelta,
+  type SpanDiff,
+} from "#traces/span-diff.ts";
+import { traceDuration } from "#traces/span-tree.ts";
+import type { Span, SpanContent } from "#traces/span.ts";
 import { traceOutline } from "#traces/trace-outline.ts";
-import type { Trace } from "#traces/trace.ts";
+import { sameRoot, type Trace } from "#traces/trace.ts";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 200;
 const MAX_TRACE_SPANS = 200;
+const MAX_COMPARED_ROWS = 50;
 
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
@@ -70,6 +80,47 @@ function spanSummary(content: SpanContent) {
       stored: link.has_trace,
       attributes: attributeObject(link.attributes),
     })),
+  };
+}
+
+function traceTotals(traceId: string, spans: Span[]) {
+  return {
+    trace_id: traceId,
+    duration_ms: traceDuration(spans),
+    span_count: spans.length,
+    error_count: spans.filter((span) => span.is_error).length,
+  };
+}
+
+function spanChange(row: SpanDiff) {
+  if (row.before === undefined) {
+    return "added";
+  }
+  return row.after === undefined ? "removed" : "changed";
+}
+
+function spanDiffSummary(row: SpanDiff) {
+  return {
+    name: row.name,
+    service: row.serviceName,
+    depth: row.depth,
+    change: spanChange(row),
+    before_span_id: row.before?.span_id ?? null,
+    after_span_id: row.after?.span_id ?? null,
+    before_self_ms: row.beforeSelfMs,
+    after_self_ms: row.afterSelfMs,
+    self_delta_ms: selfDelta(row),
+  };
+}
+
+function operationDiffSummary(operation: OperationDiff) {
+  return {
+    name: operation.name,
+    service: operation.serviceName,
+    before_count: operation.beforeCount,
+    after_count: operation.afterCount,
+    before_self_ms: operation.beforeMs,
+    after_self_ms: operation.afterMs,
   };
 }
 
@@ -201,6 +252,50 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
         return textResult(`No spans stored for trace ${trace_id}`);
       }
       return textResult(traceOutline(trace_id, spans, MAX_TRACE_SPANS));
+    },
+  );
+
+  server.registerTool(
+    "compare_traces",
+    {
+      title: "Compare two traces",
+      description:
+        "Pairs the spans of two traces with the same root span by service, name, " +
+        "and place in the tree, and lists the spans whose self time changed by more than " +
+        "a tenth or that only one trace has, in tree order. " +
+        "Self time is a span's duration minus the time its children cover. " +
+        "Operations sum self time per service and name, biggest change first, " +
+        "so they show where the time went.",
+      inputSchema: { before_trace_id: z.string(), after_trace_id: z.string() },
+      annotations: READ_ONLY,
+    },
+    async ({ before_trace_id, after_trace_id }) => {
+      const [before, after] = await Promise.all([
+        readTraceSpans(connection, before_trace_id),
+        readTraceSpans(connection, after_trace_id),
+      ]);
+      const missing = [
+        ...(before.length === 0 ? [before_trace_id] : []),
+        ...(after.length === 0 ? [after_trace_id] : []),
+      ];
+      if (missing.length > 0) {
+        return textResult(`No spans stored for trace ${missing.join(" or ")}`);
+      }
+      const [beforeRoot] = before;
+      const [afterRoot] = after;
+      if (beforeRoot === undefined || afterRoot === undefined || !sameRoot(beforeRoot, afterRoot)) {
+        return textResult("The traces start with different root spans, so they don't compare");
+      }
+      const changed = diffSpans(before, after).filter((row) => hasChanged(row));
+      return jsonResult({
+        before: traceTotals(before_trace_id, before),
+        after: traceTotals(after_trace_id, after),
+        changed_spans: changed.slice(0, MAX_COMPARED_ROWS).map((row) => spanDiffSummary(row)),
+        changed_spans_left_out: Math.max(0, changed.length - MAX_COMPARED_ROWS),
+        operations: diffOperations(before, after)
+          .slice(0, MAX_COMPARED_ROWS)
+          .map((operation) => operationDiffSummary(operation)),
+      });
     },
   );
 

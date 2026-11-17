@@ -8,11 +8,11 @@ import type { Selection } from "#ui/use-selection.ts";
 import { indent } from "#utils/text.ts";
 import { formatDuration, formatOffset } from "#utils/time.ts";
 
-import { durationDelta, type SpanDiff } from "./span-diff.ts";
+import { selfDelta, type SpanDiff } from "./span-diff.ts";
 import type { Span } from "./span.ts";
 
 const COLUMN_NAME_GROW = 3;
-const COLUMN_DURATION_WIDTH = 8;
+const COLUMN_DURATION_WIDTH = 11;
 const COLUMN_CHANGE_WIDTH = 9;
 const COLUMN_BAR_GROW = 2;
 
@@ -23,21 +23,22 @@ function change(row: SpanDiff) {
   if (row.after === undefined) {
     return "removed";
   }
-  return formatOffset(durationDelta(row));
+  return formatOffset(selfDelta(row));
 }
 
 function isError({ before, after }: SpanDiff) {
   return (before?.is_error ?? false) || (after?.is_error ?? false);
 }
 
-interface DurationCellProps {
+interface SelfTimeCellProps {
   span: Span | undefined;
+  selfMs: number;
 }
 
-function DurationCell({ span }: DurationCellProps) {
+function SelfTimeCell({ span, selfMs }: SelfTimeCellProps) {
   return (
     <Cell width={COLUMN_DURATION_WIDTH} align="right" muted={span === undefined}>
-      {span === undefined ? "-" : formatDuration(span.duration_ms)}
+      {span === undefined ? "-" : formatDuration(selfMs)}
     </Cell>
   );
 }
@@ -45,21 +46,20 @@ function DurationCell({ span }: DurationCellProps) {
 interface SpanDiffTableProps {
   rows: SpanDiff[];
   selection: Selection<SpanDiff>;
+  maxDeltaMs: number;
 }
 
-export function SpanDiffTable({ rows, selection }: SpanDiffTableProps) {
-  const maxDeltaMs = rows.reduce((max, row) => Math.max(max, Math.abs(durationDelta(row))), 0);
-
+export function SpanDiffTable({ rows, selection, maxDeltaMs }: SpanDiffTableProps) {
   return (
     <>
       <TableHeader>
         <Column width={COLUMN_SERVICE_WIDTH}>Service</Column>
         <Column grow={COLUMN_NAME_GROW}>Name</Column>
         <Column width={COLUMN_DURATION_WIDTH} align="right">
-          Before
+          Self before
         </Column>
         <Column width={COLUMN_DURATION_WIDTH} align="right">
-          After
+          Self after
         </Column>
         <Column width={COLUMN_CHANGE_WIDTH} align="right">
           Change
@@ -76,12 +76,12 @@ export function SpanDiffTable({ rows, selection }: SpanDiffTableProps) {
               {indent(row.depth)}
               {row.name}
             </Cell>
-            <DurationCell span={row.before} />
-            <DurationCell span={row.after} />
+            <SelfTimeCell span={row.before} selfMs={row.beforeSelfMs} />
+            <SelfTimeCell span={row.after} selfMs={row.afterSelfMs} />
             <Cell width={COLUMN_CHANGE_WIDTH} align="right">
               {change(row)}
             </Cell>
-            <DeltaBar grow={COLUMN_BAR_GROW} deltaMs={durationDelta(row)} maxDeltaMs={maxDeltaMs} />
+            <DeltaBar grow={COLUMN_BAR_GROW} deltaMs={selfDelta(row)} maxDeltaMs={maxDeltaMs} />
           </Row>
         )}
       </Rows>

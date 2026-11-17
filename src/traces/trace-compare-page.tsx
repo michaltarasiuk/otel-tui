@@ -19,6 +19,8 @@ import {
   diffSpans,
   hasChanged,
   isAddedOrRemoved,
+  operationDelta,
+  selfDelta,
   type SpanDiff,
 } from "./span-diff.ts";
 import { TraceCompareHeader } from "./trace-compare-header.tsx";
@@ -53,6 +55,11 @@ export function TraceComparePage({ before, after, onBack, onOpenTrace }: TraceCo
   const operations = diffOperations(beforeSpans.data, afterSpans.data);
   const operationSelection = useSelection(operations, (operation) => operation.id);
 
+  const maxDeltaMs = Math.max(
+    allRows.reduce((max, row) => Math.max(max, Math.abs(selfDelta(row))), 0),
+    operations.reduce((max, operation) => Math.max(max, Math.abs(operationDelta(operation))), 0),
+  );
+
   const [region, setRegion] = useRegion(REGIONS);
 
   function openSlower({ before, after }: SpanDiff) {
@@ -83,14 +90,18 @@ export function TraceComparePage({ before, after, onBack, onOpenTrace }: TraceCo
               {rows.length === 0 ? (
                 <Placeholder text="No span changed" />
               ) : (
-                <SpanDiffTable rows={rows} selection={selection} />
+                <SpanDiffTable rows={rows} selection={selection} maxDeltaMs={maxDeltaMs} />
               )}
             </FocusScope>
             <FocusScope
               focused={region === "operations"}
               onFocusRequest={() => setRegion("operations")}
             >
-              <OperationDiffTable operations={operations} selection={operationSelection} />
+              <OperationDiffTable
+                operations={operations}
+                selection={operationSelection}
+                maxDeltaMs={maxDeltaMs}
+              />
             </FocusScope>
           </Split>
         </>

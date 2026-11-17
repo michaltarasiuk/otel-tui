@@ -6,29 +6,21 @@ import { Cell, Column, Row, TableHeader } from "#ui/table.tsx";
 import type { Selection } from "#ui/use-selection.ts";
 import { formatDuration, formatOffset } from "#utils/time.ts";
 
-import type { OperationDiff } from "./span-diff.ts";
+import { operationDelta, type OperationDiff } from "./span-diff.ts";
 
 const COLUMN_NAME_GROW = 3;
 const COLUMN_COUNT_WIDTH = 11;
-const COLUMN_DURATION_WIDTH = 8;
+const COLUMN_DURATION_WIDTH = 11;
 const COLUMN_CHANGE_WIDTH = 9;
 const COLUMN_BAR_GROW = 2;
-
-function timeDelta(operation: OperationDiff) {
-  return operation.afterMs - operation.beforeMs;
-}
 
 interface OperationDiffTableProps {
   operations: OperationDiff[];
   selection: Selection<OperationDiff>;
+  maxDeltaMs: number;
 }
 
-export function OperationDiffTable({ operations, selection }: OperationDiffTableProps) {
-  const maxDeltaMs = operations.reduce(
-    (max, operation) => Math.max(max, Math.abs(timeDelta(operation))),
-    0,
-  );
-
+export function OperationDiffTable({ operations, selection, maxDeltaMs }: OperationDiffTableProps) {
   return (
     <>
       <TableHeader>
@@ -38,10 +30,10 @@ export function OperationDiffTable({ operations, selection }: OperationDiffTable
           Spans
         </Column>
         <Column width={COLUMN_DURATION_WIDTH} align="right">
-          Before
+          Self before
         </Column>
         <Column width={COLUMN_DURATION_WIDTH} align="right">
-          After
+          Self after
         </Column>
         <Column width={COLUMN_CHANGE_WIDTH} align="right">
           Change
@@ -65,11 +57,11 @@ export function OperationDiffTable({ operations, selection }: OperationDiffTable
               {formatDuration(operation.afterMs)}
             </Cell>
             <Cell width={COLUMN_CHANGE_WIDTH} align="right">
-              {formatOffset(timeDelta(operation))}
+              {formatOffset(operationDelta(operation))}
             </Cell>
             <DeltaBar
               grow={COLUMN_BAR_GROW}
-              deltaMs={timeDelta(operation)}
+              deltaMs={operationDelta(operation)}
               maxDeltaMs={maxDeltaMs}
             />
           </Row>

@@ -83,14 +83,15 @@ moves into the span's links, where `return` opens the linked trace, or selects
 the linked span when it is in the same trace.
 
 To see why one trace took longer than another, `m` marks a trace in the list
-and `c` compares it with the selected one when both have the same root span.
-The comparison pairs the spans of
-both traces by service, name, and place in the tree, with each span's
-duration before and after and a bar that grows right when it got slower and
-left when it got faster. A span only one trace has shows as added or removed,
-so an extra round of queries stands out. Below, each operation's span count
-and total time in both traces show where the time went. `d` shows only the
-spans that changed, `e` jumps to the next added or removed span, `x` swaps the
+or on its waterfall, and `v` compares it with the selected or open trace when
+both have the same root span. The comparison pairs the spans of both traces by
+service, name, and place in the tree, and shows each span's self time, the
+time its children don't cover, so a change shows on the span that caused it.
+A bar grows right when a span got slower and left when it got faster, on one
+scale for the whole page. A span only one trace has shows as added or removed,
+so an extra round of queries stands out. Below, each operation's span count and
+self time in both traces show where the time went. `d` shows only the spans
+that changed, `e` jumps to the next added or removed span, `x` swaps the
 traces, and `return` opens a span in the trace where it took longer.
 
 ### Metrics
@@ -162,7 +163,7 @@ claude mcp add --transport http otel-tui http://127.0.0.1:4320/mcp
 ```
 
 The tools follow the views: `list_services` and `list_operations`,
-`list_traces`, `get_trace` and `get_span`, `list_metrics` and `get_metric`, and
+`list_traces`, `get_trace`, `get_span` and `compare_traces`, `list_metrics` and `get_metric`, and
 `list_logs`. They only read, and their searches take the same terms as the
 app's. `get_trace` outlines the span tree with the critical path, and keeps the
 critical path and the spans with errors when a trace is large.

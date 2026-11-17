@@ -6,6 +6,7 @@ import { renderPage, selectRow } from "#testing/app.tsx";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
   color,
+  onDetails,
   detailsLines,
   keyHints,
   lineSpans,
@@ -30,8 +31,8 @@ import { THEME } from "#ui/theme.ts";
 
 const WIDE = { size: { width: 140, height: 30 } };
 
-const ROOT_ROW = "● frontend GET /api/cart 120.0ms 300.0ms +180.0ms";
-const GET_CART_ROW = `● cart ${GET_CART} 80.0ms 240.0ms +160.0ms`;
+const ROOT_ROW = "● frontend GET /api/cart 40.0ms 60.0ms +20.0ms";
+const GET_CART_ROW = `● cart ${GET_CART} 20.0ms 40.0ms +20.0ms`;
 const SAME_VALKEY_ROW = "● cart valkey-cart:6379 60.0ms 60.0ms +0µs";
 const ADDED_VALKEY_ROW = "● cart valkey-cart:6379 - 140.0ms added";
 
@@ -46,17 +47,17 @@ test("compares the marked trace with the selected one span by span", async () =>
   expect(spanDiffRows(frame)).toEqual([ROOT_ROW, GET_CART_ROW, SAME_VALKEY_ROW, ADDED_VALKEY_ROW]);
 });
 
-test("sums each operation's time in both traces, biggest change first", async () => {
+test("sums each operation's self time in both traces, biggest change first", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderCartComparison(receiver, WIDE);
 
   const frame = await app.waitForFrame((frame) => detailsLines(frame).length > 0);
 
   expect(detailsLines(frame).slice(0, 4)).toEqual([
-    "Service Operation Spans Before After Change -180.0ms 0 +180.0ms",
-    "● frontend GET /api/cart 1 → 1 120.0ms 300.0ms +180.0ms",
-    `● cart ${GET_CART} 1 → 1 80.0ms 240.0ms +160.0ms`,
+    "Service Operation Spans Self before Self after Change -140.0ms 0 +140.0ms",
     "● cart valkey-cart:6379 1 → 2 60.0ms 200.0ms +140.0ms",
+    "● frontend GET /api/cart 1 → 1 40.0ms 60.0ms +20.0ms",
+    `● cart ${GET_CART} 1 → 1 20.0ms 40.0ms +20.0ms`,
   ]);
 });
 
@@ -82,7 +83,7 @@ test("swaps the traces and keeps the selected span", async () => {
     textLines(frame).includes("GET /api/cart 66666666 → 11111111"),
   );
 
-  expect(spanDiffRows(frame)[0]).toBe("● frontend GET /api/cart 300.0ms 120.0ms -180.0ms");
+  expect(spanDiffRows(frame)[0]).toBe("● frontend GET /api/cart 60.0ms 40.0ms -20.0ms");
   expect(await app.waitForSelection("removed")).toBe("● cart valkey-cart:6379 140.0ms - removed");
 });
 
@@ -102,13 +103,13 @@ test("opens a span in the trace where it took longer, then comes back", async ()
 
   app.mockInput.pressEscape();
   frame = await app.waitForFrame((frame) => spanDiffRows(frame).length === 4);
-  expect(await app.waitForSelection(GET_CART)).toBe(`● cart ${GET_CART} 240.0ms 80.0ms -160.0ms`);
+  expect(await app.waitForSelection(GET_CART)).toBe(`● cart ${GET_CART} 40.0ms 20.0ms -20.0ms`);
 
   app.mockInput.pressEscape();
   frame = await app.waitForFrame((frame) => pageHeader(frame).endsWith("4 traces"));
   expect(pageHeader(frame)).toBe("vs GET /api/cart 120.0ms 4 traces");
   expect(await app.waitForSelection("GET /api/cart 4")).toBe(SLOW_CART_ROW);
-  expect(keyHints(frame)).toContain("c compare");
+  expect(keyHints(frame)).toContain("v compare");
 });
 
 function barColors(spans: CapturedSpan[]) {
@@ -144,11 +145,11 @@ test("offers to compare only traces with the same root span", async () => {
   app.mockInput.pressArrow("up");
   let frame = await app.waitForFrame((frame) => keyHints(frame).includes("m mark"));
   expect(await app.waitForSelection(PLACE_ORDER)).toContain(CHECKOUT_ROW);
-  expect(keyHints(frame)).not.toContain("c compare");
+  expect(keyHints(frame)).not.toContain("v compare");
 
   app.mockInput.pressArrow("up");
   app.mockInput.pressArrow("up");
-  frame = await app.waitForFrame((frame) => keyHints(frame).includes("c compare"));
+  frame = await app.waitForFrame((frame) => keyHints(frame).includes("v compare"));
   expect(await app.waitForSelection("GET /api/cart 4")).toBe(SLOW_CART_ROW);
 });
 
@@ -156,13 +157,43 @@ test("drops the compare key when the marked trace is gone", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderCartComparison(receiver, WIDE);
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => keyHints(frame).includes("c compare"));
+  await app.waitForFrame((frame) => keyHints(frame).includes("v compare"));
 
   const connection = await receiver.connect();
   await connection.run("DELETE FROM otlp_traces WHERE trace_id = $traceId", {
     traceId: cartTraceId,
   });
 
-  const frame = await app.waitForFrame((frame) => pageHeader(frame).startsWith("vs 11111111"));
-  expect(keyHints(frame)).not.toContain("c compare");
+  const frame = await app.waitForFrame((frame) =>
+    pageHeader(frame).startsWith("vs GET /api/cart 3 traces"),
+  );
+  expect(keyHints(frame)).not.toContain("v compare");
+});
+
+test("marks a trace on its waterfall and compares another one from there", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await receiver.sendHttp("/v1/traces", slowCartTraces);
+  await using app = await renderPage(receiver, "traces", WIDE);
+  await app.waitForRows(WITH_SLOW_CART);
+  await selectRow(app, WITH_SLOW_CART, CART_ROW);
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => textLines(frame).includes(`GET /api/cart ${cartTraceId}`));
+
+  app.mockInput.pressKey("m");
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => pageHeader(frame).includes("vs GET /api/cart 120.0ms"));
+  for (const row of WITH_SLOW_CART.slice(0, WITH_SLOW_CART.indexOf(CART_ROW)).toReversed()) {
+    app.mockInput.pressArrow("up");
+    await app.waitForSelection(row);
+  }
+  app.mockInput.pressEnter();
+  let frame = await app.waitForFrame(
+    (frame) => onDetails(frame) && keyHints(frame).includes("v compare"),
+  );
+  expect(textLines(frame)).toContain(`GET /api/cart ${slowCartTraceId}`);
+
+  app.mockInput.pressKey("v");
+  frame = await app.waitForFrame((frame) => spanDiffRows(frame).length === 4);
+  expect(textLines(frame)).toContain("GET /api/cart 11111111 → 66666666");
 });

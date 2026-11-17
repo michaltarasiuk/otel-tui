@@ -29,11 +29,15 @@ import { SpanWaterfall } from "./span-waterfall.tsx";
 import type { SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
 import { spanContentQuery, traceSpansQuery } from "./trace-queries.ts";
+import { type MarkedTrace, sameRoot } from "./trace.ts";
 
 interface TraceSpansPageProps {
   traceId: string;
   spanId: string | undefined;
+  marked: MarkedTrace | undefined;
   onBack: () => void;
+  onMark: (marked: MarkedTrace | undefined) => void;
+  onCompare: (before: string, after: string) => void;
   onOpenLogs: (spanId?: string) => void;
   onOpenTrace: (traceId: string, spanId: string) => void;
 }
@@ -41,7 +45,10 @@ interface TraceSpansPageProps {
 export function TraceSpansPage({
   traceId,
   spanId,
+  marked,
   onBack,
+  onMark,
+  onCompare,
   onOpenLogs,
   onOpenTrace,
 }: TraceSpansPageProps) {
@@ -118,6 +125,35 @@ export function TraceSpansPage({
         <Key name="l" onPress={() => onOpenLogs()}>
           logs
         </Key>
+        {root !== undefined && (
+          <Key
+            name="m"
+            description={
+              marked?.traceId === traceId
+                ? "unmark the trace to compare with"
+                : "mark the trace to compare with"
+            }
+            onPress={() =>
+              onMark(
+                marked?.traceId === traceId
+                  ? undefined
+                  : { traceId, root: { service_name: root.service_name, name: root.name } },
+              )
+            }
+          />
+        )}
+        {root !== undefined &&
+          marked !== undefined &&
+          marked.traceId !== traceId &&
+          sameRoot(marked.root, root) && (
+            <Key
+              name="v"
+              description="compare with the marked trace, which has the same root span"
+              onPress={() => onCompare(marked.traceId, traceId)}
+            >
+              compare
+            </Key>
+          )}
         {selected !== undefined && (
           <>
             <FocusScope focused={region === "spans"}>

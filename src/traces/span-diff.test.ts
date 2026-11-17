@@ -1,12 +1,6 @@
 import { expect, test } from "bun:test";
 
-import {
-  diffOperations,
-  diffSpans,
-  durationDelta,
-  hasChanged,
-  type SpanDiff,
-} from "./span-diff.ts";
+import { diffOperations, diffSpans, selfDelta, hasChanged, type SpanDiff } from "./span-diff.ts";
 import type { Span } from "./span.ts";
 
 function span(
@@ -131,11 +125,11 @@ test("counts a span as changed when only one trace has it or it moved by more th
     true,
     true,
   ]);
-  expect(durationDelta(slower!)).toBe(50);
-  expect(durationDelta(added!)).toBe(1);
+  expect(selfDelta(slower!)).toBe(50);
+  expect(selfDelta(added!)).toBe(1);
 });
 
-test("sums each operation's spans in both traces, biggest change first", () => {
+test("sums each operation's self time in both traces, biggest change first", () => {
   const before = [span("a", null, 0, "GET /cart", 0, 50), ...queries("a", 2, 5)];
   const after = [span("b", null, 0, "GET /cart", 0, 60), ...queries("b", 40, 5)];
 
@@ -155,8 +149,8 @@ test("sums each operation's spans in both traces, biggest change first", () => {
       name: "GET /cart",
       beforeCount: 1,
       afterCount: 1,
-      beforeMs: 50,
-      afterMs: 60,
+      beforeMs: 44,
+      afterMs: 16,
     },
   ]);
 });

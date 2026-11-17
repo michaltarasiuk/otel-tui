@@ -233,7 +233,7 @@ export async function renderCartComparison(receiver: TestReceiver, options?: App
     app.mockInput.pressArrow("up");
     await app.waitForSelection(row);
   }
-  app.mockInput.pressKey("c");
+  app.mockInput.pressKey("v");
   await app.waitForFrame((frame) => spanDiffRows(frame).length > 0);
   return app;
 }

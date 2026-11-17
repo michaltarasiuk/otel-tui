@@ -9,7 +9,10 @@ import {
   CHARGE_FAILED,
   checkoutTraceId,
   otlpTraces,
+  GET_CART,
   PLACE_ORDER,
+  slowCartTraceId,
+  slowCartTraces,
   statusTraceId,
 } from "#testing/traces.ts";
 
@@ -23,6 +26,7 @@ test("lists read-only tools for each view", async () => {
   const { tools } = await mcp.client.listTools();
 
   expect(tools.map((tool) => tool.name).toSorted()).toEqual([
+    "compare_traces",
     "get_metric",
     "get_span",
     "get_trace",
@@ -63,6 +67,47 @@ test("outlines a trace's spans with the critical path and errors", async () => {
     `* ${PLACE_ORDER} [checkout, server] 450.0ms at +0µs ${"2a".repeat(8)} ERROR: ${CHARGE_FAILED}`,
   );
   expect(lines.some((line) => line.startsWith("*   charge [payment, client] 300.0ms"))).toBe(true);
+});
+
+test("compares two traces by self time", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await receiver.sendHttp("/v1/traces", slowCartTraces);
+  await using mcp = await startTestMcp(receiver);
+
+  const comparison = await mcp.callJson("compare_traces", {
+    before_trace_id: cartTraceId,
+    after_trace_id: slowCartTraceId,
+  });
+
+  expect(comparison).toMatchObject({
+    before: { trace_id: cartTraceId, duration_ms: 120, span_count: 3, error_count: 0 },
+    after: { trace_id: slowCartTraceId, duration_ms: 300, span_count: 4, error_count: 0 },
+    changed_spans: [
+      { name: "GET /api/cart", change: "changed", self_delta_ms: 20 },
+      { name: GET_CART, change: "changed", self_delta_ms: 20 },
+      { name: "valkey-cart:6379", change: "added", before_span_id: null, self_delta_ms: 140 },
+    ],
+    changed_spans_left_out: 0,
+    operations: [
+      { name: "valkey-cart:6379", before_count: 1, after_count: 2, after_self_ms: 200 },
+      { name: "GET /api/cart" },
+      { name: GET_CART },
+    ],
+  });
+});
+
+test("refuses to compare traces with different root spans", async () => {
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await using mcp = await startTestMcp(receiver);
+
+  const text = await mcp.callText("compare_traces", {
+    before_trace_id: cartTraceId,
+    after_trace_id: checkoutTraceId,
+  });
+
+  expect(text).toBe("The traces start with different root spans, so they don't compare");
 });
 
 test("reads a span's attributes and resource", async () => {
