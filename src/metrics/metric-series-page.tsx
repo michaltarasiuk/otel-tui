@@ -43,8 +43,8 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
   const rows = sortByColumns(series, columns);
   const windowStart = Math.min(...series.map((row) => row.first_time));
 
-  const [selectedIndex, select] = useSelection(rows, (row) => row.series_id);
-  const selected = rows[selectedIndex];
+  const selection = useSelection(rows, (row) => row.series_id);
+  const { selected } = selection;
   const deferredSelected = useDeferredValue(selected);
 
   const seriesId = deferredSelected?.series_id;
@@ -53,11 +53,8 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
     ...exemplarsOptions,
     enabled: seriesId !== undefined,
   });
-  const [exemplarIndex, selectExemplar] = useSelection(
-    exemplars,
-    (exemplar) => exemplar.exemplar_id,
-  );
-  const exemplar = exemplars[exemplarIndex];
+  const exemplarSelection = useSelection(exemplars, (exemplar) => exemplar.exemplar_id);
+  const exemplar = exemplarSelection.selected;
   const exemplarTraceId = exemplar?.has_trace === true ? exemplar.trace_id : null;
 
   const regions = exemplars.length > 0 ? (["series", "exemplars"] as const) : (["series"] as const);
@@ -78,13 +75,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
           </box>
           <Split>
             <FocusScope focused={region === "series"} onFocusRequest={() => setRegion("series")}>
-              <SeriesTable
-                series={rows}
-                selectedIndex={selectedIndex}
-                onSelect={(action) => select(action)}
-                metric={metric}
-                columns={columns}
-              />
+              <SeriesTable series={rows} selection={selection} metric={metric} columns={columns} />
             </FocusScope>
             <SeriesDetails
               key={deferredSelected.series_id}
@@ -107,8 +98,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
                   <ExemplarList
                     metric={metric}
                     seriesId={deferredSelected.series_id}
-                    selectedIndex={exemplarIndex}
-                    onSelect={(index) => selectExemplar(index)}
+                    selection={exemplarSelection}
                   />
                 </ErrorBoundary>
               </FocusScope>
@@ -124,7 +114,7 @@ export function MetricSeriesPage({ metric, onBack, onOpenTrace }: MetricSeriesPa
           <ListKeys
             description="next exemplar"
             backwardDescription="previous exemplar"
-            onStep={(step) => selectExemplar((index) => index + step)}
+            onStep={(step) => exemplarSelection.move(step)}
           />
           {exemplarTraceId !== null && (
             <Key

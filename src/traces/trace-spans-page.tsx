@@ -55,14 +55,14 @@ export function TraceSpansPage({
   const durationMs = traceDuration(spans);
 
   const shown = visibleSpans(spans, collapsed);
-  const [selectedIndex, select, selectKey] = useSelection(shown, (span) => span.span_id, spanId);
-  const selected = shown[selectedIndex];
+  const selection = useSelection(shown, (span) => span.span_id, spanId);
+  const { selected } = selection;
   const deferredSelected = useDeferredValue(selected);
 
   const spanContent = useQuery(spanContentQuery(connection, traceId, deferredSelected?.span_id));
   const links = spanContent.data?.links ?? [];
-  const [linkIndex, selectLink] = useSelection(links, (link) => link.span_id);
-  const link = links[linkIndex];
+  const linkSelection = useSelection(links, (link) => link.span_id);
+  const link = linkSelection.selected;
 
   const regions = links.length > 0 ? (["spans", "links"] as const) : (["spans"] as const);
   const [region, setRegion] = useRegion(regions);
@@ -70,7 +70,7 @@ export function TraceSpansPage({
   function openLink(link: SpanLink) {
     if (link.trace_id === traceId) {
       setCollapsed((collapsed) => expandTo(spans, collapsed, link.span_id));
-      selectKey(link.span_id);
+      selection.selectKey(link.span_id);
       setRegion("spans");
     } else {
       onOpenTrace(link.trace_id, link.span_id);
@@ -92,8 +92,7 @@ export function TraceSpansPage({
             <FocusScope focused={region === "spans"} onFocusRequest={() => setRegion("spans")}>
               <SpanWaterfall
                 spans={shown}
-                selectedIndex={selectedIndex}
-                onSelect={(action) => select(action)}
+                selection={selection}
                 traceDurationMs={durationMs}
                 hiddenCounts={hiddenCounts(spans, collapsed)}
                 criticalPath={showCriticalPath ? criticalPath(spans) : undefined}
@@ -106,12 +105,7 @@ export function TraceSpansPage({
               span={deferredSelected}
             >
               <FocusScope focused={region === "links"} onFocusRequest={() => setRegion("links")}>
-                <LinkList
-                  links={links}
-                  traceId={traceId}
-                  selectedIndex={linkIndex}
-                  onSelect={(index) => selectLink(index)}
-                />
+                <LinkList links={links} traceId={traceId} selection={linkSelection} />
               </FocusScope>
             </SpanDetails>
           </Split>
@@ -138,7 +132,9 @@ export function TraceSpansPage({
                   backward="shift+e"
                   backwardDescription="previous error"
                   onStep={(step) =>
-                    select((index) => findNextIndex(shown, index, step, (span) => span.is_error))
+                    selection.select(
+                      findNextIndex(shown, selection.index, step, (span) => span.is_error),
+                    )
                   }
                 >
                   next error
@@ -176,7 +172,7 @@ export function TraceSpansPage({
           <ListKeys
             description="next link"
             backwardDescription="previous link"
-            onStep={(step) => selectLink((index) => index + step)}
+            onStep={(step) => linkSelection.move(step)}
           />
           {link !== undefined && canOpenLink(link, traceId, spans) && (
             <Key name="return" onPress={() => openLink(link)}>

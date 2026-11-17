@@ -68,8 +68,8 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   const { logs, totalCount } = logList.data;
   const timeline = logTimeline.data;
 
-  const [selectedIndex, select] = useSelection(logs, (log) => log.log_id);
-  const selected = logs[selectedIndex];
+  const selection = useSelection(logs, (log) => log.log_id);
+  const { selected } = selection;
   const selectedTraceId = selected?.trace_id ?? null;
 
   const filtered =
@@ -110,11 +110,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
       ) : (
         <FocusScope focused={browsing}>
           <Split>
-            <LogTable
-              logs={logs}
-              selectedIndex={selectedIndex}
-              onSelect={(action) => select(action)}
-            />
+            <LogTable logs={logs} selection={selection} />
             <LogDetails key={selected.log_id} ref={detailsRef} log={selected} />
           </Split>
         </FocusScope>
@@ -127,7 +123,7 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
               backwardDescription="previous error"
               backward="shift+e"
               onStep={(step) =>
-                select((index) => findNextIndex(logs, index, step, (log) => isError(log)))
+                selection.select(findNextIndex(logs, selection.index, step, (log) => isError(log)))
               }
             >
               next error

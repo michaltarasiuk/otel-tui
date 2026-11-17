@@ -35,8 +35,8 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
   const metricList = useSuspenseQuery(metricListQuery(connection, query));
   const { metrics, totalCount } = metricList.data;
 
-  const [selectedIndex, select] = useSelection(metrics, (metric) => metric.metric_id);
-  const selected = metrics[selectedIndex];
+  const selection = useSelection(metrics, (metric) => metric.metric_id);
+  const { selected } = selection;
   const deferredSelected = useDeferredValue(selected);
 
   const browsing = !search.isEditing;
@@ -58,12 +58,7 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
       ) : (
         <FocusScope focused={browsing}>
           <Split>
-            <MetricTable
-              metrics={metrics}
-              selectedIndex={selectedIndex}
-              onSelect={(action) => select(action)}
-              sort={deferredSort}
-            />
+            <MetricTable metrics={metrics} selection={selection} sort={deferredSort} />
             <MetricDetails
               key={deferredSelected.metric_id}
               ref={detailsRef}

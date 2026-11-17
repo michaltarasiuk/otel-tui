@@ -1,9 +1,8 @@
-import { MouseButton } from "@opentui/core";
-
-import { useFocusRequest } from "#ui/focus.tsx";
 import { KeyValueList } from "#ui/key-value-list.tsx";
+import { Selectable } from "#ui/rows.tsx";
 import { Section } from "#ui/section.tsx";
-import { Cell, Row, SelectedContext } from "#ui/table.tsx";
+import { Cell, Row } from "#ui/table.tsx";
+import type { Selection } from "#ui/use-selection.ts";
 
 import type { Span, SpanLink } from "./span.ts";
 
@@ -27,13 +26,10 @@ export function canOpenLink(link: SpanLink, traceId: string, spans: Span[]) {
 interface LinkListProps {
   links: SpanLink[];
   traceId: string;
-  selectedIndex: number;
-  onSelect: (index: number) => void;
+  selection: Selection<SpanLink>;
 }
 
-export function LinkList({ links, traceId, selectedIndex, onSelect }: LinkListProps) {
-  const requestFocus = useFocusRequest();
-
+export function LinkList({ links, traceId, selection }: LinkListProps) {
   if (links.length === 0) {
     return null;
   }
@@ -41,28 +37,18 @@ export function LinkList({ links, traceId, selectedIndex, onSelect }: LinkListPr
   return (
     <Section title="Links">
       {links.map((link, index) => (
-        <box
-          key={link.span_id}
-          onMouseDown={(event) => {
-            if (event.button === MouseButton.LEFT) {
-              requestFocus();
-              onSelect(index);
-            }
-          }}
-        >
-          <SelectedContext value={index === selectedIndex}>
-            <Row>
-              <Cell grow={1} muted={!link.has_trace}>
-                {linkLabel(link, traceId)}
-              </Cell>
-            </Row>
-          </SelectedContext>
+        <Selectable key={link.span_id} selection={selection} index={index}>
+          <Row>
+            <Cell grow={1} muted={!link.has_trace}>
+              {linkLabel(link, traceId)}
+            </Cell>
+          </Row>
           {link.attributes.length > 0 && (
             <box paddingLeft={NESTED_INDENT}>
               <KeyValueList entries={link.attributes} />
             </box>
           )}
-        </box>
+        </Selectable>
       ))}
     </Section>
   );

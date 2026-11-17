@@ -42,8 +42,8 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
   const serviceList = useSuspenseQuery(serviceListQuery(connection, query));
   const { data: services } = serviceList;
 
-  const [selectedIndex, select] = useSelection(services, (service) => service.service_name);
-  const selected = services[selectedIndex];
+  const selection = useSelection(services, (service) => service.service_name);
+  const { selected } = selection;
   const deferredSelected = useDeferredValue(selected);
 
   const serviceName = deferredSelected?.service_name;
@@ -51,8 +51,8 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
     ...serviceOperationsQuery(connection, serviceName),
     enabled: serviceName !== undefined,
   });
-  const [operationIndex, selectOperation] = useSelection(operations, (operation) => operation.name);
-  const operation = operations[operationIndex];
+  const operationSelection = useSelection(operations, (operation) => operation.name);
+  const operation = operationSelection.selected;
 
   const regions =
     operations.length > 0 ? (["services", "operations"] as const) : (["services"] as const);
@@ -84,12 +84,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
               focused={region === "services"}
               onFocusRequest={() => setRegion("services")}
             >
-              <ServiceTable
-                services={services}
-                selectedIndex={selectedIndex}
-                onSelect={(action) => select(action)}
-                sort={deferredSort}
-              />
+              <ServiceTable services={services} selection={selection} sort={deferredSort} />
             </FocusScope>
             <ServiceDetails key={deferredSelected.service_name} service={deferredSelected}>
               <FocusScope
@@ -103,8 +98,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
                 >
                   <OperationTable
                     serviceName={deferredSelected.service_name}
-                    selectedIndex={operationIndex}
-                    onSelect={(action) => selectOperation(action)}
+                    selection={operationSelection}
                   />
                 </ErrorBoundary>
               </FocusScope>

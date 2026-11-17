@@ -1,10 +1,9 @@
-import type { SetStateAction } from "react";
-
 import { COLUMN_SORT_ARROW_WIDTH } from "#ui/columns.ts";
 import { Rows } from "#ui/rows.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
+import type { Selection } from "#ui/use-selection.ts";
 import { formatInteger, formatPercent, formatRate } from "#utils/number.ts";
 import { formatDuration } from "#utils/time.ts";
 
@@ -17,12 +16,11 @@ export const COLUMN_DURATION_WIDTH = 9 + COLUMN_SORT_ARROW_WIDTH;
 
 interface ServiceTableProps {
   services: Service[];
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Service>;
   sort: ServiceSort;
 }
 
-export function ServiceTable({ services, selectedIndex, onSelect, sort }: ServiceTableProps) {
+export function ServiceTable({ services, selection, sort }: ServiceTableProps) {
   return (
     <>
       <TableHeader>
@@ -46,12 +44,7 @@ export function ServiceTable({ services, selectedIndex, onSelect, sort }: Servic
           Spans
         </Column>
       </TableHeader>
-      <Rows
-        items={services}
-        getKey={(service) => service.service_name}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-      >
+      <Rows items={services} selection={selection}>
         {(service) => (
           <Row>
             <Cell grow={1}>

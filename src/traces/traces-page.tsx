@@ -76,8 +76,8 @@ export function TracesPage({
   const { traces, totalCount } = traceList.data;
   const timeline = traceTimeline.data;
 
-  const [selectedIndex, select] = useSelection(traces, (trace) => trace.trace_id);
-  const selected = traces[selectedIndex];
+  const selection = useSelection(traces, (trace) => trace.trace_id);
+  const { selected } = selection;
 
   const filtered =
     search.deferredText !== "" ||
@@ -116,12 +116,7 @@ export function TracesPage({
         <Placeholder text={filtered ? "No traces match" : "Waiting for traces..."} />
       ) : (
         <FocusScope focused={browsing}>
-          <TraceTable
-            traces={traces}
-            selectedIndex={selectedIndex}
-            onSelect={(action) => select(action)}
-            sort={deferredSort}
-          />
+          <TraceTable traces={traces} selection={selection} sort={deferredSort} />
         </FocusScope>
       )}
       <KeyHints>
@@ -145,7 +140,9 @@ export function TracesPage({
               backwardDescription="previous error"
               backward="shift+e"
               onStep={(step) =>
-                select((index) => findNextIndex(traces, index, step, (trace) => hasErrors(trace)))
+                selection.select(
+                  findNextIndex(traces, selection.index, step, (trace) => hasErrors(trace)),
+                )
               }
             >
               next error

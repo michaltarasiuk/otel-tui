@@ -1,10 +1,9 @@
-import type { SetStateAction } from "react";
-
 import { COLUMN_SERVICE_WIDTH } from "#ui/columns.ts";
 import { Rows } from "#ui/rows.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
+import type { Selection } from "#ui/use-selection.ts";
 import { formatDuration } from "#utils/time.ts";
 
 import type { Span } from "./span.ts";
@@ -22,8 +21,7 @@ function indent(depth: number) {
 
 interface SpanWaterfallProps {
   spans: Span[];
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Span>;
   traceDurationMs: number;
   hiddenCounts: ReadonlyMap<string, number>;
   criticalPath: ReadonlySet<string> | undefined;
@@ -31,8 +29,7 @@ interface SpanWaterfallProps {
 
 export function SpanWaterfall({
   spans,
-  selectedIndex,
-  onSelect,
+  selection,
   traceDurationMs,
   hiddenCounts,
   criticalPath,
@@ -54,12 +51,7 @@ export function SpanWaterfall({
         </Column>
         <Scale grow={COLUMN_TIMELINE_GROW} durationMs={traceDurationMs} />
       </TableHeader>
-      <Rows
-        items={spans}
-        getKey={(span) => span.span_id}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-      >
+      <Rows items={spans} selection={selection}>
         {(span) => {
           const hidden = hiddenCounts.get(span.span_id);
           return (

@@ -35,16 +35,10 @@ interface NumberedRowsProps {
 
 function NumberedRows({ count, halfPageKeys = false }: NumberedRowsProps) {
   const rows = Array.from({ length: count }, (_, index) => `row ${index + 1}`);
-  const [selectedIndex, select] = useSelection(rows, (row) => row);
+  const selection = useSelection(rows, (row) => row);
 
   return (
-    <Rows
-      items={rows}
-      getKey={(row) => row}
-      selectedIndex={selectedIndex}
-      onSelect={(action) => select(action)}
-      halfPageKeys={halfPageKeys}
-    >
+    <Rows items={rows} selection={selection} halfPageKeys={halfPageKeys}>
       {(row) => <NumberedRow name={row} />}
     </Rows>
   );

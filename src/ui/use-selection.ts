@@ -1,4 +1,4 @@
-import { type SetStateAction, useState } from "react";
+import { useState } from "react";
 
 import { clamp } from "#utils/number.ts";
 
@@ -14,13 +14,27 @@ export function useSelection<T>(
     return Math.max(index, 0);
   }
 
-  function select(action: SetStateAction<number>) {
-    setSelectedKey((key) => {
-      const index = typeof action === "function" ? action(indexOf(key)) : action;
-      const item = items[clamp(index, 0, items.length - 1)];
-      return item === undefined ? key : keyOf(item);
-    });
+  function keyAt(index: number) {
+    const item = items[clamp(index, 0, items.length - 1)];
+    return item === undefined ? undefined : keyOf(item);
   }
 
-  return [indexOf(selectedKey), select, setSelectedKey] as const;
+  const selectedIndex = indexOf(selectedKey);
+
+  return {
+    index: selectedIndex,
+    selected: items[selectedIndex],
+    keyOf,
+    select(index: number) {
+      setSelectedKey((key) => keyAt(index) ?? key);
+    },
+    move(offset: number) {
+      setSelectedKey((key) => keyAt(indexOf(key) + offset) ?? key);
+    },
+    selectKey(key: string) {
+      setSelectedKey(key);
+    },
+  };
 }
+
+export type Selection<T> = ReturnType<typeof useSelection<T>>;

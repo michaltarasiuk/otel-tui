@@ -1,13 +1,13 @@
-import { MouseButton } from "@opentui/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useConnection } from "#query/connection.ts";
 import { COLUMN_TIME_WIDTH } from "#ui/columns.ts";
 import { Description } from "#ui/details.tsx";
-import { useFocusRequest } from "#ui/focus.tsx";
+import { Selectable } from "#ui/rows.tsx";
 import { Section } from "#ui/section.tsx";
-import { Cell, Row, SelectedContext } from "#ui/table.tsx";
+import { Cell, Row } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
+import type { Selection } from "#ui/use-selection.ts";
 import { formatTime } from "#utils/time.ts";
 
 import { seriesExemplarsQuery } from "./metric-queries.ts";
@@ -28,12 +28,10 @@ function traceLabel({ trace_id, span_id, has_trace }: Exemplar) {
 interface ExemplarListProps {
   metric: Metric;
   seriesId: string;
-  selectedIndex: number;
-  onSelect: (index: number) => void;
+  selection: Selection<Exemplar>;
 }
 
-export function ExemplarList({ metric, seriesId, selectedIndex, onSelect }: ExemplarListProps) {
-  const requestFocus = useFocusRequest();
+export function ExemplarList({ metric, seriesId, selection }: ExemplarListProps) {
   const connection = useConnection();
   const { data: exemplars, isError } = useSuspenseQuery(
     seriesExemplarsQuery(connection, metric, seriesId),
@@ -49,29 +47,19 @@ export function ExemplarList({ metric, seriesId, selectedIndex, onSelect }: Exem
   return (
     <Section title="Exemplars">
       {exemplars.map((exemplar, index) => (
-        <box
-          key={exemplar.exemplar_id}
-          onMouseDown={(event) => {
-            if (event.button === MouseButton.LEFT) {
-              requestFocus();
-              onSelect(index);
-            }
-          }}
-        >
-          <SelectedContext value={index === selectedIndex}>
-            <Row>
-              <Cell width={COLUMN_TIME_WIDTH} muted>
-                {formatTime(exemplar.time)}
-              </Cell>
-              <Cell width={COLUMN_VALUE_WIDTH} align="right">
-                {formatMetricValue(exemplar.value, metric.unit)}
-              </Cell>
-              <Cell grow={1} muted={!exemplar.has_trace}>
-                {traceLabel(exemplar)}
-              </Cell>
-            </Row>
-          </SelectedContext>
-        </box>
+        <Selectable key={exemplar.exemplar_id} selection={selection} index={index}>
+          <Row>
+            <Cell width={COLUMN_TIME_WIDTH} muted>
+              {formatTime(exemplar.time)}
+            </Cell>
+            <Cell width={COLUMN_VALUE_WIDTH} align="right">
+              {formatMetricValue(exemplar.value, metric.unit)}
+            </Cell>
+            <Cell grow={1} muted={!exemplar.has_trace}>
+              {traceLabel(exemplar)}
+            </Cell>
+          </Row>
+        </Selectable>
       ))}
     </Section>
   );

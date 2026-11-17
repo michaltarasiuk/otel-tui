@@ -1,5 +1,4 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import type { SetStateAction } from "react";
 
 import { useConnection } from "#query/connection.ts";
 import { Description } from "#ui/details.tsx";
@@ -7,6 +6,7 @@ import { Rows } from "#ui/rows.tsx";
 import { SPLIT_PADDING_X } from "#ui/split.tsx";
 import { Cell, Column, Row, TableHeader } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
+import type { Selection } from "#ui/use-selection.ts";
 import { formatInteger, formatPercent, formatRate } from "#utils/number.ts";
 import { formatDuration } from "#utils/time.ts";
 
@@ -17,14 +17,14 @@ import {
   COLUMN_RATE_WIDTH,
   COLUMN_SPANS_WIDTH,
 } from "./service-table.tsx";
+import type { Operation } from "./service.ts";
 
 interface OperationTableProps {
   serviceName: string;
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Operation>;
 }
 
-export function OperationTable({ serviceName, selectedIndex, onSelect }: OperationTableProps) {
+export function OperationTable({ serviceName, selection }: OperationTableProps) {
   const connection = useConnection();
   const { data: operations, isError } = useSuspenseQuery(
     serviceOperationsQuery(connection, serviceName),
@@ -60,12 +60,7 @@ export function OperationTable({ serviceName, selectedIndex, onSelect }: Operati
           Spans
         </Column>
       </TableHeader>
-      <Rows
-        items={operations}
-        getKey={(operation) => operation.name}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-      >
+      <Rows items={operations} selection={selection}>
         {(operation) => (
           <Row>
             <Cell grow={1}>{operation.name}</Cell>

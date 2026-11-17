@@ -1,9 +1,8 @@
-import type { SetStateAction } from "react";
-
 import { COLUMN_SERVICE_WIDTH, COLUMN_SORT_ARROW_WIDTH, COLUMN_TIME_WIDTH } from "#ui/columns.ts";
 import { Rows } from "#ui/rows.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#ui/table.tsx";
+import type { Selection } from "#ui/use-selection.ts";
 import { formatInteger } from "#utils/number.ts";
 import { formatTime } from "#utils/time.ts";
 
@@ -15,12 +14,11 @@ const COLUMN_SERIES_WIDTH = 6 + COLUMN_SORT_ARROW_WIDTH;
 
 interface MetricTableProps {
   metrics: Metric[];
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Metric>;
   sort: MetricSort;
 }
 
-export function MetricTable({ metrics, selectedIndex, onSelect, sort }: MetricTableProps) {
+export function MetricTable({ metrics, selection, sort }: MetricTableProps) {
   return (
     <>
       <TableHeader>
@@ -41,12 +39,7 @@ export function MetricTable({ metrics, selectedIndex, onSelect, sort }: MetricTa
           Series
         </Column>
       </TableHeader>
-      <Rows
-        items={metrics}
-        getKey={(metric) => metric.metric_id}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-      >
+      <Rows items={metrics} selection={selection}>
         {(metric) => (
           <Row>
             <Cell width={COLUMN_TIME_WIDTH} muted>

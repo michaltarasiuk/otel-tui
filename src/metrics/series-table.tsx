@@ -1,7 +1,8 @@
-import { Fragment, type SetStateAction } from "react";
+import { Fragment } from "react";
 
 import { Rows } from "#ui/rows.tsx";
 import { Cell, Column, Row, TableHeader } from "#ui/table.tsx";
+import type { Selection } from "#ui/use-selection.ts";
 
 import type { Metric } from "./metric.ts";
 import { type AttributeColumn, cellValue } from "./series-columns.ts";
@@ -12,19 +13,12 @@ const COLUMN_STAT_WIDTH = 10;
 
 interface SeriesTableProps {
   series: Series[];
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Series>;
   metric: Metric;
   columns: AttributeColumn[];
 }
 
-export function SeriesTable({
-  series,
-  selectedIndex,
-  onSelect,
-  metric,
-  columns,
-}: SeriesTableProps) {
+export function SeriesTable({ series, selection, metric, columns }: SeriesTableProps) {
   const columnGroups = [...Map.groupBy(columns, (column) => column.source)];
 
   return (
@@ -46,12 +40,7 @@ export function SeriesTable({
           </Column>
         ))}
       </TableHeader>
-      <Rows
-        items={series}
-        getKey={(row) => row.series_id}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-      >
+      <Rows items={series} selection={selection}>
         {(row) => {
           const stats = seriesStats(metric, row);
           return (

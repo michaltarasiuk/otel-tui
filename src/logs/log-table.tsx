@@ -1,9 +1,8 @@
-import type { SetStateAction } from "react";
-
 import { COLUMN_SERVICE_WIDTH, COLUMN_TIME_WIDTH } from "#ui/columns.ts";
 import { Rows } from "#ui/rows.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { Cell, Column, Row, Secondary, TableHeader } from "#ui/table.tsx";
+import type { Selection } from "#ui/use-selection.ts";
 import { collapseWhitespace } from "#utils/text.ts";
 import { formatTime } from "#utils/time.ts";
 
@@ -14,11 +13,10 @@ const COLUMN_SEVERITY_WIDTH = 8;
 
 interface LogTableProps {
   logs: Log[];
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Log>;
 }
 
-export function LogTable({ logs, selectedIndex, onSelect }: LogTableProps) {
+export function LogTable({ logs, selection }: LogTableProps) {
   return (
     <>
       <TableHeader>
@@ -27,12 +25,7 @@ export function LogTable({ logs, selectedIndex, onSelect }: LogTableProps) {
         <Column width={COLUMN_SERVICE_WIDTH}>Service</Column>
         <Column grow={1}>Body</Column>
       </TableHeader>
-      <Rows
-        items={logs}
-        getKey={(log) => log.log_id}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-      >
+      <Rows items={logs} selection={selection}>
         {(log) => (
           <Row>
             <Cell width={COLUMN_TIME_WIDTH} muted>

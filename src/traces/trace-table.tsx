@@ -1,10 +1,9 @@
-import type { SetStateAction } from "react";
-
 import { COLUMN_SERVICE_WIDTH, COLUMN_SORT_ARROW_WIDTH, COLUMN_TIME_WIDTH } from "#ui/columns.ts";
 import { Rows } from "#ui/rows.tsx";
 import { ServiceName } from "#ui/service-name.tsx";
 import { Cell, Column, Row, sortDirection, TableHeader } from "#ui/table.tsx";
 import { THEME } from "#ui/theme.ts";
+import type { Selection } from "#ui/use-selection.ts";
 import { formatDuration, formatTime } from "#utils/time.ts";
 
 import type { Trace, TraceSort } from "./trace.ts";
@@ -15,12 +14,11 @@ const COLUMN_DURATION_WIDTH = 8 + COLUMN_SORT_ARROW_WIDTH;
 
 interface TraceTableProps {
   traces: Trace[];
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<Trace>;
   sort: TraceSort;
 }
 
-export function TraceTable({ traces, selectedIndex, onSelect, sort }: TraceTableProps) {
+export function TraceTable({ traces, selection, sort }: TraceTableProps) {
   return (
     <>
       <TableHeader>
@@ -43,13 +41,7 @@ export function TraceTable({ traces, selectedIndex, onSelect, sort }: TraceTable
           Duration
         </Column>
       </TableHeader>
-      <Rows
-        items={traces}
-        getKey={(trace) => trace.trace_id}
-        selectedIndex={selectedIndex}
-        onSelect={(action) => onSelect(action)}
-        halfPageKeys
-      >
+      <Rows items={traces} selection={selection} halfPageKeys>
         {(trace) => (
           <Row>
             <Cell width={COLUMN_TIME_WIDTH} muted>

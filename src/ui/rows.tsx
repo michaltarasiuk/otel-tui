@@ -1,6 +1,6 @@
 import { type BoxRenderable, MouseButton } from "@opentui/core";
 import { useBindings } from "@opentui/keymap/react";
-import { type SetStateAction, useEffectEvent, useRef, useState } from "react";
+import { useEffectEvent, useRef, useState } from "react";
 
 import { clamp } from "#utils/number.ts";
 
@@ -8,27 +8,18 @@ import { useFocused, useFocusRequest, useKeysEnabled } from "./focus.tsx";
 import { SelectedContext } from "./table.tsx";
 import { THEME } from "./theme.ts";
 import { useScrollGesture } from "./use-scroll-gesture.ts";
+import type { Selection } from "./use-selection.ts";
 
 interface RowsProps<T> {
   items: readonly T[];
-  getKey: (item: T) => string;
-  selectedIndex: number;
-  onSelect: (action: SetStateAction<number>) => void;
+  selection: Selection<T>;
   halfPageKeys?: boolean;
   children: (item: T) => React.ReactNode;
 }
 
-export function Rows<T>({
-  items,
-  getKey,
-  selectedIndex,
-  onSelect,
-  halfPageKeys = false,
-  children,
-}: RowsProps<T>) {
+export function Rows<T>({ items, selection, halfPageKeys = false, children }: RowsProps<T>) {
   const focused = useFocused();
   const keysEnabled = useKeysEnabled();
-  const requestFocus = useFocusRequest();
   const claimScroll = useScrollGesture();
 
   const [measured, setMeasured] = useState({ height: items.length, itemCount: items.length });
@@ -38,18 +29,18 @@ export function Rows<T>({
   const halfPage = Math.max(1, Math.floor(visibleRowCount / 2));
 
   const firstVisibleIndex = clamp(
-    selectedIndex - Math.floor(visibleRowCount / 2),
+    selection.index - Math.floor(visibleRowCount / 2),
     0,
     hiddenRowCount,
   );
   const visibleItems = items.slice(firstVisibleIndex, firstVisibleIndex + visibleRowCount);
   const scrollThumbTop = Math.round((firstVisibleIndex / hiddenRowCount) * (visibleRowCount - 1));
 
-  const moveBy = useEffectEvent((offset: number) => onSelect((index) => index + offset));
+  const moveBy = useEffectEvent((offset: number) => selection.move(offset));
   const movePage = useEffectEvent((direction: 1 | -1) => moveBy(direction * visibleRowCount));
   const moveHalfPage = useEffectEvent((direction: 1 | -1) => moveBy(direction * halfPage));
-  const moveTo = useEffectEvent((index: number) => onSelect(index));
-  const moveToLast = useEffectEvent(() => onSelect(items.length - 1));
+  const moveTo = useEffectEvent((index: number) => selection.select(index));
+  const moveToLast = useEffectEvent(() => selection.select(items.length - 1));
 
   useBindings(
     () => ({
@@ -110,28 +101,21 @@ export function Rows<T>({
           return;
         }
         if (scroll.direction === "down") {
-          onSelect((index) => index + scroll.delta);
+          selection.move(scroll.delta);
         } else if (scroll.direction === "up") {
-          onSelect((index) => index - scroll.delta);
+          selection.move(-scroll.delta);
         }
       }}
     >
       <box flexShrink={0} onSizeChange={() => measure()}>
         {visibleItems.map((item, offset) => (
-          <box
-            key={getKey(item)}
-            flexShrink={0}
-            onMouseDown={(event) => {
-              if (event.button === MouseButton.LEFT) {
-                requestFocus();
-                onSelect(firstVisibleIndex + offset);
-              }
-            }}
+          <Selectable
+            key={selection.keyOf(item)}
+            selection={selection}
+            index={firstVisibleIndex + offset}
           >
-            <SelectedContext value={firstVisibleIndex + offset === selectedIndex}>
-              {children(item)}
-            </SelectedContext>
-          </box>
+            {children(item)}
+          </Selectable>
         ))}
       </box>
       {visibleRowCount > 0 && hiddenRowCount > 0 && (
@@ -139,6 +123,30 @@ export function Rows<T>({
           █
         </text>
       )}
+    </box>
+  );
+}
+
+interface SelectableProps<T> {
+  selection: Selection<T>;
+  index: number;
+  children: React.ReactNode;
+}
+
+export function Selectable<T>({ selection, index, children }: SelectableProps<T>) {
+  const requestFocus = useFocusRequest();
+
+  return (
+    <box
+      flexShrink={0}
+      onMouseDown={(event) => {
+        if (event.button === MouseButton.LEFT) {
+          requestFocus();
+          selection.select(index);
+        }
+      }}
+    >
+      <SelectedContext value={index === selection.index}>{children}</SelectedContext>
     </box>
   );
 }
