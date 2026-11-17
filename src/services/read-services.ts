@@ -1,14 +1,17 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
 
+import serviceCalls from "#services/sql/service-calls.sql" with { type: "text" };
 import serviceList from "#services/sql/service-list.sql" with { type: "text" };
 import serviceOperations from "#services/sql/service-operations.sql" with { type: "text" };
 import { substringPattern } from "#telemetry/substring-pattern.ts";
 import { sortParams } from "#utils/sort.ts";
 import { MINUTE_MS } from "#utils/time.ts";
 
-import { Operation, Service, type ServiceSort } from "./service.ts";
+import { Call, Operation, Service, type ServiceSort } from "./service.ts";
 
 export const SERVICE_WINDOW_MS = 5 * MINUTE_MS;
+
+export const SERVICE_WINDOW_LABEL = `last ${SERVICE_WINDOW_MS / MINUTE_MS} min`;
 
 const OPERATION_LIMIT = 50;
 
@@ -40,4 +43,9 @@ export async function readServiceOperations(connection: DuckDBConnection, servic
     limit: OPERATION_LIMIT,
   });
   return Operation.array().parse(reader.getRowObjectsJS());
+}
+
+export async function readServiceCalls(connection: DuckDBConnection) {
+  const reader = await connection.runAndReadAll(serviceCalls, windowParams());
+  return Call.array().parse(reader.getRowObjectsJS());
 }

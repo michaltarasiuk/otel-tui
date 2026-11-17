@@ -9,7 +9,11 @@ import { latestRate } from "#metrics/intervals.ts";
 import { BY_NAME, type Metric } from "#metrics/metric.ts";
 import { readMetricList, readMetricSeries, readNamedMetrics } from "#metrics/read-metrics.ts";
 import type { Series } from "#metrics/series.ts";
-import { readServiceOperations, readServiceList } from "#services/read-services.ts";
+import {
+  readServiceCalls,
+  readServiceOperations,
+  readServiceList,
+} from "#services/read-services.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
 import { readTraceList, readSpanContent, readTraceSpans } from "#traces/read-traces.ts";
 import {
@@ -198,6 +202,25 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ service }) => jsonResult(await readServiceOperations(connection, service)),
+  );
+
+  server.registerTool(
+    "get_service_map",
+    {
+      title: "Get the service map",
+      description:
+        "Calls between services in the last 5 minutes, from spans whose parent is in another " +
+        "service, with rate per second, error ratio, and p50, p95, and p99 latency " +
+        "in milliseconds of the called spans. " +
+        "External calls are client or producer spans with no child span, " +
+        "named by peer.service, db.system.name, db.system, messaging.system, or server.address.",
+      inputSchema: {},
+      annotations: READ_ONLY,
+    },
+    async () => {
+      const calls = await readServiceCalls(connection);
+      return jsonResult(calls);
+    },
   );
 
   server.registerTool(

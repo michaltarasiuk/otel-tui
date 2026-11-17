@@ -61,6 +61,16 @@ the selected service's operations below. `return` opens the service's traces,
 into the operations, where `return` opens the traces with that operation,
 slowest first. A trace opened from there starts at the operation's span.
 
+![Service map as a tree of services from edge-gateway and analytics down to the services they call, with hollow leaves for peers such as redis, sqlite, nats, and external hosts, and each call's rate, error rate, p50, p95, and p99 latency, and span count](docs/service-map-page.png)
+
+`m` opens the service map: which service calls which over the same 5 minutes,
+as a tree from the services nobody calls, with each call's rate, error rate,
+and latency. A call is a span whose parent is in another service. A client or
+producer span with no child shows the peer it called, such as a database, as
+a hollow `○` leaf, named by `peer.service`, `db.system.name`, `db.system`,
+`messaging.system`, or `server.address`. `return` opens the selected service's
+traces.
+
 ### Traces
 
 ![Traces view with a chart of traces over time above the list of root traces with service, span count, errors, and duration](docs/traces-page.png)
@@ -164,11 +174,12 @@ browse. Add it to Claude Code with:
 claude mcp add --transport http otel-tui http://127.0.0.1:4320/mcp
 ```
 
-The tools follow the views: `list_services` and `list_operations`,
-`list_traces`, `get_trace`, `get_span` and `compare_traces`, `list_metrics` and `get_metric`, and
-`list_logs`. They only read, and their searches take the same terms as the
-app's. `get_trace` outlines the span tree with the critical path, and keeps the
-critical path and the spans with errors when a trace is large.
+The tools follow the views: `list_services`, `list_operations`, and
+`get_service_map`; `list_traces`, `get_trace`, `get_span`, and
+`compare_traces`; `list_metrics` and `get_metric`; and `list_logs`. They only
+read, and their searches take the same terms as the app's. `get_trace`
+outlines the span tree with the critical path, and keeps the critical path and
+the spans with errors when a trace is large.
 
 The MCP server listens only on 127.0.0.1, whatever `--host` says, and refuses
 requests whose `Host` or `Origin` header names another site. It has no

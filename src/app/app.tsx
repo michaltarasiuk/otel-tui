@@ -5,6 +5,7 @@ import { Fragment, Suspense, useState } from "react";
 import { LogsPage } from "#logs/logs-page.tsx";
 import { MetricSeriesPage } from "#metrics/metric-series-page.tsx";
 import { MetricsPage } from "#metrics/metrics-page.tsx";
+import { ServiceMapPage } from "#services/service-map-page.tsx";
 import { ServicesPage } from "#services/services-page.tsx";
 import { TraceComparePage } from "#traces/trace-compare-page.tsx";
 import { TraceSpansPage } from "#traces/trace-spans-page.tsx";
@@ -38,6 +39,7 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
   const {
     tab,
     services,
+    map,
     traces,
     trace,
     compare,
@@ -109,9 +111,24 @@ export function App({ httpUrl, grpcUrl, mcpUrl, onClear }: AppProps) {
                       onOpenTraces={(service, operation) =>
                         open({ name: "traces", service, operation })
                       }
+                      onOpenMap={() => open({ name: "map" })}
                     />
                   </ErrorBoundary>
                 </Screen>
+                {map !== undefined && (
+                  <Screen mode={map.mode}>
+                    <ErrorBoundary
+                      fallback={
+                        <PageError text="Failed to load the service map" onBack={map.back} />
+                      }
+                    >
+                      <ServiceMapPage
+                        onOpenTraces={(service) => open({ name: "traces", service })}
+                        onBack={map.back}
+                      />
+                    </ErrorBoundary>
+                  </Screen>
+                )}
                 <Screen mode={traces.mode}>
                   <ErrorBoundary
                     fallback={<PageError text="Failed to load traces" onBack={traces.back} />}

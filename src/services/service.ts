@@ -28,3 +28,17 @@ export const Operation = z.object({
   p99_ms: z.number(),
 });
 export type Operation = z.infer<typeof Operation>;
+
+export const Call = z.object({
+  call_id: z.string(),
+  caller: z.string(),
+  callee: z.string(),
+  is_external: z.boolean(),
+  span_count: z.number(),
+  rate: z.number(),
+  error_ratio: z.number(),
+  p50_ms: z.number(),
+  p95_ms: z.number(),
+  p99_ms: z.number(),
+});
+export type Call = z.infer<typeof Call>;

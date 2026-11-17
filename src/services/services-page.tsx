@@ -18,7 +18,7 @@ import { useSelection } from "#ui/use-selection.ts";
 import { formatCount } from "#utils/number.ts";
 
 import { OperationTable } from "./operation-table.tsx";
-import { SERVICE_WINDOW_MS } from "./read-services.ts";
+import { SERVICE_WINDOW_LABEL } from "./read-services.ts";
 import { ServiceDetails } from "./service-details.tsx";
 import { serviceListQuery, serviceOperationsQuery } from "./service-queries.ts";
 import { ServiceTable } from "./service-table.tsx";
@@ -26,13 +26,12 @@ import { SERVICE_SORT_COLUMNS, type ServiceSort } from "./service.ts";
 
 const BUSIEST_FIRST: ServiceSort = { column: "rate", descending: true };
 
-const WINDOW_LABEL = `last ${SERVICE_WINDOW_MS / 60_000} min`;
-
 interface ServicesPageProps {
   onOpenTraces: (service: string, operation?: string) => void;
+  onOpenMap: () => void;
 }
 
-export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
+export function ServicesPage({ onOpenTraces, onOpenMap }: ServicesPageProps) {
   const search = useSearch();
   const [sort, setSort] = useState(BUSIEST_FIRST);
   const deferredSort = useDeferredValue(sort);
@@ -64,7 +63,7 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
     <box flexGrow={1}>
       <PageHeader>
         <SearchInput search={search} placeholder="service name" />
-        <Chip>{WINDOW_LABEL}</Chip>
+        <Chip>{SERVICE_WINDOW_LABEL}</Chip>
         <Count>{formatCount(services.length, "service")}</Count>
       </PageHeader>
       {serviceList.isError ? (
@@ -126,6 +125,9 @@ export function ServicesPage({ onOpenTraces }: ServicesPageProps) {
           <SortKeys columns={SERVICE_SORT_COLUMNS} onChange={(action) => setSort(action)} />
         </FocusScope>
         <FocusScope focused={browsing}>
+          <Key name="m" description="show which services call which" onPress={() => onOpenMap()}>
+            map
+          </Key>
           <PauseKey />
           <RegionKeys regions={regions} region={region} onChange={(region) => setRegion(region)} />
         </FocusScope>

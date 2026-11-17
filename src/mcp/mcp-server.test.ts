@@ -28,6 +28,7 @@ test("lists read-only tools for each view", async () => {
   expect(tools.map((tool) => tool.name).toSorted()).toEqual([
     "compare_traces",
     "get_metric",
+    "get_service_map",
     "get_span",
     "get_trace",
     "list_logs",
@@ -134,6 +135,21 @@ test("lists services and their operations", async () => {
 
   expect(services).toContainEqual(expect.objectContaining({ service_name: "checkout" }));
   expect(operations).toEqual([expect.objectContaining({ name: PLACE_ORDER, error_ratio: 1 })]);
+});
+
+test("maps calls between services and to external peers", async () => {
+  fakeClock(at(60_000));
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  await using mcp = await startTestMcp(receiver);
+
+  const calls = await mcp.callJson("get_service_map");
+
+  expect(calls).toEqual([
+    expect.objectContaining({ caller: "cart", callee: "redis", is_external: true }),
+    expect.objectContaining({ caller: "checkout", callee: "payment", error_ratio: 1 }),
+    expect.objectContaining({ caller: "frontend", callee: "cart", is_external: false }),
+  ]);
 });
 
 test("lists logs at or above a severity", async () => {

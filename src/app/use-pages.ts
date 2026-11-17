@@ -32,6 +32,7 @@ interface LogsLocation {
 
 interface Location {
   tab: Tab;
+  map: boolean;
   traces: TracesLocation;
   trace: TraceLocation | undefined;
   compare: CompareLocation | undefined;
@@ -44,9 +45,10 @@ interface History {
   previous: Location[];
 }
 
-type PageName = "services" | "traces" | "trace" | "compare" | "metrics" | "series" | "logs";
+type PageName = "services" | "map" | "traces" | "trace" | "compare" | "metrics" | "series" | "logs";
 
 type Destination =
+  | { name: "map" }
   | { name: "traces"; service: string | undefined; operation?: string | undefined }
   | { name: "trace"; traceId: string; spanId?: string | undefined }
   | { name: "compare"; before: string; after: string }
@@ -58,6 +60,7 @@ const ALL_LOGS: LogsLocation = { traceId: undefined, spanId: undefined };
 
 const START_LOCATION: Location = {
   tab: "services",
+  map: false,
   traces: ALL_TRACES,
   trace: undefined,
   compare: undefined,
@@ -65,10 +68,10 @@ const START_LOCATION: Location = {
   logs: ALL_LOGS,
 };
 
-function pageAt({ tab, trace, compare, series }: Location): PageName {
+function pageAt({ tab, map, trace, compare, series }: Location): PageName {
   switch (tab) {
     case "services":
-      return "services";
+      return map ? "map" : "services";
     case "traces":
       if (trace !== undefined) {
         return "trace";
@@ -83,6 +86,8 @@ function pageAt({ tab, trace, compare, series }: Location): PageName {
 
 function changeTo(destination: Destination): Partial<Location> {
   switch (destination.name) {
+    case "map":
+      return { tab: "services", map: true };
     case "traces": {
       const { service, operation } = destination;
       return {
@@ -112,7 +117,7 @@ function changeTo(destination: Destination): Partial<Location> {
 function closeChange({ tab, trace }: Location): Partial<Location> {
   switch (tab) {
     case "services":
-      return {};
+      return { map: false };
     case "traces":
       return trace === undefined ? { compare: undefined } : { trace: undefined };
     case "metrics":
@@ -169,6 +174,7 @@ export function usePages() {
   return {
     tab: history.location.tab,
     services: { mode: mode("services") },
+    map: location.map ? { mode: mode("map"), back: goBack } : undefined,
     traces: { ...location.traces, mode: mode("traces"), back: historyBack },
     trace:
       location.trace === undefined
