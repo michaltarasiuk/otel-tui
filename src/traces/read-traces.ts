@@ -9,6 +9,7 @@ import {
   type TimeRange,
 } from "#telemetry/time-buckets.ts";
 import spanContent from "#traces/sql/span-content.sql" with { type: "text" };
+import spanMatches from "#traces/sql/span-matches.sql" with { type: "text" };
 import traceCount from "#traces/sql/trace-count.sql" with { type: "text" };
 import traceList from "#traces/sql/trace-list.sql" with { type: "text" };
 import traceSpans from "#traces/sql/trace-spans.sql" with { type: "text" };
@@ -17,6 +18,8 @@ import { sortParams } from "#utils/sort.ts";
 
 import { Span, SpanContent } from "./span.ts";
 import { Trace, type TraceSort } from "./trace.ts";
+
+const SpanMatch = z.object({ span_id: z.string() });
 
 export interface TraceFilter {
   search: string;
@@ -72,6 +75,16 @@ export async function readTraceCount(connection: DuckDBConnection) {
 export async function readTraceSpans(connection: DuckDBConnection, traceId: string) {
   const reader = await connection.runAndReadAll(traceSpans, { traceId });
   return Span.array().parse(reader.getRowObjectsJS());
+}
+
+export async function readSpanMatches(
+  connection: DuckDBConnection,
+  traceId: string,
+  search: string,
+) {
+  const reader = await connection.runAndReadAll(spanMatches, { traceId, ...searchParams(search) });
+  const rows = SpanMatch.array().parse(reader.getRowObjectsJS());
+  return new Set(rows.map((row) => row.span_id));
 }
 
 export async function readSpanContent(

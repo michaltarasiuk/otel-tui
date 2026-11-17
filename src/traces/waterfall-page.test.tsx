@@ -1,14 +1,17 @@
 import { expect, test } from "bun:test";
 
-import { selectRow } from "#testing/app.tsx";
+import { search, selectRow } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { logsRequest, SEVERITY_NUMBER } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
+  color,
   detailsLines,
   keyHints,
+  lineSpans,
   onDetails,
   pageHeader,
+  spanColors,
   spanRows,
   tableRows,
   textLines,
@@ -26,6 +29,7 @@ import {
   renderTraceList,
   STATUS_ROW,
 } from "#testing/traces.ts";
+import { THEME } from "#ui/theme.ts";
 import { GESTURE_PAUSE_MS } from "#ui/use-scroll-gesture.ts";
 import { collapseWhitespace } from "#utils/text.ts";
 
@@ -68,6 +72,84 @@ test("jumps between spans with errors", async () => {
   await app.waitForFrame((frame) => detailsLines(frame).includes(CHARGE_DECLINED));
 
   expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
+});
+
+test("dims the spans that don't match a search and jumps between the matches", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CART_ROW);
+  await app.waitForSelection("GET /api/cart");
+
+  await search(app, "db.system=redis");
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => keyHints(frame).includes("n next match"));
+
+  const frame = await app.captureSpans();
+  expect(spanColors(lineSpans(frame, "valkey-cart"), "valkey-cart").fg).toEqual(color(THEME.text));
+  expect(spanColors(lineSpans(frame, "POST /oteldemo"), "POST /oteldemo").fg).toEqual(
+    color(THEME.textMuted),
+  );
+
+  app.mockInput.pressKey("n");
+  expect(await app.waitForSelection("valkey-cart")).toBe("● cart valkey-cart:6379 60.0ms");
+});
+
+test("keeps the spans in place while typing a search", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CART_ROW);
+  const before = await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
+
+  await search(app, "valkey");
+  const after = await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+
+  expect(spanRows(after)).toEqual(spanRows(before));
+  expect(after.split("\n").findIndex((line) => line.includes("valkey-cart:6379"))).toBe(
+    before.split("\n").findIndex((line) => line.includes("valkey-cart:6379")),
+  );
+});
+
+test("keeps room for the search on a narrow terminal", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForFrame((frame) => frame.includes("charge"));
+  app.resize(50, 20);
+
+  await search(app, "charge");
+
+  const frame = await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  expect(frame).toContain("/charge");
+});
+
+test("unfolds a span to jump to a match inside it", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CART_ROW);
+  await app.waitForSelection("GET /api/cart");
+  app.mockInput.pressKey(" ");
+  await app.waitForFrame((frame) => spanRows(frame).length === 1);
+
+  await search(app, "valkey");
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) =>
+    textLines(frame).includes("● frontend 12:00:00.000 1 of 3 spans 120.0ms"),
+  );
+  app.mockInput.pressKey("n");
+
+  expect(await app.waitForSelection("valkey-cart")).toBe("● cart valkey-cart:6379 60.0ms");
+  expect(spanRows(await app.waitForFrame((frame) => spanRows(frame).length === 3))).toHaveLength(3);
+});
+
+test("clears the search before going back to the list", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CART_ROW);
+  await search(app, "valkey");
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => keyHints(frame).includes("escape clear"));
+
+  app.mockInput.pressEscape();
+  const frame = await app.waitForFrame((frame) => keyHints(frame).includes("escape back"));
+  expect(frame).not.toContain("1 of 3 spans");
+
+  app.mockInput.pressEscape();
+  await app.waitForFrame((frame) => tableRows(frame).length === 3);
 });
 
 test("goes back to the list with the opened trace still selected", async () => {

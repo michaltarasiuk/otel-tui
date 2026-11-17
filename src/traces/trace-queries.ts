@@ -5,6 +5,7 @@ import { POLL_INTERVAL_MS } from "#query/polling.ts";
 
 import {
   readSpanContent,
+  readSpanMatches,
   readTraceCount,
   readTraceList,
   readTraceSpans,
@@ -41,6 +42,14 @@ export function traceSpansQuery(connection: DuckDBConnection, traceId: string) {
   return queryOptions({
     queryKey: ["traces", traceId, "spans"],
     queryFn: () => readTraceSpans(connection, traceId),
+    refetchInterval: POLL_INTERVAL_MS,
+  });
+}
+
+export function spanMatchesQuery(connection: DuckDBConnection, traceId: string, search: string) {
+  return queryOptions({
+    queryKey: ["traces", traceId, "matches", search],
+    queryFn: () => (search === "" ? null : readSpanMatches(connection, traceId, search)),
     refetchInterval: POLL_INTERVAL_MS,
   });
 }
