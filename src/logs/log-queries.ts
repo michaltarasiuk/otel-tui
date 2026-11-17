@@ -11,12 +11,14 @@ import {
   readLogTimeline,
 } from "./read-logs.ts";
 
+const LOG_LIMIT = 500;
+
 export function logListQuery(connection: DuckDBConnection, query: LogQuery) {
   return queryOptions({
     queryKey: ["logs", query],
     queryFn: async () => {
       const [logs, totalCount] = await Promise.all([
-        readLogList(connection, query),
+        readLogList(connection, query, LOG_LIMIT),
         readLogCount(connection),
       ]);
       return { logs, totalCount };

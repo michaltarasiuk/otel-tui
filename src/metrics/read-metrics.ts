@@ -24,7 +24,6 @@ import {
   NumberSeries,
 } from "./series.ts";
 
-const METRIC_LIMIT = 500;
 const EXEMPLAR_LIMIT = 10;
 
 function metricIdentity(metric: Metric) {
@@ -41,9 +40,13 @@ export interface MetricQuery {
   sort: MetricSort;
 }
 
-export async function readMetricList(connection: DuckDBConnection, { search, sort }: MetricQuery) {
+export async function readMetricList(
+  connection: DuckDBConnection,
+  { search, sort }: MetricQuery,
+  limit: number,
+) {
   const reader = await connection.runAndReadAll(metricList, {
-    limit: METRIC_LIMIT,
+    limit,
     ...searchParams(search),
     ...sortParams(sort),
   });

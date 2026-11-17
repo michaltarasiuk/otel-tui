@@ -13,12 +13,14 @@ import {
   readSeriesPoints,
 } from "./read-metrics.ts";
 
+const METRIC_LIMIT = 500;
+
 export function metricListQuery(connection: DuckDBConnection, query: MetricQuery) {
   return queryOptions({
     queryKey: ["metrics", query],
     queryFn: async () => {
       const [metrics, totalCount] = await Promise.all([
-        readMetricList(connection, query),
+        readMetricList(connection, query, METRIC_LIMIT),
         readMetricCount(connection),
       ]);
       return { metrics, totalCount };

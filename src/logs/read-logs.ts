@@ -15,8 +15,6 @@ import {
 import { Log } from "./log.ts";
 import { lowestSeverityNumber, type SeverityLevel } from "./severity.ts";
 
-const LOG_LIMIT = 500;
-
 const ANY_SEVERITY_NUMBER = 0;
 
 export interface LogFilter {
@@ -43,9 +41,10 @@ function filterParams({ search, minSeverity, traceId, spanId }: LogFilter) {
 export async function readLogList(
   connection: DuckDBConnection,
   { timeRange, ...filter }: LogQuery,
+  limit: number,
 ) {
   const reader = await connection.runAndReadAll(logList, {
-    limit: LOG_LIMIT,
+    limit,
     ...filterParams(filter),
     minTimeMs: timeRange?.from ?? null,
     maxTimeMs: timeRange?.to ?? null,

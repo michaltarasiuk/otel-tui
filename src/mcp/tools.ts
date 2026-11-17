@@ -19,6 +19,7 @@ import type { Trace } from "#traces/trace.ts";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 200;
 const MAX_TRACE_SPANS = 200;
+const MAX_METRIC_CANDIDATES = 500;
 
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
@@ -174,16 +175,16 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, service, operation, errors_only, sort, limit }) => {
-      const traces = await readTraceList(connection, {
+      const query = {
         search,
         errorsOnly: errors_only,
         serviceName: service,
         operationName: operation,
         timeRange: undefined,
         sort: descending(sort),
-      });
-      const shown = traces.slice(0, limit).map((trace) => traceSummary(trace));
-      return jsonResult(shown);
+      };
+      const traces = await readTraceList(connection, query, limit);
+      return jsonResult(traces.map((trace) => traceSummary(trace)));
     },
   );
 
@@ -236,9 +237,8 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, limit }) => {
-      const metrics = await readMetricList(connection, { search, sort: BY_NAME });
-      const shown = metrics.slice(0, limit).map((metric) => metricSummary(metric));
-      return jsonResult(shown);
+      const metrics = await readMetricList(connection, { search, sort: BY_NAME }, limit);
+      return jsonResult(metrics.map((metric) => metricSummary(metric)));
     },
   );
 
@@ -258,7 +258,11 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ name, service }) => {
-      const candidates = await readMetricList(connection, { search: name, sort: BY_NAME });
+      const candidates = await readMetricList(
+        connection,
+        { search: name, sort: BY_NAME },
+        MAX_METRIC_CANDIDATES,
+      );
       const metrics = candidates.filter((metric) => isMetricNamed(metric, name, service));
       if (metrics.length === 0) {
         const from = service === undefined ? "" : ` from ${service}`;
@@ -297,15 +301,15 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ search, min_severity, trace_id, span_id, limit }) => {
-      const logs = await readLogList(connection, {
+      const query = {
         search,
         minSeverity: min_severity,
         traceId: trace_id,
         spanId: span_id,
         timeRange: undefined,
-      });
-      const shown = logs.slice(0, limit).map((log) => logSummary(log));
-      return jsonResult(shown);
+      };
+      const logs = await readLogList(connection, query, limit);
+      return jsonResult(logs.map((log) => logSummary(log)));
     },
   );
 }

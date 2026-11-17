@@ -13,12 +13,14 @@ import {
   type TraceQuery,
 } from "./read-traces.ts";
 
+const TRACE_LIMIT = 500;
+
 export function traceListQuery(connection: DuckDBConnection, query: TraceQuery) {
   return queryOptions({
     queryKey: ["traces", query],
     queryFn: async () => {
       const [traces, totalCount] = await Promise.all([
-        readTraceList(connection, query),
+        readTraceList(connection, query, TRACE_LIMIT),
         readTraceCount(connection),
       ]);
       return { traces, totalCount };

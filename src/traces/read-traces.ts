@@ -18,8 +18,6 @@ import { sortParams } from "#utils/sort.ts";
 import { Span, SpanContent } from "./span.ts";
 import { Trace, type TraceSort } from "./trace.ts";
 
-const TRACE_LIMIT = 500;
-
 export interface TraceFilter {
   search: string;
   errorsOnly: boolean;
@@ -44,9 +42,10 @@ function filterParams({ search, errorsOnly, serviceName, operationName }: TraceF
 export async function readTraceList(
   connection: DuckDBConnection,
   { timeRange, sort, ...filter }: TraceQuery,
+  limit: number,
 ) {
   const reader = await connection.runAndReadAll(traceList, {
-    limit: TRACE_LIMIT,
+    limit,
     ...filterParams(filter),
     minTimeMs: timeRange?.from ?? null,
     maxTimeMs: timeRange?.to ?? null,
