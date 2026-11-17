@@ -28,15 +28,15 @@ jobs:
       - run: bun run build ${{ matrix.platform }} ${{ matrix.arch }}
       - name: Package
         run: |
-          name=otel-tui-${{ matrix.platform }}-${{ matrix.arch }}
+          name=otui-${{ matrix.platform }}-${{ matrix.arch }}
           mkdir -p "package/$name"
-          cp "dist/$name" "package/$name/otel-tui"
+          cp "dist/$name" "package/$name/otui"
           cp README.md LICENSE "package/$name/"
           tar -czf "$name.tar.gz" -C package "$name"
       - uses: actions/upload-artifact@v4
         with:
-          name: otel-tui-${{ matrix.platform }}-${{ matrix.arch }}
-          path: otel-tui-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
+          name: otui-${{ matrix.platform }}-${{ matrix.arch }}
+          path: otui-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
 
   release:
     needs: build
@@ -53,8 +53,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           merge-multiple: true
-      - run: sha256sum otel-tui-*.tar.gz > checksums.txt
-      - run: gh release create "$GITHUB_REF_NAME" otel-tui-*.tar.gz checksums.txt --notes-file notes.md --repo "$GITHUB_REPOSITORY"
+      - run: sha256sum otui-*.tar.gz > checksums.txt
+      - run: gh release create "$GITHUB_REF_NAME" otui-*.tar.gz checksums.txt --notes-file notes.md --repo "$GITHUB_REPOSITORY"
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -71,7 +71,7 @@ jobs:
       - run: gh release download "$GITHUB_REF_NAME" --pattern checksums.txt --repo "$GITHUB_REPOSITORY"
         env:
           GH_TOKEN: ${{ github.token }}
-      - run: bun scripts/homebrew-formula.ts "${GITHUB_REF_NAME#v}" checksums.txt > otel-tui.rb
+      - run: bun scripts/homebrew-formula.ts "${GITHUB_REF_NAME#v}" checksums.txt > otui.rb
       - uses: actions/checkout@v5
         with:
           repository: michaltarasiuk/homebrew-tap
@@ -81,9 +81,9 @@ jobs:
         working-directory: tap
         run: |
           mkdir -p Formula
-          mv ../otel-tui.rb Formula/otel-tui.rb
+          mv ../otui.rb Formula/otui.rb
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/otel-tui.rb
-          git commit -m "otel-tui ${GITHUB_REF_NAME#v}"
+          git add Formula/otui.rb
+          git commit -m "otui ${GITHUB_REF_NAME#v}"
           git push

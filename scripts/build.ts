@@ -3,7 +3,7 @@ import type { BunPlugin } from "bun";
 import dedent from "dedent";
 
 const [platform = process.platform, arch = process.arch, outfileArg] = process.argv.slice(2);
-const outfile = outfileArg ?? `dist/otel-tui-${platform}-${arch}`;
+const outfile = outfileArg ?? `dist/otui-${platform}-${arch}`;
 
 const DUCKDB_LIBRARIES: Record<string, string> = {
   darwin: "libduckdb.dylib",
@@ -23,7 +23,7 @@ function extractedDuckdbBinding(platformArch: string, library: string) {
     const embeddedBinding = require("${bindings}/duckdb.node");
     const embeddedLibrary = require("${bindings}/${library}");
     const cache = process.env.XDG_CACHE_HOME || join(homedir(), ".cache");
-    const directory = join(cache, "otel-tui", "duckdb-${bindingsPackage.version}");
+    const directory = join(cache, "otui", "duckdb-${bindingsPackage.version}");
 
     function extract(source, name) {
       const target = join(directory, name);

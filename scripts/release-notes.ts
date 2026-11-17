@@ -1,4 +1,4 @@
-const REPOSITORY = "michaltarasiuk/otel-tui";
+const REPOSITORY = "michaltarasiuk/otui";
 
 const SECTIONS = [
   { type: "feat", heading: "Features" },

@@ -109,7 +109,7 @@ export async function startReceiver({
 }: ReceiverOptions) {
   const instance = await DuckDBInstance.create(":memory:", {
     memory_limit: `${memoryLimitBytes}B`,
-    temp_directory: join(tmpdir(), `otel-tui-${crypto.randomUUID()}`),
+    temp_directory: join(tmpdir(), `otui-${crypto.randomUUID()}`),
   });
   const connection = await instance.connect();
 

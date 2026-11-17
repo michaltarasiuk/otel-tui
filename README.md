@@ -1,4 +1,4 @@
-# otel-tui
+# otui
 
 A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
@@ -11,19 +11,19 @@ Send it data over OTLP/HTTP or OTLP/gRPC and browse it in your terminal.
 Install with [Homebrew](https://brew.sh) on macOS or Linux:
 
 ```shell
-brew install michaltarasiuk/tap/otel-tui
+brew install michaltarasiuk/tap/otui
 ```
 
 Or download the archive for your system from the
-[latest release](https://github.com/michaltarasiuk/otel-tui/releases/latest)
-(macOS and Linux, arm64 and x64), unpack it, and run `otel-tui`:
+[latest release](https://github.com/michaltarasiuk/otui/releases/latest)
+(macOS and Linux, arm64 and x64), unpack it, and run `otui`:
 
 ```shell
-tar -xzf otel-tui-darwin-arm64.tar.gz
-./otel-tui-darwin-arm64/otel-tui
+tar -xzf otui-darwin-arm64.tar.gz
+./otui-darwin-arm64/otui
 ```
 
-The first run unpacks DuckDB into `~/.cache/otel-tui` and downloads its OTLP
+The first run unpacks DuckDB into `~/.cache/otui` and downloads its OTLP
 extension, so it needs network access once.
 
 To run from source instead, install [Bun](https://bun.sh):
@@ -36,7 +36,7 @@ bun run start
 ## Send telemetry
 
 Point your OTLP exporter at `http://localhost:4318` for OTLP/HTTP or
-`http://localhost:4317` for OTLP/gRPC. Auth is off, so otel-tui listens only
+`http://localhost:4317` for OTLP/gRPC. Auth is off, so otui listens only
 on `127.0.0.1` unless you pass `--host`. To receive telemetry from containers,
 as on Linux Docker, use `--host 0.0.0.0` and point the exporter at
 `host.docker.internal` or the host's address, but only on a network you trust:
@@ -44,7 +44,7 @@ anyone who can reach the port can send data.
 
 ## Views
 
-otel-tui opens on Services. The tabs follow the way you dig into a problem:
+otui opens on Services. The tabs follow the way you dig into a problem:
 Services shows which service is slow or failing, Traces shows where the time
 goes, and Metrics and Logs fill in the rest. The views link to each other, so
 an operation opens its traces, a span its logs, and a log or an exemplar its
@@ -126,7 +126,7 @@ and attributes.
 `return` opens a metric's series with their rates, last values, or
 percentiles, plus the selected series' chart, histogram buckets, and
 exemplars. `tab` moves into the exemplars, where `return` opens an exemplar's
-trace at its span; exemplars whose trace otel-tui never received are marked
+trace at its span; exemplars whose trace otui never received are marked
 "not stored". `w` narrows the chart to the last 15, 5, or 1 minute, and
 `shift+w` widens it again.
 
@@ -170,12 +170,12 @@ as in `duration>500ms http.route=/api/cart service.name=cart`.
 
 ## MCP
 
-`otel-tui --mcp` also serves [MCP](https://modelcontextprotocol.io) on
+`otui --mcp` also serves [MCP](https://modelcontextprotocol.io) on
 `http://127.0.0.1:4320/mcp`, so a coding agent can read the telemetry you
 browse. Add it to Claude Code with:
 
 ```shell
-claude mcp add --transport http otel-tui http://127.0.0.1:4320/mcp
+claude mcp add --transport http otui http://127.0.0.1:4320/mcp
 ```
 
 The tools follow the views: `list_services`, `list_operations`, and
@@ -188,7 +188,7 @@ the spans with errors when a trace is large.
 The MCP server listens only on 127.0.0.1, whatever `--host` says, and refuses
 requests whose `Host` or `Origin` header names another site. It has no
 authentication, so any program on your machine can read your telemetry through
-it. `--headless` runs otel-tui without the terminal UI, for an agent that runs
+it. `--headless` runs otui without the terminal UI, for an agent that runs
 it in the background; `ctrl+c` stops it.
 
 ## Configuration
@@ -208,8 +208,8 @@ to a temporary directory for a few seconds, which is removed on exit.
 | `--mcp-port`     | `OTEL_TUI_MCP_PORT`          | `4320`      | Port for MCP                 |
 | `--headless`     | `OTEL_TUI_HEADLESS`          | off         | Run without the terminal UI  |
 
-A flag wins over its variable. `otel-tui --help` lists them, and
-`otel-tui --version` prints the version.
+A flag wins over its variable. `otui --help` lists them, and
+`otui --version` prints the version.
 
 ## Development
 
@@ -226,7 +226,7 @@ For realistic data, `bun run demo:up` runs the
 [OpenTelemetry Demo](https://opentelemetry.io/docs/demo/) in Docker: an online
 shop of about 20 services in different languages, with a load generator and
 feature flags that inject failures. Its collector exports everything to
-otel-tui on `OTEL_TUI_HTTP_PORT`. It needs about 6 GB of memory for Docker; stop
+otui on `OTEL_TUI_HTTP_PORT`. It needs about 6 GB of memory for Docker; stop
 it with `bun run demo:down`.
 
 ```shell

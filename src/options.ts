@@ -42,7 +42,7 @@ export type Options = z.infer<typeof Options>;
 export const VERSION = packageJson.version;
 
 export const HELP = dedent`
-  Usage: otel-tui [options]
+  Usage: otui [options]
 
   A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 

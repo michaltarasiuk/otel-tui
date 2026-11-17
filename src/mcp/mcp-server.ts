@@ -18,7 +18,7 @@ export function startMcpServer({ connection, port, version }: McpServerOptions) 
   const allowedHosts = [`${LOOPBACK_HOST}:${port}`, `localhost:${port}`];
 
   async function respond(request: Request) {
-    const server = new McpServer({ name: "otel-tui", version });
+    const server = new McpServer({ name: "otui", version });
     registerTools(server, connection);
     const transport = new WebStandardStreamableHTTPServerTransport({
       enableJsonResponse: true,

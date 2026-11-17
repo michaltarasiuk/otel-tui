@@ -14,7 +14,7 @@ const USAGE_ERROR_EXIT_CODE = 2;
 function prefixLines(message: string) {
   return message
     .split("\n")
-    .map((line) => `otel-tui: ${line}`)
+    .map((line) => `otui: ${line}`)
     .join("\n");
 }
 
@@ -83,7 +83,7 @@ if (parsed.kind === "help") {
 
   if (options.headless) {
     console.log(dedent`
-      otel-tui ${VERSION} is receiving OTLP/HTTP on ${receiver.httpUrl} and OTLP/gRPC on ${receiver.grpcUrl}
+      otui ${VERSION} is receiving OTLP/HTTP on ${receiver.httpUrl} and OTLP/gRPC on ${receiver.grpcUrl}
       ${mcp === undefined ? "MCP is off; --mcp serves it" : `MCP: ${mcp.url}`}
       Press ctrl+c to stop.
     `);

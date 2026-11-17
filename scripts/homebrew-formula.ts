@@ -1,6 +1,6 @@
 import dedent from "dedent";
 
-const REPOSITORY = "michaltarasiuk/otel-tui";
+const REPOSITORY = "michaltarasiuk/otui";
 
 const [version, checksumsPath] = process.argv.slice(2);
 if (version === undefined || checksumsPath === undefined) {
@@ -19,7 +19,7 @@ const checksums = new Map(
 );
 
 function archive(platform: string, arch: string) {
-  return `otel-tui-${platform}-${arch}.tar.gz`;
+  return `otui-${platform}-${arch}.tar.gz`;
 }
 
 function url(platform: string, arch: string) {
@@ -35,7 +35,7 @@ function sha256(platform: string, arch: string) {
 }
 
 console.log(dedent`
-  class OtelTui < Formula
+  class Otui < Formula
     desc "Terminal app for viewing OpenTelemetry traces, metrics, and logs"
     homepage "https://github.com/${REPOSITORY}"
     version "${version}"
@@ -64,11 +64,11 @@ console.log(dedent`
     end
 
     def install
-      bin.install "otel-tui"
+      bin.install "otui"
     end
 
     test do
-      assert_predicate bin/"otel-tui", :executable?
+      assert_predicate bin/"otui", :executable?
     end
   end
 `);
