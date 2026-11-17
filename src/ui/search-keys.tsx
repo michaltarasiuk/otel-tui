@@ -4,9 +4,10 @@ import type { Search } from "./use-search.ts";
 
 interface SearchKeysProps {
   search: Search;
+  onApply?: () => void;
 }
 
-export function SearchKeys({ search }: SearchKeysProps) {
+export function SearchKeys({ search, onApply }: SearchKeysProps) {
   return (
     <>
       <FocusScope focused={!search.isEditing}>
@@ -15,7 +16,13 @@ export function SearchKeys({ search }: SearchKeysProps) {
         </Key>
       </FocusScope>
       {search.isEditing && (
-        <Key name="return" onPress={() => search.apply()}>
+        <Key
+          name="return"
+          onPress={() => {
+            search.apply();
+            onApply?.();
+          }}
+        >
           apply
         </Key>
       )}

@@ -74,22 +74,60 @@ test("jumps between spans with errors", async () => {
   expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
 });
 
-test("dims the spans that don't match a search and jumps between the matches", async () => {
+test("dims the spans that don't match a search", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
   await app.waitForSelection("GET /api/cart");
 
   await search(app, "db.system=redis");
-  app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => keyHints(frame).includes("n next match"));
+  await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
 
   const frame = await app.captureSpans();
   expect(spanColors(lineSpans(frame, "valkey-cart"), "valkey-cart").fg).toEqual(color(THEME.text));
   expect(spanColors(lineSpans(frame, "POST /oteldemo"), "POST /oteldemo").fg).toEqual(
     color(THEME.textMuted),
   );
+});
+
+test("jumps to the first match when the search applies", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForSelection(PLACE_ORDER);
+
+  await search(app, "orders");
+  await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  app.mockInput.pressEnter();
+
+  expect(await app.waitForSelection("orders process")).toContain("orders process");
+});
+
+test("jumps between the matches", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CHECKOUT_ROW);
+  await app.waitForSelection(PLACE_ORDER);
+  await search(app, "card info is invalid");
+  await app.waitForFrame((frame) => frame.includes("2 of 3 spans"));
+  app.mockInput.pressEnter();
+  await app.waitForFrame((frame) => keyHints(frame).includes("n next match"));
 
   app.mockInput.pressKey("n");
+  expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
+  app.mockInput.pressKey("n");
+  expect(await app.waitForSelection(PLACE_ORDER)).toContain(PLACE_ORDER);
+  app.mockInput.pressKey("n", { shift: true });
+  expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
+});
+
+test("matches span attribute values as text", async () => {
+  await using receiver = await startTestReceiver();
+  await using app = await openTrace(receiver, CART_ROW);
+  await app.waitForSelection("GET /api/cart");
+
+  await search(app, "redis");
+
+  await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  app.mockInput.pressEnter();
+
   expect(await app.waitForSelection("valkey-cart")).toBe("● cart valkey-cart:6379 60.0ms");
 });
 
@@ -115,11 +153,11 @@ test("keeps room for the search on a narrow terminal", async () => {
 
   await search(app, "charge");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  const frame = await app.waitForFrame((frame) => frame.includes("2 of 3 spans"));
   expect(frame).toContain("/charge");
 });
 
-test("unfolds a span to jump to a match inside it", async () => {
+test("unfolds a span to jump to the match inside it", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
   await app.waitForSelection("GET /api/cart");
@@ -128,10 +166,6 @@ test("unfolds a span to jump to a match inside it", async () => {
 
   await search(app, "valkey");
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) =>
-    textLines(frame).includes("● frontend 12:00:00.000 1 of 3 spans 120.0ms"),
-  );
-  app.mockInput.pressKey("n");
 
   expect(await app.waitForSelection("valkey-cart")).toBe("● cart valkey-cart:6379 60.0ms");
   expect(spanRows(await app.waitForFrame((frame) => spanRows(frame).length === 3))).toHaveLength(3);

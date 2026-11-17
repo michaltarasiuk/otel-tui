@@ -88,9 +88,10 @@ services.
 attributes, links, and resource. `space` folds or unfolds the selected span's
 children, and `c` dims every span off the critical path, the chain of spans
 that sets how long the trace takes. `/` searches the trace's span names,
-services, and IDs, with the same terms as the list, and dims the spans that
-don't match; `n` jumps to the next match, unfolding the spans around it, and
-`shift+n` to the previous one. `e` there jumps to the next span with errors,
+services, IDs, attributes, and status messages, with the same terms as the
+list, and dims the spans that don't match. `return` jumps to the first match,
+unfolding the spans around it, `n` to the next one, and `shift+n` to the
+previous one. `e` there jumps to the next span with errors,
 `l` opens the trace's logs, and `shift+l` only the selected span's. `tab`
 moves into the span's links, where `return` opens the linked trace, or selects
 the linked span when it is in the same trace.

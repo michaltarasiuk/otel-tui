@@ -56,6 +56,7 @@ export function WaterfallPage({
   onOpenTrace,
 }: WaterfallPageProps) {
   const search = useSearch();
+  const [jumping, setJumping] = useState(false);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [showCriticalPath, setShowCriticalPath] = useState(false);
 
@@ -95,6 +96,11 @@ export function WaterfallPage({
     if (match !== undefined) {
       selectSpan(match.span_id);
     }
+  }
+
+  if (jumping && search.deferredText === search.text && selected !== undefined) {
+    setJumping(false);
+    stepToMatch(spans.indexOf(selected) - 1, 1);
   }
 
   const spanContent = useQuery(spanContentQuery(connection, traceId, deferredSelected?.span_id));
@@ -163,8 +169,8 @@ export function WaterfallPage({
         </>
       )}
       <KeyHints>
-        <SearchInput search={search} placeholder="span name, service, ID or key=value" />
-        <SearchKeys search={search} />
+        <SearchInput search={search} placeholder="span name, service, attribute or key=value" />
+        <SearchKeys search={search} onApply={() => setJumping(true)} />
         <FocusScope focused={browsing}>
           {search.text === "" && (
             <Key name="escape" onPress={() => onBack()}>
