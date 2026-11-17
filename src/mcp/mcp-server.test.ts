@@ -175,6 +175,26 @@ test("reads a counter's rate and total like the app", async () => {
   ]);
 });
 
+test("finds a metric by its exact name among many that contain it", async () => {
+  await using receiver = await startTestReceiver();
+  const containing = Array.from({ length: 600 }, (_, index) => ({
+    name: `app.requests.${index}`,
+    gauge: [{ time: new Date(), value: index }],
+  }));
+  const exact = { name: "requests", gauge: [{ time: new Date(), value: 7 }] };
+  await receiver.sendHttp(
+    "/v1/metrics",
+    metricsRequest({ service: "frontend", metrics: [...containing, exact] }),
+  );
+  await using mcp = await startTestMcp(receiver);
+
+  const metrics = await mcp.callJson("get_metric", { name: "requests" });
+
+  expect(metrics).toEqual([
+    expect.objectContaining({ name: "requests", series: [expect.objectContaining({ last: 7 })] }),
+  ]);
+});
+
 test("refuses requests from other hosts and origins", async () => {
   await using receiver = await startTestReceiver();
   await using mcp = await startTestMcp(receiver);

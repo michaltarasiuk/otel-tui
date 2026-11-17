@@ -7,7 +7,7 @@ import { readLogList } from "#logs/read-logs.ts";
 import { quantile } from "#metrics/distribution.ts";
 import { latestRate } from "#metrics/intervals.ts";
 import { BY_NAME, type Metric } from "#metrics/metric.ts";
-import { readMetricList, readMetricSeries } from "#metrics/read-metrics.ts";
+import { readMetricList, readMetricSeries, readNamedMetrics } from "#metrics/read-metrics.ts";
 import type { Series } from "#metrics/series.ts";
 import { readServiceOperations, readServiceList } from "#services/read-services.ts";
 import type { Attributes } from "#telemetry/attributes.ts";
@@ -19,7 +19,6 @@ import type { Trace } from "#traces/trace.ts";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 200;
 const MAX_TRACE_SPANS = 200;
-const MAX_METRIC_CANDIDATES = 500;
 
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 
@@ -49,10 +48,6 @@ function isoTime(timeMs: number | null) {
 
 function descending<T>(column: T) {
   return { column, descending: true };
-}
-
-function isMetricNamed(metric: Metric, name: string, service: string | undefined) {
-  return metric.name === name && (service === undefined || metric.service_name === service);
 }
 
 function traceSummary(trace: Trace) {
@@ -258,12 +253,7 @@ export function registerTools(server: McpServer, connection: DuckDBConnection) {
       annotations: READ_ONLY,
     },
     async ({ name, service }) => {
-      const candidates = await readMetricList(
-        connection,
-        { search: name, sort: BY_NAME },
-        MAX_METRIC_CANDIDATES,
-      );
-      const metrics = candidates.filter((metric) => isMetricNamed(metric, name, service));
+      const metrics = await readNamedMetrics(connection, name, service);
       if (metrics.length === 0) {
         const from = service === undefined ? "" : ` from ${service}`;
         return textResult(`No metric named ${name}${from}`);

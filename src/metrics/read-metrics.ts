@@ -13,7 +13,7 @@ import seriesExemplars from "#metrics/sql/series-exemplars.sql" with { type: "te
 import { searchParams } from "#telemetry/search.ts";
 import { sortParams } from "#utils/sort.ts";
 
-import { Metric, type MetricSort } from "./metric.ts";
+import { BY_NAME, Metric, type MetricSort } from "./metric.ts";
 import {
   Exemplar,
   ExponentialHistogramPoint,
@@ -48,7 +48,24 @@ export async function readMetricList(
   const reader = await connection.runAndReadAll(metricList, {
     limit,
     ...searchParams(search),
+    name: null,
+    serviceName: null,
     ...sortParams(sort),
+  });
+  return Metric.array().parse(reader.getRowObjectsJS());
+}
+
+export async function readNamedMetrics(
+  connection: DuckDBConnection,
+  name: string,
+  serviceName: string | undefined,
+) {
+  const reader = await connection.runAndReadAll(metricList, {
+    limit: null,
+    ...searchParams(""),
+    name,
+    serviceName: serviceName ?? null,
+    ...sortParams(BY_NAME),
   });
   return Metric.array().parse(reader.getRowObjectsJS());
 }

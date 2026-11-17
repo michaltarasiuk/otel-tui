@@ -70,6 +70,8 @@ WITH series AS (
       OR bool_or(metric_attributes ILIKE $pattern ESCAPE '\')
     )
     AND bool_or(matches_filters($attributes, NULL::JSON, metric_attributes, resource_attributes))
+    AND ($name IS NULL OR name = $name)
+    AND ($serviceName IS NULL OR service_name = $serviceName)
 )
 SELECT *
 FROM metrics
