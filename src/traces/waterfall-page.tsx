@@ -15,7 +15,7 @@ import { SearchKeys } from "#ui/search-keys.tsx";
 import { Split } from "#ui/split.tsx";
 import { useSearch } from "#ui/use-search.ts";
 import { useSelection } from "#ui/use-selection.ts";
-import { findNextIndex } from "#utils/cycle.ts";
+import { findNextIndex, type Step } from "#utils/cycle.ts";
 import { toggle } from "#utils/set.ts";
 
 import { canOpenLink, LinkList } from "./link-list.tsx";
@@ -84,6 +84,17 @@ export function WaterfallPage({
   function selectSpan(spanId: string) {
     setCollapsed((collapsed) => expandTo(spans, collapsed, spanId));
     selection.selectKey(spanId);
+  }
+
+  function stepToMatch(index: number, step: Step) {
+    if (matches === null || matches.size === 0) {
+      return;
+    }
+    const next = findNextIndex(spans, index, step, (span) => matches.has(span.span_id));
+    const match = spans[next];
+    if (match !== undefined) {
+      selectSpan(match.span_id);
+    }
   }
 
   const spanContent = useQuery(spanContentQuery(connection, traceId, deferredSelected?.span_id));
@@ -205,15 +216,7 @@ export function WaterfallPage({
                     forward="n"
                     backward="shift+n"
                     backwardDescription="previous match"
-                    onStep={(step) => {
-                      const index = findNextIndex(spans, spans.indexOf(selected), step, (span) =>
-                        matches.has(span.span_id),
-                      );
-                      const match = spans[index];
-                      if (match !== undefined) {
-                        selectSpan(match.span_id);
-                      }
-                    }}
+                    onStep={(step) => stepToMatch(spans.indexOf(selected), step)}
                   >
                     next match
                   </StepKeys>
