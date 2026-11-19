@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "otel-tui",
+      "name": "otui",
       "dependencies": {
         "@duckdb/node-api": "2.0.0-r.1",
         "@modelcontextprotocol/sdk": "1.32.2",
