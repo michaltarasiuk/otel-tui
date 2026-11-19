@@ -197,16 +197,16 @@ Telemetry is kept in memory for the retention period. When it nears the memory
 limit, the oldest telemetry is dropped first. A burst that outpaces this spills
 to a temporary directory for a few seconds, which is removed on exit.
 
-| Flag             | Variable                     | Default     | Meaning                      |
-| ---------------- | ---------------------------- | ----------- | ---------------------------- |
-| `--host`         | `OTEL_TUI_HOST`              | `127.0.0.1` | Address OTLP listens on      |
-| `--http-port`    | `OTEL_TUI_HTTP_PORT`         | `4318`      | Port for OTLP/HTTP           |
-| `--grpc-port`    | `OTEL_TUI_GRPC_PORT`         | `4317`      | Port for OTLP/gRPC           |
-| `--retention`    | `OTEL_TUI_RETENTION_MINUTES` | `60`        | How long telemetry is kept   |
-| `--memory-limit` | `OTEL_TUI_MEMORY_LIMIT_MB`   | `1024`      | Memory for telemetry, in MiB |
-| `--mcp`          | `OTEL_TUI_MCP`               | off         | Serve MCP                    |
-| `--mcp-port`     | `OTEL_TUI_MCP_PORT`          | `4320`      | Port for MCP                 |
-| `--headless`     | `OTEL_TUI_HEADLESS`          | off         | Run without the terminal UI  |
+| Flag             | Variable                 | Default     | Meaning                      |
+| ---------------- | ------------------------ | ----------- | ---------------------------- |
+| `--host`         | `OTUI_HOST`              | `127.0.0.1` | Address OTLP listens on      |
+| `--http-port`    | `OTUI_HTTP_PORT`         | `4318`      | Port for OTLP/HTTP           |
+| `--grpc-port`    | `OTUI_GRPC_PORT`         | `4317`      | Port for OTLP/gRPC           |
+| `--retention`    | `OTUI_RETENTION_MINUTES` | `60`        | How long telemetry is kept   |
+| `--memory-limit` | `OTUI_MEMORY_LIMIT_MB`   | `1024`      | Memory for telemetry, in MiB |
+| `--mcp`          | `OTUI_MCP`               | off         | Serve MCP                    |
+| `--mcp-port`     | `OTUI_MCP_PORT`          | `4320`      | Port for MCP                 |
+| `--headless`     | `OTUI_HEADLESS`          | off         | Run without the terminal UI  |
 
 A flag wins over its variable. `otui --help` lists them, and
 `otui --version` prints the version.
@@ -226,7 +226,7 @@ For realistic data, `bun run demo:up` runs the
 [OpenTelemetry Demo](https://opentelemetry.io/docs/demo/) in Docker: an online
 shop of about 20 services in different languages, with a load generator and
 feature flags that inject failures. Its collector exports everything to
-otui on `OTEL_TUI_HTTP_PORT`. It needs about 6 GB of memory for Docker; stop
+otui on `OTUI_HTTP_PORT`. It needs about 6 GB of memory for Docker; stop
 it with `bun run demo:down`.
 
 ```shell

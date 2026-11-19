@@ -28,14 +28,14 @@ function toggle(name: string) {
 }
 
 const Options = z.object({
-  host: host("--host (OTEL_TUI_HOST)").default(LOOPBACK_HOST),
-  httpPort: port("--http-port (OTEL_TUI_HTTP_PORT)").default(4318),
-  grpcPort: port("--grpc-port (OTEL_TUI_GRPC_PORT)").default(4317),
-  retentionMinutes: positive("--retention (OTEL_TUI_RETENTION_MINUTES)").default(60),
-  memoryLimitMb: positive("--memory-limit (OTEL_TUI_MEMORY_LIMIT_MB)").default(1024),
-  mcp: toggle("--mcp (OTEL_TUI_MCP)").default(false),
-  mcpPort: port("--mcp-port (OTEL_TUI_MCP_PORT)").default(4320),
-  headless: toggle("--headless (OTEL_TUI_HEADLESS)").default(false),
+  host: host("--host (OTUI_HOST)").default(LOOPBACK_HOST),
+  httpPort: port("--http-port (OTUI_HTTP_PORT)").default(4318),
+  grpcPort: port("--grpc-port (OTUI_GRPC_PORT)").default(4317),
+  retentionMinutes: positive("--retention (OTUI_RETENTION_MINUTES)").default(60),
+  memoryLimitMb: positive("--memory-limit (OTUI_MEMORY_LIMIT_MB)").default(1024),
+  mcp: toggle("--mcp (OTUI_MCP)").default(false),
+  mcpPort: port("--mcp-port (OTUI_MCP_PORT)").default(4320),
+  headless: toggle("--headless (OTUI_HEADLESS)").default(false),
 });
 export type Options = z.infer<typeof Options>;
 
@@ -47,14 +47,14 @@ export const HELP = dedent`
   A terminal app for viewing OpenTelemetry traces, metrics, and logs.
 
   Options:
-    --host <address>        Address OTLP listens on (default ${LOOPBACK_HOST}, env OTEL_TUI_HOST)
-    --http-port <port>      Port for OTLP/HTTP (default 4318, env OTEL_TUI_HTTP_PORT)
-    --grpc-port <port>      Port for OTLP/gRPC (default 4317, env OTEL_TUI_GRPC_PORT)
-    --retention <minutes>   How long telemetry is kept (default 60, env OTEL_TUI_RETENTION_MINUTES)
-    --memory-limit <MiB>    Memory for telemetry (default 1024, env OTEL_TUI_MEMORY_LIMIT_MB)
-    --mcp                   Serve MCP tools that read telemetry on ${LOOPBACK_HOST} (env OTEL_TUI_MCP)
-    --mcp-port <port>       Port for MCP (default 4320, env OTEL_TUI_MCP_PORT)
-    --headless              Run without the terminal UI (env OTEL_TUI_HEADLESS)
+    --host <address>        Address OTLP listens on (default ${LOOPBACK_HOST}, env OTUI_HOST)
+    --http-port <port>      Port for OTLP/HTTP (default 4318, env OTUI_HTTP_PORT)
+    --grpc-port <port>      Port for OTLP/gRPC (default 4317, env OTUI_GRPC_PORT)
+    --retention <minutes>   How long telemetry is kept (default 60, env OTUI_RETENTION_MINUTES)
+    --memory-limit <MiB>    Memory for telemetry (default 1024, env OTUI_MEMORY_LIMIT_MB)
+    --mcp                   Serve MCP tools that read telemetry on ${LOOPBACK_HOST} (env OTUI_MCP)
+    --mcp-port <port>       Port for MCP (default 4320, env OTUI_MCP_PORT)
+    --headless              Run without the terminal UI (env OTUI_HEADLESS)
     -h, --help              Show this help
     -v, --version           Show the version
 `;
@@ -96,14 +96,14 @@ export function parseOptions(args: string[], env: Record<string, string | undefi
   }
 
   const options = Options.safeParse({
-    host: values.host ?? env["OTEL_TUI_HOST"],
-    httpPort: values["http-port"] ?? env["OTEL_TUI_HTTP_PORT"],
-    grpcPort: values["grpc-port"] ?? env["OTEL_TUI_GRPC_PORT"],
-    retentionMinutes: values.retention ?? env["OTEL_TUI_RETENTION_MINUTES"],
-    memoryLimitMb: values["memory-limit"] ?? env["OTEL_TUI_MEMORY_LIMIT_MB"],
-    mcp: values.mcp ?? env["OTEL_TUI_MCP"],
-    mcpPort: values["mcp-port"] ?? env["OTEL_TUI_MCP_PORT"],
-    headless: values.headless ?? env["OTEL_TUI_HEADLESS"],
+    host: values.host ?? env["OTUI_HOST"],
+    httpPort: values["http-port"] ?? env["OTUI_HTTP_PORT"],
+    grpcPort: values["grpc-port"] ?? env["OTUI_GRPC_PORT"],
+    retentionMinutes: values.retention ?? env["OTUI_RETENTION_MINUTES"],
+    memoryLimitMb: values["memory-limit"] ?? env["OTUI_MEMORY_LIMIT_MB"],
+    mcp: values.mcp ?? env["OTUI_MCP"],
+    mcpPort: values["mcp-port"] ?? env["OTUI_MCP_PORT"],
+    headless: values.headless ?? env["OTUI_HEADLESS"],
   });
   if (!options.success) {
     throw new OptionsError(options.error.issues.map((issue) => issue.message).join("\n"));

@@ -54,14 +54,14 @@ test("reads each option from its flag", () => {
 
 test("reads each option from the environment", () => {
   const env = {
-    OTEL_TUI_HOST: "localhost",
-    OTEL_TUI_HTTP_PORT: "9001",
-    OTEL_TUI_GRPC_PORT: "9002",
-    OTEL_TUI_RETENTION_MINUTES: "5",
-    OTEL_TUI_MEMORY_LIMIT_MB: "256",
-    OTEL_TUI_MCP: "true",
-    OTEL_TUI_MCP_PORT: "9003",
-    OTEL_TUI_HEADLESS: "1",
+    OTUI_HOST: "localhost",
+    OTUI_HTTP_PORT: "9001",
+    OTUI_GRPC_PORT: "9002",
+    OTUI_RETENTION_MINUTES: "5",
+    OTUI_MEMORY_LIMIT_MB: "256",
+    OTUI_MCP: "true",
+    OTUI_MCP_PORT: "9003",
+    OTUI_HEADLESS: "1",
   };
 
   expect(parseOptions([], env)).toEqual(
@@ -79,7 +79,7 @@ test("reads each option from the environment", () => {
 });
 
 test("prefers flags over the environment", () => {
-  expect(parseOptions(["--http-port", "9000"], { OTEL_TUI_HTTP_PORT: "14318" })).toEqual(
+  expect(parseOptions(["--http-port", "9000"], { OTUI_HTTP_PORT: "14318" })).toEqual(
     run({ httpPort: 9000 }),
   );
 });
@@ -93,14 +93,14 @@ test("asks for help or the version", () => {
 
 test("names each invalid option with its flag and variable", () => {
   const args = ["--host", "not a host", "--http-port", "nope", "--retention", "0"];
-  const env = { OTEL_TUI_GRPC_PORT: "70000", OTEL_TUI_MCP: "maybe" };
+  const env = { OTUI_GRPC_PORT: "70000", OTUI_MCP: "maybe" };
   const error = new OptionsError(
     [
-      "--host (OTEL_TUI_HOST) must be an IPv4 address or a hostname",
-      "--http-port (OTEL_TUI_HTTP_PORT) must be a whole number from 1 to 65535",
-      "--grpc-port (OTEL_TUI_GRPC_PORT) must be a whole number from 1 to 65535",
-      "--retention (OTEL_TUI_RETENTION_MINUTES) must be a number above 0",
-      "--mcp (OTEL_TUI_MCP) must be true or false",
+      "--host (OTUI_HOST) must be an IPv4 address or a hostname",
+      "--http-port (OTUI_HTTP_PORT) must be a whole number from 1 to 65535",
+      "--grpc-port (OTUI_GRPC_PORT) must be a whole number from 1 to 65535",
+      "--retention (OTUI_RETENTION_MINUTES) must be a number above 0",
+      "--mcp (OTUI_MCP) must be true or false",
     ].join("\n"),
   );
 
