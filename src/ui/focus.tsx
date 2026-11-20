@@ -2,15 +2,24 @@ import { createContext, use } from "react";
 
 import type { Step } from "#utils/cycle.ts";
 
-const FocusContext = createContext(true);
-const FocusRequestContext = createContext(() => {});
-
-interface RegionLevel {
+interface Focus {
+  focused: boolean;
+  keysEnabled: boolean;
+  requestFocus: () => void;
   depth: number;
   stepOut?: ((step: Step) => void) | undefined;
 }
 
-const RegionLevelContext = createContext<RegionLevel>({ depth: 0 });
+const FocusContext = createContext<Focus>({
+  focused: true,
+  keysEnabled: true,
+  requestFocus: () => {},
+  depth: 0,
+});
+
+export function useFocus() {
+  return use(FocusContext);
+}
 
 interface FocusScopeProps {
   focused: boolean;
@@ -20,42 +29,23 @@ interface FocusScopeProps {
 }
 
 export function FocusScope({ focused, onFocusRequest, onStepOut, children }: FocusScopeProps) {
-  const parentFocused = useFocused();
-  const requestParentFocus = useFocusRequest();
-  const parentLevel = useRegionLevel();
+  const parent = useFocus();
 
   return (
-    <FocusContext value={parentFocused && focused}>
-      <FocusRequestContext
-        value={() => {
-          requestParentFocus();
+    <FocusContext
+      value={{
+        ...parent,
+        focused: parent.focused && focused,
+        requestFocus: () => {
+          parent.requestFocus();
           onFocusRequest?.();
-        }}
-      >
-        <RegionLevelContext
-          value={
-            onStepOut === undefined
-              ? parentLevel
-              : { depth: parentLevel.depth + 1, stepOut: onStepOut }
-          }
-        >
-          {children}
-        </RegionLevelContext>
-      </FocusRequestContext>
+        },
+        ...(onStepOut === undefined ? {} : { depth: parent.depth + 1, stepOut: onStepOut }),
+      }}
+    >
+      {children}
     </FocusContext>
   );
-}
-
-export function useFocused() {
-  return use(FocusContext);
-}
-
-export function useFocusRequest() {
-  return use(FocusRequestContext);
-}
-
-export function useRegionLevel() {
-  return use(RegionLevelContext);
 }
 
 interface FocusRootProps {
@@ -63,14 +53,14 @@ interface FocusRootProps {
 }
 
 export function FocusRoot({ children }: FocusRootProps) {
+  const parent = useFocus();
+
   return (
-    <FocusContext value>
-      <RegionLevelContext value={{ depth: 0 }}>{children}</RegionLevelContext>
+    <FocusContext value={{ ...parent, focused: true, depth: 0, stepOut: undefined }}>
+      {children}
     </FocusContext>
   );
 }
-
-const KeysContext = createContext(true);
 
 interface KeysScopeProps {
   enabled: boolean;
@@ -78,9 +68,11 @@ interface KeysScopeProps {
 }
 
 export function KeysScope({ enabled, children }: KeysScopeProps) {
-  return <KeysContext value={useKeysEnabled() && enabled}>{children}</KeysContext>;
-}
+  const parent = useFocus();
 
-export function useKeysEnabled() {
-  return use(KeysContext);
+  return (
+    <FocusContext value={{ ...parent, keysEnabled: parent.keysEnabled && enabled }}>
+      {children}
+    </FocusContext>
+  );
 }

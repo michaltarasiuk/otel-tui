@@ -4,7 +4,7 @@ import { useEffectEvent, useRef, useState } from "react";
 
 import { clamp } from "#utils/number.ts";
 
-import { useFocused, useFocusRequest, useKeysEnabled } from "./focus.tsx";
+import { useFocus } from "./focus.tsx";
 import { SelectedContext } from "./table.tsx";
 import { THEME } from "./theme.ts";
 import { useScrollGesture } from "./use-scroll-gesture.ts";
@@ -18,8 +18,7 @@ interface RowsProps<T> {
 }
 
 export function Rows<T>({ items, selection, halfPageKeys = false, children }: RowsProps<T>) {
-  const focused = useFocused();
-  const keysEnabled = useKeysEnabled();
+  const { focused, keysEnabled } = useFocus();
   const claimScroll = useScrollGesture();
 
   const [measured, setMeasured] = useState({ height: items.length, itemCount: items.length });
@@ -134,7 +133,7 @@ interface SelectableProps<T> {
 }
 
 export function Selectable<T>({ selection, index, children }: SelectableProps<T>) {
-  const requestFocus = useFocusRequest();
+  const { requestFocus } = useFocus();
 
   return (
     <box

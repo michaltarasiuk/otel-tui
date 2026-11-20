@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { cycle, type Step } from "#utils/cycle.ts";
 
-import { useRegionLevel } from "./focus.tsx";
+import { useFocus } from "./focus.tsx";
 import { StepKeys } from "./key-hints.tsx";
 
 export function useRegion<T>(regions: readonly [T, ...T[]]) {
@@ -19,7 +19,7 @@ interface RegionKeysProps<T> {
 }
 
 export function RegionKeys<T>({ regions, region, onChange, children }: RegionKeysProps<T>) {
-  const { depth, stepOut } = useRegionLevel();
+  const { depth, stepOut } = useFocus();
 
   function step(step: Step) {
     const next = regions[regions.indexOf(region) + step];

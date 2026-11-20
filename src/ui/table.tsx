@@ -4,7 +4,7 @@ import { createContext, use } from "react";
 import type { Sort } from "#utils/sort.ts";
 
 import { COLUMN_GAP } from "./columns.ts";
-import { useFocused } from "./focus.tsx";
+import { useFocus } from "./focus.tsx";
 import { THEME } from "./theme.ts";
 
 type Align = "left" | "right";
@@ -66,7 +66,7 @@ interface RowProps {
 }
 
 export function Row({ children }: RowProps) {
-  const focused = useFocused();
+  const { focused } = useFocus();
   const selected = use(SelectedContext);
 
   return (

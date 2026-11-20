@@ -5,7 +5,7 @@ import { cycle } from "#utils/cycle.ts";
 import type { Sort } from "#utils/sort.ts";
 
 import { COLUMN_GAP } from "./columns.ts";
-import { FocusRoot, useFocused, useKeysEnabled } from "./focus.tsx";
+import { FocusRoot, useFocus } from "./focus.tsx";
 import { THEME } from "./theme.ts";
 
 export const AppKeys = createContext<React.ReactNode>(null);
@@ -32,8 +32,7 @@ interface KeyProps {
 }
 
 export function Key({ name, priority = 0, description, onPress, children }: KeyProps) {
-  const focused = useFocused();
-  const keysEnabled = useKeysEnabled();
+  const { focused, keysEnabled } = useFocus();
   const command = useId();
   const press = useEffectEvent(() => onPress());
 

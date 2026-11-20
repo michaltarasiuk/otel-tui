@@ -1,4 +1,4 @@
-import { useFocused } from "./focus.tsx";
+import { useFocus } from "./focus.tsx";
 import { THEME } from "./theme.ts";
 import type { Search } from "./use-search.ts";
 
@@ -10,7 +10,7 @@ interface SearchInputProps {
 }
 
 export function SearchInput({ search, placeholder }: SearchInputProps) {
-  const focused = useFocused();
+  const { focused } = useFocus();
 
   if (!search.isEditing && search.text === "") {
     return null;
