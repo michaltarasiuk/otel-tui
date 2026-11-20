@@ -176,24 +176,22 @@ export function TracesPage({
           )}
         </FocusScope>
         <FocusScope focused={browsing}>
-          {search.text === "" && timeRange.selected !== undefined && (
-            <Key name="escape" onPress={() => timeRange.clear()}>
-              any time
-            </Key>
-          )}
-          {search.text === "" && timeRange.selected === undefined && onBack !== undefined && (
-            <Key name="escape" onPress={() => onBack()}>
-              back
-            </Key>
-          )}
           {search.text === "" &&
-            timeRange.selected === undefined &&
-            onBack === undefined &&
-            service !== undefined && (
-              <Key name="escape" onPress={() => onServiceChange(undefined)}>
-                all traces
+            (timeRange.selected !== undefined ? (
+              <Key name="escape" onPress={() => timeRange.clear()}>
+                any time
               </Key>
-            )}
+            ) : onBack !== undefined ? (
+              <Key name="escape" onPress={() => onBack()}>
+                back
+              </Key>
+            ) : (
+              service !== undefined && (
+                <Key name="escape" onPress={() => onServiceChange(undefined)}>
+                  all traces
+                </Key>
+              )
+            ))}
           {timeline.occupied.length > 0 && (
             <StepKeys
               forward="right"

@@ -155,11 +155,22 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
           )}
         </FocusScope>
         <FocusScope focused={browsing}>
-          {search.text === "" && timeRange.selected !== undefined && (
-            <Key name="escape" onPress={() => timeRange.clear()}>
-              any time
-            </Key>
-          )}
+          {search.text === "" &&
+            (timeRange.selected !== undefined ? (
+              <Key name="escape" onPress={() => timeRange.clear()}>
+                any time
+              </Key>
+            ) : onBack !== undefined ? (
+              <Key name="escape" onPress={() => onBack()}>
+                back
+              </Key>
+            ) : (
+              traceId !== undefined && (
+                <Key name="escape" onPress={() => onTraceChange(undefined)}>
+                  all logs
+                </Key>
+              )
+            ))}
           {timeline.occupied.length > 0 && (
             <StepKeys
               forward="right"
@@ -171,19 +182,6 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
               range
             </StepKeys>
           )}
-          {search.text === "" && timeRange.selected === undefined && onBack !== undefined && (
-            <Key name="escape" onPress={() => onBack()}>
-              back
-            </Key>
-          )}
-          {search.text === "" &&
-            timeRange.selected === undefined &&
-            onBack === undefined &&
-            traceId !== undefined && (
-              <Key name="escape" onPress={() => onTraceChange(undefined)}>
-                all logs
-              </Key>
-            )}
           <StepKeys
             forward="s"
             backwardDescription="lower severity"
