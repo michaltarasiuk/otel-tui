@@ -22,15 +22,10 @@ import { findNextIndex } from "#utils/cycle.ts";
 import { formatShownCount } from "#utils/number.ts";
 import { formatDuration } from "#utils/time.ts";
 
+import { MarkKeys } from "./mark-keys.tsx";
 import { traceListQuery, traceTimelineQuery } from "./trace-queries.ts";
 import { TraceTable } from "./trace-table.tsx";
-import {
-  type MarkedTrace,
-  sameRoot,
-  TRACE_SORT_COLUMNS,
-  type Trace,
-  type TraceSort,
-} from "./trace.ts";
+import { type MarkedTrace, TRACE_SORT_COLUMNS, type Trace, type TraceSort } from "./trace.ts";
 
 const PAGE_HEADER_HEIGHT = 1;
 const MIN_TABLE_HEIGHT = 6;
@@ -92,11 +87,6 @@ export function TracesPage({
   const selection = useSelection(traces, (trace) => trace.trace_id);
   const { selected } = selection;
   const markedRow = traces.find((trace) => trace.trace_id === marked?.traceId);
-  const comparable =
-    markedRow !== undefined &&
-    selected !== undefined &&
-    markedRow.trace_id !== selected.trace_id &&
-    sameRoot(markedRow, selected);
 
   const filtered =
     search.deferredText !== "" ||
@@ -156,35 +146,15 @@ export function TracesPage({
               >
                 open
               </Key>
-              <Key
-                name="m"
-                description={
-                  marked?.traceId === selected.trace_id
-                    ? "unmark the trace to compare with"
-                    : "mark the trace to compare with"
-                }
-                onPress={() =>
-                  onMark(
-                    marked?.traceId === selected.trace_id
-                      ? undefined
-                      : {
-                          traceId: selected.trace_id,
-                          root: { service_name: selected.service_name, name: selected.name },
-                        },
-                  )
-                }
-              >
-                {marked?.traceId === selected.trace_id ? "unmark" : "mark"}
-              </Key>
-              {comparable && (
-                <Key
-                  name="v"
-                  description="compare with the marked trace, which has the same root span"
-                  onPress={() => onCompare(markedRow.trace_id, selected.trace_id)}
-                >
-                  compare
-                </Key>
-              )}
+              <MarkKeys
+                trace={{
+                  traceId: selected.trace_id,
+                  root: { service_name: selected.service_name, name: selected.name },
+                }}
+                marked={markedRow === undefined ? undefined : marked}
+                onMark={(marked) => onMark(marked)}
+                onCompare={(before, after) => onCompare(before, after)}
+              />
               <CopyKey name="y" text={selected.trace_id}>
                 copy id
               </CopyKey>

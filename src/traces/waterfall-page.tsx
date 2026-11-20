@@ -19,6 +19,7 @@ import { findNextIndex, type Step } from "#utils/cycle.ts";
 import { toggle } from "#utils/set.ts";
 
 import { canOpenLink, LinkList } from "./link-list.tsx";
+import { MarkKeys } from "./mark-keys.tsx";
 import { SpanDetails } from "./span-details.tsx";
 import {
   criticalPath,
@@ -32,7 +33,7 @@ import { SpanWaterfall } from "./span-waterfall.tsx";
 import type { SpanLink } from "./span.ts";
 import { TraceHeader } from "./trace-header.tsx";
 import { spanContentQuery, spanMatchesQuery, traceSpansQuery } from "./trace-queries.ts";
-import { type MarkedTrace, sameRoot } from "./trace.ts";
+import type { MarkedTrace } from "./trace.ts";
 
 interface WaterfallPageProps {
   traceId: string;
@@ -181,34 +182,13 @@ export function WaterfallPage({
             logs
           </Key>
           {root !== undefined && (
-            <Key
-              name="m"
-              description={
-                marked?.traceId === traceId
-                  ? "unmark the trace to compare with"
-                  : "mark the trace to compare with"
-              }
-              onPress={() =>
-                onMark(
-                  marked?.traceId === traceId
-                    ? undefined
-                    : { traceId, root: { service_name: root.service_name, name: root.name } },
-                )
-              }
+            <MarkKeys
+              trace={{ traceId, root: { service_name: root.service_name, name: root.name } }}
+              marked={marked}
+              onMark={(marked) => onMark(marked)}
+              onCompare={(before, after) => onCompare(before, after)}
             />
           )}
-          {root !== undefined &&
-            marked !== undefined &&
-            marked.traceId !== traceId &&
-            sameRoot(marked.root, root) && (
-              <Key
-                name="v"
-                description="compare with the marked trace, which has the same root span"
-                onPress={() => onCompare(marked.traceId, traceId)}
-              >
-                compare
-              </Key>
-            )}
           {selected !== undefined && (
             <>
               <FocusScope focused={region === "spans"}>
