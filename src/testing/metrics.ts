@@ -1,4 +1,4 @@
-import { renderPage, selectRow } from "./app.tsx";
+import { renderPage } from "./app.tsx";
 import { atSecond } from "./clock.ts";
 import { metricsRequest, TEMPORALITY } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
@@ -178,7 +178,7 @@ export async function renderMetricList(receiver: TestReceiver, { size }: ListOpt
 
 export async function openMetric(receiver: TestReceiver, row: string) {
   const app = await renderMetricList(receiver, { size: DETAILS_SIZE });
-  await selectRow(app, BY_NAME, row);
+  await app.selectRow(row);
   app.mockInput.pressEnter();
   await app.waitForFrame(onDetails);
   return app;

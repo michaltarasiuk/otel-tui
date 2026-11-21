@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { openTab, renderApp, search } from "#testing/app.tsx";
+import { renderApp } from "#testing/app.tsx";
 import { startTestReceiver } from "#testing/receiver.ts";
 import { keyHints, onList } from "#testing/screen.ts";
 import { collapseWhitespace } from "#utils/text.ts";
@@ -8,13 +8,13 @@ import { collapseWhitespace } from "#utils/text.ts";
 test("lists every key of the focused page in a help overlay", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await openTab(app, "traces");
+  await app.openTab("traces");
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
 
   app.mockInput.pressKey("?");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Keys"));
+  const frame = await app.waitForText("Keys");
   for (const line of [
     "/ search",
     "s status",
@@ -34,22 +34,22 @@ test("lists every key of the focused page in a help overlay", async () => {
 test("types ? into the search instead of opening help", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await openTab(app, "traces");
+  await app.openTab("traces");
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
-  await search(app, "?");
+  await app.search("?");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("/?"));
+  const frame = await app.waitForText("/?");
   expect(frame).not.toContain("Keys");
 });
 
 test("offers only the search's keys while typing a search", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await openTab(app, "traces");
+  await app.openTab("traces");
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
-  await search(app, "cart");
+  await app.search("cart");
 
   let frame = await app.waitForFrame((frame) => keyHints(frame).startsWith("/cart"));
   expect(keyHints(frame)).toEndWith("return apply escape clear");

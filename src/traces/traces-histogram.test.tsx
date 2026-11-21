@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import { RGBA } from "@opentui/core";
 
-import { renderPage, search, type TestApp } from "#testing/app.tsx";
+import { renderPage, type TestApp } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver, type TestReceiver } from "#testing/receiver.ts";
@@ -89,7 +89,7 @@ async function renderHistogram(
     await receiver.sendHttp("/v1/traces", oldTrace);
   }
   const app = await renderPage(receiver, "traces", { size });
-  await app.waitForFrame((frame) => frame.includes(TIMELINE_STATUS_ROW.slice(0, 12)));
+  await app.waitForText(TIMELINE_STATUS_ROW.slice(0, 12));
   return app;
 }
 async function showsOnly(app: TestApp, row: string, range: string, totalCount = 3) {
@@ -113,7 +113,7 @@ test("draws a histogram of traces over time above the list", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("12:00"));
+  const frame = await app.waitForText("12:00");
 
   expect(pageHeader(frame)).toBe("3 traces");
   expect(chartLines(frame)).toEqual([
@@ -126,7 +126,7 @@ test("draws a histogram of traces over time above the list", async () => {
 test("colors the histogram's errors apart from the other traces", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver);
-  await app.waitForFrame((frame) => frame.includes("Traces over time"));
+  await app.waitForText("Traces over time");
 
   expect((await barSpans(app)).map((span) => span.fg.toInts())).toEqual(
     [THEME.bar, THEME.textError, THEME.bar].map((hex) => RGBA.fromHex(hex).toInts()),
@@ -137,7 +137,7 @@ test("narrows the histogram with the search and the errors filter", async () => 
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver);
 
-  await search(app, "cart");
+  await app.search("cart");
   let frame = await app.waitForFrame((frame) => !frame.includes("■ errors"));
   expect(chartLines(frame)).toEqual([
     "Traces over time 10s per column",
@@ -146,9 +146,9 @@ test("narrows the histogram with the search and the errors filter", async () => 
   ]);
 
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => frame.includes("■ errors"));
+  await app.waitForText("■ errors");
   app.mockInput.pressKey("s");
-  frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  frame = await app.waitForText("1 of 3 traces");
   expect(chartLines(frame)).toEqual([
     "Traces over time ■ errors 10s per column",
     ...Array.from({ length: 4 }, () => bar),
@@ -177,7 +177,7 @@ test("scrolls the timeline to keep the marker in view", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver, { withOldTrace: true });
 
-  let frame = await app.waitForFrame((frame) => frame.includes("◀ earlier"));
+  let frame = await app.waitForText("◀ earlier");
   expect(frame).not.toContain("later ▶");
   expect(axisLine(frame)).toBe(MINUTE_TICKS);
 
@@ -206,7 +206,7 @@ test("highlights the selected bucket's column", async () => {
   await using app = await renderHistogram(receiver);
 
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  await app.waitForText("1 of 3 traces");
 
   const highlighted = (await app.captureSpans()).lines.filter(({ spans }) =>
     spans.some((span) => span.bg.equals(RGBA.fromHex(THEME.backgroundSelected))),
@@ -218,7 +218,7 @@ test("clears the selected bucket with escape", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver);
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("escape any time"));
+  await app.waitForText("escape any time");
 
   app.mockInput.pressEscape();
 
@@ -230,11 +230,11 @@ test("keeps the selected bucket when the search leaves it without traces", async
   await using receiver = await startTestReceiver();
   await using app = await renderHistogram(receiver);
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  await app.waitForText("1 of 3 traces");
 
-  await search(app, "cart");
+  await app.search("cart");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
+  const frame = await app.waitForText("No traces match");
   expect(pageHeader(frame)).toBe("12:00:40–12:00:50 0 of 3 traces");
   expect(keyHints(frame)).toStartWith("/cart ");
   expect(frame).toContain("Traces over time");

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { renderFailedPage, renderPage, search } from "#testing/app.tsx";
+import { renderFailedPage, renderPage } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { silenceConsoleError } from "#testing/console.ts";
 import {
@@ -22,7 +22,6 @@ import {
   keyHints,
   lineSpans,
   listLines,
-  onDetails,
   onList,
   pageHeader,
   spanColors,
@@ -36,7 +35,7 @@ test("waits for logs before any arrive", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderPage(receiver, "logs");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Waiting for logs..."));
+  const frame = await app.waitForText("Waiting for logs...");
 
   expect(frame).toContain("0 logs");
 });
@@ -45,7 +44,7 @@ test("lists logs newest first, falling back to the observed time", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("7 logs"));
+  const frame = await app.waitForText("7 logs");
 
   expect(textLines(frame)).toContain("Time Severity Service Body");
   expect(tableRows(frame)).toEqual(NEWEST_FIRST);
@@ -84,7 +83,7 @@ test("wraps the severity filter around to show every log again", async () => {
   await using app = await renderLogList(receiver);
 
   app.mockInput.pressKey("s", { shift: true });
-  let frame = await app.waitForFrame((frame) => frame.includes("1 of 7 logs"));
+  let frame = await app.waitForText("1 of 7 logs");
   expect(pageHeader(frame)).toBe("≥ FATAL 1 of 7 logs");
 
   app.mockInput.pressKey("s");
@@ -97,7 +96,7 @@ test("searches bodies, attribute keys, services, trace IDs, and key=value pairs"
   await using app = await renderLogList(receiver);
 
   async function expectSearch(text: string, rows: string[]) {
-    await search(app, text);
+    await app.search(text);
     const frame = await app.waitForRows(rows);
     expect(frame).toContain(`${rows.length} of 7 logs`);
     app.mockInput.pressEscape();
@@ -115,7 +114,7 @@ test("keeps an applied search while browsing", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  await search(app, "payment");
+  await app.search("payment");
   await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();
   await app.waitForFrame(onList);
@@ -173,13 +172,13 @@ test("offers trace actions only for logs with a trace", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  let frame = await app.waitForFrame((frame) => frame.includes("e next error"));
+  let frame = await app.waitForText("e next error");
   expect(frame).not.toContain("t trace");
 
   app.mockInput.pressKey("e");
   await app.waitForSelection(FATAL_ROW);
   app.mockInput.pressKey("e");
-  frame = await app.waitForFrame((frame) => frame.includes("t trace"));
+  frame = await app.waitForText("t trace");
   expect(keyHints(frame)).toStartWith(
     "/ search e next error return open trace t trace y copy body",
   );
@@ -207,7 +206,7 @@ test("opens the selected log's trace in the traces view and goes back to the log
   await app.waitForSelection(ORDER_ROW);
 
   app.mockInput.pressEnter();
-  let frame = await app.waitForFrame((frame) => frame.includes("1 span"));
+  let frame = await app.waitForText("1 span");
   expect(listLines(frame).slice(0, 2)).toEqual([
     `${PLACE_ORDER} ${checkoutTraceId}`,
     "● checkout 12:00:00.000 1 span 2.50s",
@@ -229,7 +228,7 @@ test("selects the log's span in the trace it opens", async () => {
   await app.waitForSelection(ERROR_ROW);
 
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("2 spans"));
+  await app.waitForText("2 spans");
 
   expect(await app.waitForSelection("charge")).toBe("● payment charge 1.50s");
 });
@@ -240,17 +239,14 @@ test("selects the log's span in a trace that is already open", async () => {
   await receiver.sendHttp("/v1/logs", otlpLogs);
   await using app = await renderPage(receiver, "traces");
 
-  await app.waitForFrame((frame) => frame.includes(PLACE_ORDER));
+  await app.waitForText(PLACE_ORDER);
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("2 spans"));
+  await app.waitForText("2 spans");
   expect(await app.waitForSelection(PLACE_ORDER)).toBe(`● checkout ${PLACE_ORDER} 2.50s`);
 
   app.mockInput.pressTab({ shift: true });
-  await app.waitForFrame((frame) => !onDetails(frame));
-  app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
-  app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => tableRows(frame).length === NEWEST_FIRST.length);
+  await app.openTab("logs");
+  await app.waitForRows(NEWEST_FIRST);
   app.mockInput.pressTab();
   await app.waitForFrame(onList);
   app.mockInput.pressKey("e");
@@ -259,7 +255,7 @@ test("selects the log's span in a trace that is already open", async () => {
   await app.waitForSelection(ERROR_ROW);
 
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("2 spans"));
+  await app.waitForText("2 spans");
 
   expect(await app.waitForSelection("charge")).toBe("● payment charge 1.50s");
 });
@@ -305,18 +301,17 @@ test("shows an error when logs cannot be loaded", async () => {
 
   await using app = await renderFailedPage(receiver, "logs");
 
-  expect(await app.waitForFrame(() => true)).toContain("Failed to load logs");
+  await app.waitForText("Failed to load logs");
 });
 
 test("copies the selected log's body", async () => {
   await using receiver = await startTestReceiver();
-  const copied: string[] = [];
-  await using app = await renderLogList(receiver, { copied });
+  await using app = await renderLogList(receiver);
 
   app.mockInput.pressKey("y");
 
   await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
-  expect(copied).toEqual(["Database connection established"]);
+  expect(app.copied).toEqual(["Database connection established"]);
 });
 
 test("colors each severity", async () => {
@@ -338,7 +333,7 @@ test("charts the logs over time and narrows the list to a column", async () => {
   fakeClock(at(50_000));
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
-  let frame = await app.waitForFrame((frame) => frame.includes("Logs over time"));
+  let frame = await app.waitForText("Logs over time");
   expect(textLines(frame)).toContain("Logs over time ■ errors 10s per column");
 
   app.mockInput.pressArrow("right");

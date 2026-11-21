@@ -42,9 +42,7 @@ test("waits for server or consumer spans", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderPage(receiver, "services");
 
-  const frame = await app.waitForFrame((frame) =>
-    frame.includes("Waiting for server or consumer spans..."),
-  );
+  const frame = await app.waitForText("Waiting for server or consumer spans...");
   expect(pageHeader(frame)).toBe("last 5 min · 0 services");
 });
 
@@ -52,7 +50,7 @@ test("lists each service's rate, errors, and latency from its entry spans", asyn
   await using receiver = await startTestReceiver();
   await using app = await renderServices(receiver);
 
-  const frame = await app.waitForFrame(() => true);
+  const frame = await app.captureFrame();
 
   expect(pageHeader(frame)).toBe("last 5 min · 4 services");
   expect(textLines(frame)).toContain("Service ▼ Rate Errors p50 p95 p99 Spans");

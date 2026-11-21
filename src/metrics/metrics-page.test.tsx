@@ -1,6 +1,6 @@
 import { beforeEach, expect, test } from "bun:test";
 
-import { renderFailedPage, renderPage, search } from "#testing/app.tsx";
+import { renderFailedPage, renderPage } from "#testing/app.tsx";
 import { atSecond, fakeClock } from "#testing/clock.ts";
 import { silenceConsoleError } from "#testing/console.ts";
 import {
@@ -32,7 +32,7 @@ test("waits for metrics before any arrive", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderPage(receiver, "metrics");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  const frame = await app.waitForText("Waiting for metrics...");
 
   expect(frame).toContain("0 metrics");
 });
@@ -41,7 +41,7 @@ test("lists metrics by name with their type, unit, and series count", async () =
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("6 metrics"));
+  const frame = await app.waitForText("6 metrics");
 
   expect(textLines(frame)).toContain("Time Service Name ▲ Type Unit Series");
   expect(tableRows(frame)).toEqual(BY_NAME);
@@ -82,7 +82,7 @@ test("searches names, descriptions, attribute values, and key=value pairs", asyn
   await using app = await renderMetricList(receiver);
 
   async function expectSearch(text: string, rows: string[]) {
-    await search(app, text);
+    await app.search(text);
     const frame = await app.waitForRows(rows);
     expect(frame).toContain(`${rows.length} of 6 metrics`);
     app.mockInput.pressEscape();
@@ -99,7 +99,7 @@ test("keeps an applied search while browsing", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
 
-  await search(app, "http");
+  await app.search("http");
   await app.waitForFrame((frame) => tableRows(frame).length === 2);
   app.mockInput.pressEnter();
   await app.waitForFrame(onList);
@@ -151,7 +151,7 @@ test("lists a few attribute values and counts the rest", async () => {
   );
   await using app = await renderPage(receiver, "metrics");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Attributes"));
+  const frame = await app.waitForText("Attributes");
 
   expect(detailsLines(frame)).toContain("cpu 0, 1, 2 and 2 more");
 });
@@ -188,5 +188,5 @@ test("shows an error when metrics cannot be loaded", async () => {
 
   await using app = await renderFailedPage(receiver, "metrics");
 
-  expect(await app.waitForFrame(() => true)).toContain("Failed to load metrics");
+  await app.waitForText("Failed to load metrics");
 });

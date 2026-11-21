@@ -36,9 +36,7 @@ test("waits for spans that call another service", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMap(receiver);
 
-  const frame = await app.waitForFrame((frame) =>
-    frame.includes("Waiting for spans that call another service..."),
-  );
+  const frame = await app.waitForText("Waiting for spans that call another service...");
   expect(pageHeader(frame)).toBe("last 5 min · 0 dependencies");
 });
 

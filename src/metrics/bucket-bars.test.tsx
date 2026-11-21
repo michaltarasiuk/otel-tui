@@ -18,7 +18,7 @@ async function renderBars(distribution: Distribution, unit: string) {
     <BucketBars distribution={distribution} unit={unit} color="#00FF00" />,
     { width: BAR_COLUMNS + LABEL_AND_COUNT_COLUMNS, height: 20 },
   );
-  const frame = await screen.waitForFrame((frame) => frame.includes("■".repeat(BAR_COLUMNS)));
+  const frame = await screen.waitForText("■".repeat(BAR_COLUMNS));
   return {
     ...screen,
     rows: frame

@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { renderPage, selectRow } from "#testing/app.tsx";
+import { renderPage } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
-import { JSON_ROW, NEWEST_FIRST, renderLogList } from "#testing/logs.ts";
+import { JSON_ROW, renderLogList } from "#testing/logs.ts";
 import { logsRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
 import { detailsLines } from "#testing/screen.ts";
@@ -36,10 +36,8 @@ test("pretty-prints a JSON body", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderLogList(receiver);
 
-  await selectRow(app, NEWEST_FIRST, JSON_ROW);
-  const frame = await app.waitForFrame((frame) =>
-    frame.includes('"http.response.status_code": 200'),
-  );
+  await app.selectRow(JSON_ROW);
+  const frame = await app.waitForText('"http.response.status_code": 200');
 
   expect(detailsLines(frame)).toEqual([
     "DEBUG ● frontend 12:00:03.000",
@@ -107,7 +105,7 @@ test("scrolls the log panel only once the list's scroll gesture pauses", async (
 
   await app.mockMouse.scroll(2, listLine, "down");
   await app.mockMouse.scroll(panelColumn, panelLine, "down");
-  expect(detailsLines(await app.waitForFrame((frame) => frame.includes("Body")))).toContain("Body");
+  expect(detailsLines(await app.waitForText("Body"))).toContain("Body");
 
   clock.advance(GESTURE_PAUSE_MS + 1);
   await app.mockMouse.scroll(panelColumn, panelLine, "down");

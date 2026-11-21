@@ -112,7 +112,7 @@ test("stops at the first and last rows", async () => {
   await screen.waitForFrame(selected(1));
 
   screen.mockInput.pressArrow("up");
-  await screen.waitForFrame(() => true);
+  await screen.captureFrame();
   screen.mockInput.pressArrow("down");
   await screen.waitForFrame(selected(2));
 
@@ -121,7 +121,7 @@ test("stops at the first and last rows", async () => {
   expect(visibleRows(frame)).toEqual(["row 16", "row 17", "row 18", "row 19", "> row 20"]);
 
   screen.mockInput.pressArrow("down");
-  await screen.waitForFrame(() => true);
+  await screen.captureFrame();
   screen.mockInput.pressArrow("up");
   frame = await screen.waitForFrame(selected(19));
   expect(visibleRows(frame)).toContain("row 20");
@@ -181,7 +181,7 @@ test("moves the selection once for every scroll event, however fast they come", 
 
 test("places the scroll indicator by how far the list has scrolled", async () => {
   await using screen = await render(<NumberedRows count={20} />, SCREEN_SIZE);
-  const frame = await screen.waitForFrame((frame) => frame.includes(SCROLL_INDICATOR));
+  const frame = await screen.waitForText(SCROLL_INDICATOR);
   expect(indicatorLine(frame)).toBe(0);
 
   screen.mockInput.pressKey("END");

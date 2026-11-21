@@ -1,10 +1,9 @@
 import { beforeEach, expect, test } from "bun:test";
 
-import { renderPage, selectRow } from "#testing/app.tsx";
+import { renderPage } from "#testing/app.tsx";
 import { atSecond, fakeClock } from "#testing/clock.ts";
 import {
   BODY_SIZE_ROW,
-  BY_NAME,
   DETAILS_SIZE,
   DURATION_ROW,
   FLAG_REQUESTS_ROW,
@@ -34,7 +33,7 @@ beforeEach(() => {
 test("draws the chart on the frame the metric first shows", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver, { size: DETAILS_SIZE });
-  await selectRow(app, BY_NAME, FLAG_REQUESTS_ROW);
+  await app.selectRow(FLAG_REQUESTS_ROW);
 
   app.mockInput.pressEnter();
   const frame = await app.waitForFrame(onDetails);
@@ -116,7 +115,7 @@ test("shows the last, lowest, and highest value of gauges and updowncounters", a
   ]);
 
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => frame.includes("6 metrics"));
+  await app.waitForText("6 metrics");
   app.mockInput.pressArrow("up");
   await app.waitForSelection(THREADS_ROW);
   app.mockInput.pressEnter();
@@ -165,7 +164,7 @@ test("shows an exponential histogram's buckets", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openMetric(receiver, BODY_SIZE_ROW);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Buckets"));
+  const frame = await app.waitForText("Buckets");
 
   expect(detailsLines(frame)[1]).toBe("count 6 p50 1.3 KiB p95 1.9 KiB p99 2.0 KiB max");
   expect(
@@ -196,7 +195,7 @@ test("waits for a second export before plotting a counter's rate", async () => {
 
   app.mockInput.pressEnter();
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Not enough data points"));
+  const frame = await app.waitForText("Not enough data points");
   expect(detailsLines(frame).slice(0, 2)).toEqual(["no attributes 12:00:10.000", "rate total 5"]);
 });
 
@@ -205,7 +204,7 @@ test("goes back to the list with the opened metric still selected", async () => 
   await using app = await openMetric(receiver, ITEMS_SHIPPED_ROW);
 
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => frame.includes("6 metrics"));
+  await app.waitForText("6 metrics");
 
   expect(await app.waitForSelection("demo.shipping.items_shipped")).toBe(ITEMS_SHIPPED_ROW);
 });
@@ -279,7 +278,7 @@ test("opens a delta histogram that exports no buckets", async () => {
 test("scrolls the series panel down and back up", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderMetricList(receiver);
-  await selectRow(app, BY_NAME, DURATION_ROW);
+  await app.selectRow(DURATION_ROW);
   app.mockInput.pressEnter();
   await app.waitForFrame(
     (frame) => detailsLines(frame).includes("Exemplars") && CHART_DOTS.test(frame),
@@ -300,15 +299,15 @@ test("says when an open metric is no longer available", async () => {
   const connection = await receiver.connect();
   await connection.run("DELETE FROM otlp_metrics_sum WHERE name = 'demo.shipping.items_shipped'");
 
-  await app.waitForFrame((frame) => frame.includes("This metric is no longer available"));
+  await app.waitForText("This metric is no longer available");
 });
 
 test("opens an exemplar's trace from the exemplars region and comes back", async () => {
   await using receiver = await startTestReceiver();
   await receiver.sendHttp("/v1/traces", otlpTraces);
   await using app = await openMetric(receiver, DURATION_ROW);
-  await app.waitForFrame((frame) => detailsLines(frame).includes("Exemplars"));
-  expect(keyHints(await app.waitForFrame(() => true))).not.toContain("open trace");
+  const frame = await app.waitForFrame((frame) => detailsLines(frame).includes("Exemplars"));
+  expect(keyHints(frame)).not.toContain("open trace");
 
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => keyHints(frame).includes("return open trace"));
@@ -316,8 +315,8 @@ test("opens an exemplar's trace from the exemplars region and comes back", async
 
   expect(await app.waitForSelection("charge")).toBe("● payment charge 300.0ms");
   app.mockInput.pressEscape();
-  await app.waitForFrame((frame) => frame.includes("http.server.request.duration"));
-  expect(keyHints(await app.waitForFrame(() => true))).toContain("return open trace");
+  const back = await app.waitForText("http.server.request.duration");
+  expect(keyHints(back)).toContain("return open trace");
 
   app.mockInput.pressTab();
   await app.waitForFrame((frame) => keyHints(frame) === "tab next region ? help");

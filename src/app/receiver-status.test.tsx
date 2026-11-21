@@ -9,7 +9,7 @@ test("shows where the receiver listens beside the tabs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("nothing received yet"));
+  const frame = await app.waitForText("nothing received yet");
 
   expect(frame.split("\n")[0]).toMatch(
     new RegExp(
@@ -22,7 +22,7 @@ test("shows where the receiver listens beside the tabs", async () => {
 test("counts the items received and says when the last arrived", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderApp(receiver);
-  await app.waitForFrame((frame) => frame.includes("nothing received yet"));
+  await app.waitForText("nothing received yet");
 
   await receiver.sendHttp(
     "/v1/logs",
@@ -35,6 +35,6 @@ test("counts the items received and says when the last arrived", async () => {
     }),
   );
 
-  const frame = await app.waitForFrame((frame) => frame.includes("2 items received"));
+  const frame = await app.waitForText("2 items received");
   expect(frame.split("\n")[0]).toMatch(/2 items received (just now|\d+s ago) · OTLP\/HTTP/);
 });

@@ -21,7 +21,7 @@ test("shows the selected span's attributes, resource, and scope", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Scope"));
+  const frame = await app.waitForText("Scope");
 
   expect(detailsLines(frame)).toEqual([
     `GET /api/cart ${"1a".repeat(8)}`,
@@ -39,10 +39,10 @@ test("shows the selected span's attributes, resource, and scope", async () => {
 test("shows the selected span's events with their offsets", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  await app.waitForFrame((frame) => frame.includes("Scope"));
+  await app.waitForText("Scope");
 
   app.mockInput.pressArrow("down");
-  const frame = await app.waitForFrame((frame) => frame.includes("feature_flag.evaluation"));
+  const frame = await app.waitForText("feature_flag.evaluation");
 
   expect(detailsLines(frame)).toEqual([
     `${GET_CART} ${"1b".repeat(8)}`,
@@ -61,7 +61,7 @@ test("shows a span's links and status message", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Links"));
+  const frame = await app.waitForText("Links");
 
   expect(detailsLines(frame)).toEqual([
     `${PLACE_ORDER} ${"2a".repeat(8)}`,

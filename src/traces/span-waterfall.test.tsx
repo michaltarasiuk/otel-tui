@@ -68,9 +68,7 @@ test("indents each span under its parent", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
 
-  const [root, child, grandchild] = spanRows(
-    await app.waitForFrame((frame) => frame.includes("valkey-cart:6379")),
-  );
+  const [root, child, grandchild] = spanRows(await app.waitForText("valkey-cart:6379"));
   const nameColumn = root?.indexOf("GET /api/cart") ?? -1;
 
   expect(child?.indexOf("POST /oteldemo")).toBe(nameColumn + 2);
@@ -80,7 +78,7 @@ test("indents each span under its parent", async () => {
 test("draws each span's bar inside its parent's bar", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
+  await app.waitForText("valkey-cart:6379");
 
   const frame = await app.captureSpans();
   const root = barExtent(frame, "GET /api/cart", serviceColor("frontend"));
@@ -99,7 +97,7 @@ test("points out a span whose parent never arrived", async () => {
   await app.waitForFrame((frame) => detailsLines(frame).includes(CHARGE_FAILED));
 
   app.mockInput.pressKey("END");
-  const frame = await app.waitForFrame((frame) => frame.includes("not received"));
+  const frame = await app.waitForText("not received");
 
   expect(textLines(frame)).toContain(
     `● fraud-detection consumer 12:00:01.460 +460.0ms 40.0ms parent ${missingParentId} not received`,
@@ -110,7 +108,7 @@ test("opens a trace whose spans have no kind", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, STATUS_ROW);
 
-  const frame = await app.waitForFrame((frame) => frame.includes("unspecified"));
+  const frame = await app.waitForText("unspecified");
 
   expect(textLines(frame)).toContain("● image-provider unspecified 12:00:02.000 +0µs 1.0ms");
 });
@@ -118,7 +116,7 @@ test("opens a trace whose spans have no kind", async () => {
 test("colors the names of spans with errors", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
-  await app.waitForFrame((frame) => frame.includes("orders process"));
+  await app.waitForText("orders process");
 
   const frame = await app.captureSpans();
 
@@ -146,7 +144,7 @@ test("folds and unfolds the selected span's children", async () => {
 test("dims the spans off the critical path", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
-  await app.waitForFrame((frame) => frame.includes("orders process"));
+  await app.waitForText("orders process");
 
   app.mockInput.pressKey("c");
   await app.waitForFrame((frame) => keyHints(frame).includes("c all spans"));

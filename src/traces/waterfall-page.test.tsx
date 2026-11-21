@@ -1,6 +1,5 @@
 import { expect, test } from "bun:test";
 
-import { search, selectRow } from "#testing/app.tsx";
 import { at, fakeClock } from "#testing/clock.ts";
 import { logsRequest, SEVERITY_NUMBER } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
@@ -23,7 +22,6 @@ import {
   CHARGE_FAILED,
   CHECKOUT_ROW,
   checkoutTraceId,
-  NEWEST_FIRST,
   openTrace,
   PLACE_ORDER,
   renderTraceList,
@@ -36,7 +34,7 @@ import { collapseWhitespace } from "#utils/text.ts";
 test("draws the waterfall on the frame the trace first shows", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
-  await selectRow(app, NEWEST_FIRST, CART_ROW);
+  await app.selectRow(CART_ROW);
 
   app.mockInput.pressEnter();
   const frame = await app.waitForFrame(onDetails);
@@ -47,10 +45,10 @@ test("draws the waterfall on the frame the trace first shows", async () => {
 test("clips the spans that don't fit on the frame the trace first shows", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver, { size: { width: 120, height: 10 } });
-  await selectRow(app, NEWEST_FIRST, CART_ROW);
+  await app.selectRow(CART_ROW);
 
   app.mockInput.pressEnter();
-  const frame = await app.waitForFrame((frame) => frame.includes("3 spans"));
+  const frame = await app.waitForText("3 spans");
 
   const rows = spanRows(frame).map((row) => collapseWhitespace(row.replace("█", "")));
   expect(rows).toEqual([
@@ -79,8 +77,8 @@ test("dims the spans that don't match a search", async () => {
   await using app = await openTrace(receiver, CART_ROW);
   await app.waitForSelection("GET /api/cart");
 
-  await search(app, "db.system=redis");
-  await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  await app.search("db.system=redis");
+  await app.waitForText("1 of 3 spans");
 
   const frame = await app.captureSpans();
   expect(spanColors(lineSpans(frame, "valkey-cart"), "valkey-cart").fg).toEqual(color(THEME.text));
@@ -94,8 +92,8 @@ test("jumps to the first match when the search applies", async () => {
   await using app = await openTrace(receiver, CHECKOUT_ROW);
   await app.waitForSelection(PLACE_ORDER);
 
-  await search(app, "orders");
-  await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  await app.search("orders");
+  await app.waitForText("1 of 3 spans");
   app.mockInput.pressEnter();
 
   expect(await app.waitForSelection("orders process")).toContain("orders process");
@@ -105,8 +103,8 @@ test("jumps between the matches", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
   await app.waitForSelection(PLACE_ORDER);
-  await search(app, "card info is invalid");
-  await app.waitForFrame((frame) => frame.includes("2 of 3 spans"));
+  await app.search("card info is invalid");
+  await app.waitForText("2 of 3 spans");
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => keyHints(frame).includes("n next match"));
 
@@ -123,9 +121,9 @@ test("matches span attribute values as text", async () => {
   await using app = await openTrace(receiver, CART_ROW);
   await app.waitForSelection("GET /api/cart");
 
-  await search(app, "redis");
+  await app.search("redis");
 
-  await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  await app.waitForText("1 of 3 spans");
   app.mockInput.pressEnter();
 
   expect(await app.waitForSelection("valkey-cart")).toBe("● cart valkey-cart:6379 60.0ms");
@@ -134,10 +132,10 @@ test("matches span attribute values as text", async () => {
 test("keeps the spans in place while typing a search", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  const before = await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
+  const before = await app.waitForText("valkey-cart:6379");
 
-  await search(app, "valkey");
-  const after = await app.waitForFrame((frame) => frame.includes("1 of 3 spans"));
+  await app.search("valkey");
+  const after = await app.waitForText("1 of 3 spans");
 
   expect(spanRows(after)).toEqual(spanRows(before));
   expect(after.split("\n").findIndex((line) => line.includes("valkey-cart:6379"))).toBe(
@@ -148,12 +146,12 @@ test("keeps the spans in place while typing a search", async () => {
 test("keeps room for the search on a narrow terminal", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CHECKOUT_ROW);
-  await app.waitForFrame((frame) => frame.includes("charge"));
+  await app.waitForText("charge");
   app.resize(50, 20);
 
-  await search(app, "charge");
+  await app.search("charge");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("2 of 3 spans"));
+  const frame = await app.waitForText("2 of 3 spans");
   expect(frame).toContain("/charge");
 });
 
@@ -164,7 +162,7 @@ test("unfolds a span to jump to the match inside it", async () => {
   app.mockInput.pressKey(" ");
   await app.waitForFrame((frame) => spanRows(frame).length === 1);
 
-  await search(app, "valkey");
+  await app.search("valkey");
   app.mockInput.pressEnter();
 
   expect(await app.waitForSelection("valkey-cart")).toBe("● cart valkey-cart:6379 60.0ms");
@@ -174,7 +172,7 @@ test("unfolds a span to jump to the match inside it", async () => {
 test("clears the search before going back to the list", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  await search(app, "valkey");
+  await app.search("valkey");
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => keyHints(frame).includes("escape clear"));
 
@@ -200,7 +198,7 @@ test("leaves the opened trace alone while the list's scroll gesture continues", 
   const clock = fakeClock(at(10_000));
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
-  const listLine = (await app.waitForFrame((frame) => frame.includes("Traces over time")))
+  const listLine = (await app.waitForText("Traces over time"))
     .split("\n")
     .findIndex((line) => collapseWhitespace(line) === STATUS_ROW);
 
@@ -258,7 +256,7 @@ test("opens the logs of the open trace in the logs view", async () => {
 
   app.mockInput.pressKey("l");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
+  const frame = await app.waitForText("[PlaceOrder]");
   expect(pageHeader(frame)).toBe("trace 22222222 2 of 3 logs");
   expect(frame).toContain("Credit card info is invalid.");
   expect(frame).not.toContain("starting to listen on tcp");
@@ -288,7 +286,7 @@ test("comes back from the span's logs to the same span", async () => {
   app.mockInput.pressArrow("down");
   await app.waitForSelection("charge");
   app.mockInput.pressKey("l", { shift: true });
-  await app.waitForFrame((frame) => frame.includes("span 2b2b2b2b"));
+  await app.waitForText("span 2b2b2b2b");
 
   app.mockInput.pressEscape();
 
@@ -307,7 +305,7 @@ test("goes back from the trace's logs to the trace, then to the list", async () 
   await using app = await openTrace(receiver, CHECKOUT_ROW);
 
   app.mockInput.pressKey("l");
-  let frame = await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
+  let frame = await app.waitForText("[PlaceOrder]");
   expect(keyHints(frame)).toContain("escape back");
 
   app.mockInput.pressEscape();
@@ -324,26 +322,25 @@ test("goes back from the trace's logs to the trace, then to the list", async () 
 test("says when an open trace is no longer available", async () => {
   await using receiver = await startTestReceiver();
   await using app = await openTrace(receiver, CART_ROW);
-  await app.waitForFrame((frame) => frame.includes("valkey-cart:6379"));
+  await app.waitForText("valkey-cart:6379");
 
   const connection = await receiver.connect();
   await connection.run("DELETE FROM otlp_traces WHERE trace_id = $traceId", {
     traceId: cartTraceId,
   });
 
-  await app.waitForFrame((frame) => frame.includes("This trace is no longer available"));
+  await app.waitForText("This trace is no longer available");
 });
 
 test("copies the selected span's ID and the trace's ID", async () => {
   await using receiver = await startTestReceiver();
-  const copied: string[] = [];
-  await using app = await openTrace(receiver, CART_ROW, { copied });
+  await using app = await openTrace(receiver, CART_ROW);
   await app.waitForFrame((frame) => keyHints(frame).includes("y copy id"));
 
   app.mockInput.pressKey("y");
   await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
   app.mockInput.pressKey("y", { shift: true });
-  await app.waitForFrame(() => copied.length === 2);
+  await app.waitForFrame(() => app.copied.length === 2);
 
-  expect(copied).toEqual(["1a".repeat(8), cartTraceId]);
+  expect(app.copied).toEqual(["1a".repeat(8), cartTraceId]);
 });

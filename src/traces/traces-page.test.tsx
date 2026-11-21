@@ -1,6 +1,6 @@
 import { expect, spyOn, test } from "bun:test";
 
-import { renderFailedPage, renderPage, search, type TestApp } from "#testing/app.tsx";
+import { renderFailedPage, renderPage, type TestApp } from "#testing/app.tsx";
 import { at } from "#testing/clock.ts";
 import { silenceConsoleError } from "#testing/console.ts";
 import { tracesRequest } from "#testing/otlp.ts";
@@ -34,7 +34,7 @@ test("waits for traces before any arrive", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderPage(receiver, "traces");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
+  const frame = await app.waitForText("Waiting for traces...");
 
   expect(frame).toContain("0 traces");
 });
@@ -55,8 +55,8 @@ test("searches trace names, services, and IDs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
 
-  await search(app, "cart");
-  let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  await app.search("cart");
+  let frame = await app.waitForText("1 of 3 traces");
   expect(tableRows(frame)).toEqual([CART_ROW]);
 
   app.mockInput.pressEnter();
@@ -68,8 +68,8 @@ test("searches trace names, services, and IDs", async () => {
   frame = await app.waitForFrame((frame) => tableRows(frame).length === 3);
   expect(pageHeader(frame)).toBe("3 traces");
 
-  await search(app, statusTraceId.slice(0, 8));
-  frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  await app.search(statusTraceId.slice(0, 8));
+  frame = await app.waitForText("1 of 3 traces");
   expect(tableRows(frame)).toEqual([STATUS_ROW]);
 });
 
@@ -77,12 +77,12 @@ test("filters traces by a span or resource attribute", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
 
-  await search(app, "db.system=redis");
-  let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  await app.search("db.system=redis");
+  let frame = await app.waitForText("1 of 3 traces");
   expect(tableRows(frame)).toEqual([CART_ROW]);
 
   await app.mockInput.typeText(" host.name=elsewhere");
-  frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
+  frame = await app.waitForText("No traces match");
   expect(frame).toContain("0 of 3 traces");
 });
 
@@ -90,9 +90,9 @@ test("matches search text literally", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
 
-  await search(app, "_");
+  await app.search("_");
 
-  const frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
+  const frame = await app.waitForText("No traces match");
   expect(frame).toContain("0 of 3 traces");
 });
 
@@ -101,7 +101,7 @@ test("shows only traces with errors", async () => {
   await using app = await renderTraceList(receiver);
 
   app.mockInput.pressKey("s");
-  let frame = await app.waitForFrame((frame) => frame.includes("1 of 3 traces"));
+  let frame = await app.waitForText("1 of 3 traces");
   expect(pageHeader(frame)).toBe("errors only 1 of 3 traces");
   expect(tableRows(frame)).toEqual([CHECKOUT_ROW]);
 
@@ -148,15 +148,15 @@ test("keeps the search and sort when switching tabs", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);
   app.mockInput.pressKey("o");
-  await app.waitForFrame((frame) => frame.includes("▼ Spans"));
-  await search(app, "cart");
+  await app.waitForText("▼ Spans");
+  await app.search("cart");
   app.mockInput.pressEnter();
   await app.waitForFrame(onList);
 
   app.mockInput.pressTab({ shift: true });
   await app.waitForFrame((frame) => frame.includes("tab next region") && !onList(frame));
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  await app.waitForText("Waiting for metrics...");
   app.mockInput.pressArrow("left");
 
   const frame = await app.waitForFrame((frame) => tableRows(frame).length === 1);
@@ -182,7 +182,7 @@ test("shows an error when traces cannot be loaded and retries", async () => {
   });
 
   await using app = await renderFailedPage(receiver, "traces", { connection });
-  expect(await app.waitForFrame(() => true)).toContain("Failed to load traces");
+  await app.waitForText("Failed to load traces");
   app.mockInput.pressKey("r");
 
   await app.waitForFrame((frame) => tableRows(frame).length > 0);
@@ -190,13 +190,12 @@ test("shows an error when traces cannot be loaded and retries", async () => {
 
 test("copies the selected trace's ID", async () => {
   await using receiver = await startTestReceiver();
-  const copied: string[] = [];
-  await using app = await renderTraceList(receiver, { copied });
+  await using app = await renderTraceList(receiver);
 
   app.mockInput.pressKey("y");
 
   await app.waitForFrame((frame) => keyHints(frame).includes("y copied"));
-  expect(copied).toEqual([statusTraceId]);
+  expect(app.copied).toEqual([statusTraceId]);
 });
 
 test("pauses and resumes live updates", async () => {
@@ -225,9 +224,7 @@ test("pauses and resumes live updates", async () => {
   app.mockInput.pressKey("p");
 
   await app.waitForFrame((frame) => pageHeader(frame) === "4 traces");
-  expect(keyHints(await app.waitForFrame((frame) => frame.includes("p pause")))).toContain(
-    "p pause",
-  );
+  expect(keyHints(await app.waitForText("p pause"))).toContain("p pause");
 });
 
 test("colors each service and the error count", async () => {
@@ -253,7 +250,7 @@ test("highlights the selected row only while its region has focus", async () => 
 });
 
 async function searchTraces(app: TestApp, text: string) {
-  await search(app, text);
+  await app.search(text);
   app.mockInput.pressEnter();
   return app.waitForFrame((frame) => keyHints(frame).startsWith(`/${text} `));
 }
@@ -287,7 +284,7 @@ test("filters traces by spans whose attribute has a different value", async () =
 
   await clearSearch(app);
   await searchTraces(app, "http.route!=/api/cart");
-  frame = await app.waitForFrame((frame) => frame.includes("No traces match"));
+  frame = await app.waitForText("No traces match");
   expect(pageHeader(frame)).toEndWith("0 of 3 traces");
 });
 

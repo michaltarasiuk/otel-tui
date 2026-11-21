@@ -1,4 +1,4 @@
-import type { CapturedFrame, CliRenderer } from "@opentui/core";
+import type { CapturedFrame, CapturedSpan, CliRenderer } from "@opentui/core";
 import { createTestRenderer } from "@opentui/core/testing";
 import {
   registerDeadBindingWarnings,
@@ -76,6 +76,16 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     return waitUntil(() => setup.captureCharFrame(), predicate, expected);
   }
 
+  function waitForText(text: string) {
+    return waitForFrame((frame) => frame.includes(text), `text ${JSON.stringify(text)}`);
+  }
+
+  async function captureFrame() {
+    await setup.renderOnce();
+    await runPendingEffects();
+    return setup.captureCharFrame();
+  }
+
   async function waitForSelection(text: string, { line }: SelectionOptions = {}) {
     const selected = await waitUntil(
       async () => firstSelectedLine(await captureSpans()),
@@ -87,13 +97,38 @@ export async function render(node: React.ReactNode, { width, height }: RenderOpt
     return selected.text;
   }
 
+  // Moves the selection one row at a time toward the visible row containing `text`,
+  // waiting for each step to render, so keys never outrun the deferred selection.
+  async function selectRow(text: string) {
+    let selected = await waitUntil(
+      async () => firstSelectedLine(await captureSpans()),
+      () => true,
+      "a selected row",
+    );
+    while (!selected.text.includes(text)) {
+      const frame = await captureSpans();
+      const direction = nearestLine(frame, text, selected.line) < selected.line ? "up" : "down";
+      const previous = selected.text;
+      setup.mockInput.pressArrow(direction);
+      selected = await waitUntil(
+        async () => firstSelectedLine(await captureSpans()),
+        (next) => next.text !== previous,
+        `the selection to move ${direction} from "${previous}" toward "${text}"`,
+      );
+    }
+    return selected.text;
+  }
+
   return {
     mockInput: setup.mockInput,
     mockMouse: setup.mockMouse,
     resize: setup.resize,
+    captureFrame,
     captureSpans,
     waitForFrame,
+    waitForText,
     waitForSelection,
+    selectRow,
     async [Symbol.asyncDispose]() {
       try {
         flushSync(() => root.unmount());
@@ -127,11 +162,27 @@ function createDiagnosedKeymap(renderer: CliRenderer) {
   return { keymap, diagnostics };
 }
 
+function lineText(spans: CapturedSpan[]) {
+  return collapseWhitespace(spans.map((span) => span.text).join(""));
+}
+
 function firstSelectedLine({ lines }: CapturedFrame) {
   for (const [line, { spans }] of lines.entries()) {
     if (spans.some((span) => span.text.trim() !== "" && span.bg.equals(selectedBackground))) {
-      return { line, text: collapseWhitespace(spans.map((span) => span.text).join("")) };
+      return { line, text: lineText(spans) };
     }
   }
   return undefined;
+}
+
+// The line containing `text` closest to `from`, or the last line when no line contains it,
+// so a row scrolled out of view below is reached by moving down.
+function nearestLine({ lines }: CapturedFrame, text: string, from: number) {
+  let nearest = lines.length;
+  for (const [line, { spans }] of lines.entries()) {
+    if (lineText(spans).includes(text) && Math.abs(line - from) < Math.abs(nearest - from)) {
+      nearest = line;
+    }
+  }
+  return nearest;
 }

@@ -1,4 +1,4 @@
-import { type AppOptions, renderPage, selectRow } from "./app.tsx";
+import { type AppOptions, renderPage } from "./app.tsx";
 import { at } from "./clock.ts";
 import { SPAN_KIND, STATUS_CODE, tracesRequest } from "./otlp.ts";
 import type { TestReceiver } from "./receiver.ts";
@@ -161,7 +161,7 @@ export async function renderTraceList(receiver: TestReceiver, options?: AppOptio
 
 export async function openTrace(receiver: TestReceiver, row: string, options?: AppOptions) {
   const app = await renderTraceList(receiver, options);
-  await selectRow(app, NEWEST_FIRST, row);
+  await app.selectRow(row);
   app.mockInput.pressEnter();
   await app.waitForFrame(onDetails);
   return app;
@@ -226,7 +226,7 @@ export async function renderCartComparison(receiver: TestReceiver, options?: App
   await receiver.sendHttp("/v1/traces", slowCartTraces);
   const app = await renderPage(receiver, "traces", options);
   await app.waitForRows(WITH_SLOW_CART);
-  await selectRow(app, WITH_SLOW_CART, CART_ROW);
+  await app.selectRow(CART_ROW);
   app.mockInput.pressKey("m");
   await app.waitForFrame((frame) => pageHeader(frame).includes("vs GET /api/cart 120.0ms"));
   for (const row of WITH_SLOW_CART.slice(0, WITH_SLOW_CART.indexOf(CART_ROW)).toReversed()) {

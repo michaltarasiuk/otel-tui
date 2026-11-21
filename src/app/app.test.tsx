@@ -5,7 +5,7 @@ import { DuckDBConnection } from "@duckdb/node-api";
 import logList from "#logs/sql/log-list.sql" with { type: "text" };
 import metricList from "#metrics/sql/metric-list.sql" with { type: "text" };
 import serviceList from "#services/sql/service-list.sql" with { type: "text" };
-import { openTab, renderApp } from "#testing/app.tsx";
+import { renderApp } from "#testing/app.tsx";
 import { otlpLogs } from "#testing/logs.ts";
 import { logsRequest, STATUS_CODE, tracesRequest } from "#testing/otlp.ts";
 import { startTestReceiver } from "#testing/receiver.ts";
@@ -59,8 +59,8 @@ test("hints the view's described keys, the selected row's actions first", async 
     }),
   );
   await using app = await renderApp(receiver, { size: { width: 160, height: 10 } });
-  await openTab(app, "traces");
-  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
+  await app.openTab("traces");
+  await app.waitForText("oteldemo.CheckoutService/PlaceOrder");
 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame(onList);
@@ -89,8 +89,8 @@ test("hints the jump to the next error only when a trace has errors", async () =
     }),
   );
   await using app = await renderApp(receiver, { size: { width: 160, height: 10 } });
-  await openTab(app, "traces");
-  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
+  await app.openTab("traces");
+  await app.waitForText("oteldemo.CheckoutService/PlaceOrder");
 
   app.mockInput.pressTab();
   const frame = await app.waitForFrame(onList);
@@ -125,18 +125,18 @@ test("follows to the traces tab when a log opens its trace", async () => {
     }),
   );
   await using app = await renderApp(receiver);
-  await openTab(app, "traces");
-  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
+  await app.openTab("traces");
+  await app.waitForText("oteldemo.CheckoutService/PlaceOrder");
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  await app.waitForText("Waiting for metrics...");
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
+  await app.waitForText("[PlaceOrder]");
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("return open trace"));
+  await app.waitForText("return open trace");
 
   app.mockInput.pressEnter();
 
-  await app.waitForFrame((frame) => frame.includes("1 span"));
+  await app.waitForText("1 span");
   expect(tabStyles(await app.captureSpans())).toEqual({
     Services: { highlighted: false, fg: "muted" },
     Traces: { highlighted: false, fg: "text" },
@@ -171,28 +171,28 @@ test("forgets where a trace was opened from after switching tabs", async () => {
     }),
   );
   await using app = await renderApp(receiver);
-  await openTab(app, "traces");
-  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
+  await app.openTab("traces");
+  await app.waitForText("oteldemo.CheckoutService/PlaceOrder");
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  await app.waitForText("Waiting for metrics...");
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("[PlaceOrder]"));
+  await app.waitForText("[PlaceOrder]");
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("return open trace"));
+  await app.waitForText("return open trace");
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("1 span"));
+  await app.waitForText("1 span");
 
   app.mockInput.pressTab({ shift: true });
   await app.waitForFrame((frame) => !onDetails(frame));
   app.mockInput.pressArrow("right");
-  await app.waitForFrame((frame) => frame.includes("Waiting for metrics..."));
+  await app.waitForText("Waiting for metrics...");
   app.mockInput.pressArrow("left");
-  await app.waitForFrame((frame) => frame.includes("1 span"));
+  await app.waitForText("1 span");
   app.mockInput.pressTab();
   await app.waitForFrame(onDetails);
   app.mockInput.pressEscape();
 
-  await app.waitForFrame((frame) => frame.includes("1 trace"));
+  await app.waitForText("1 trace");
   expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: false, fg: "text" },
   });
@@ -216,15 +216,15 @@ test("clears the telemetry with ctrl+l and starts the current tab over", async (
     }),
   );
   await using app = await renderApp(receiver);
-  await openTab(app, "traces");
+  await app.openTab("traces");
   app.mockInput.pressTab();
-  await app.waitForFrame((frame) => frame.includes("oteldemo.CheckoutService/PlaceOrder"));
+  await app.waitForText("oteldemo.CheckoutService/PlaceOrder");
   app.mockInput.pressEnter();
-  await app.waitForFrame((frame) => frame.includes("1 span"));
+  await app.waitForText("1 span");
 
   app.mockInput.pressKey("l", { ctrl: true });
 
-  await app.waitForFrame((frame) => frame.includes("Waiting for traces..."));
+  await app.waitForText("Waiting for traces...");
   expect(tabStyles(await app.captureSpans())).toMatchObject({
     Traces: { highlighted: false, fg: "text" },
   });

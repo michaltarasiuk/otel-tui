@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 
 import type { CapturedSpan } from "@opentui/core";
 
-import { renderPage, selectRow } from "#testing/app.tsx";
+import { renderPage } from "#testing/app.tsx";
 import { startTestReceiver } from "#testing/receiver.ts";
 import {
   color,
@@ -138,7 +138,7 @@ test("offers to compare only traces with the same root span", async () => {
   await receiver.sendHttp("/v1/traces", slowCartTraces);
   await using app = await renderPage(receiver, "traces", WIDE);
   await app.waitForRows(WITH_SLOW_CART);
-  await selectRow(app, WITH_SLOW_CART, CART_ROW);
+  await app.selectRow(CART_ROW);
   app.mockInput.pressKey("m");
   await app.waitForFrame((frame) => keyHints(frame).includes("m unmark"));
 
@@ -176,7 +176,7 @@ test("marks a trace on its waterfall and compares another one from there", async
   await receiver.sendHttp("/v1/traces", slowCartTraces);
   await using app = await renderPage(receiver, "traces", WIDE);
   await app.waitForRows(WITH_SLOW_CART);
-  await selectRow(app, WITH_SLOW_CART, CART_ROW);
+  await app.selectRow(CART_ROW);
   app.mockInput.pressEnter();
   await app.waitForFrame((frame) => textLines(frame).includes(`GET /api/cart ${cartTraceId}`));
 
