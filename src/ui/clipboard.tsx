@@ -4,7 +4,9 @@ import { Key } from "./key-hints.tsx";
 
 const NOTICE_MS = 1500;
 
-type CopyNotice = "copied" | "copy failed";
+interface CopyNotice {
+  text: "copied" | "copy failed";
+}
 
 export const ClipboardContext = createContext<((text: string) => Promise<boolean>) | undefined>(
   undefined,
@@ -32,14 +34,15 @@ function useCopy() {
 
   async function copy(text: string) {
     try {
-      setNotice((await write(text)) ? "copied" : "copy failed");
+      const copied = await write(text);
+      setNotice({ text: copied ? "copied" : "copy failed" });
     } catch (error) {
       console.error("Copying to the clipboard failed", error);
-      setNotice("copy failed");
+      setNotice({ text: "copy failed" });
     }
   }
 
-  return [notice, copy] as const;
+  return [notice?.text, copy] as const;
 }
 
 interface CopyKeyProps {
