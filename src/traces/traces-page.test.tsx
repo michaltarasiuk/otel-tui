@@ -188,6 +188,35 @@ test("shows an error when traces cannot be loaded and retries", async () => {
   await app.waitForFrame((frame) => tableRows(frame).length > 0);
 });
 
+test("retries traces after another page has loaded", async () => {
+  silenceConsoleError();
+  await using receiver = await startTestReceiver();
+  await receiver.sendHttp("/v1/traces", otlpTraces);
+  const connection = await receiver.connect();
+  const runAndReadAll = connection.runAndReadAll.bind(connection);
+  let failures = 1;
+  spyOn(connection, "runAndReadAll").mockImplementation((...args) => {
+    if (args[0] === traceList && failures > 0) {
+      failures--;
+      return Promise.reject(new Error("traces are unavailable"));
+    }
+    return runAndReadAll(...args);
+  });
+  await using app = await renderFailedPage(receiver, "traces", { connection });
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => !keyHints(frame).includes("r retry"));
+  app.mockInput.pressArrow("right");
+  await app.waitForFrame((frame) => / metrics?$/.test(pageHeader(frame)));
+  app.mockInput.pressArrow("left");
+  await app.waitForText("Failed to load traces");
+  app.mockInput.pressTab();
+  await app.waitForFrame((frame) => keyHints(frame).includes("r retry"));
+
+  app.mockInput.pressKey("r");
+
+  await app.waitForFrame((frame) => tableRows(frame).length > 0);
+});
+
 test("copies the selected trace's ID", async () => {
   await using receiver = await startTestReceiver();
   await using app = await renderTraceList(receiver);

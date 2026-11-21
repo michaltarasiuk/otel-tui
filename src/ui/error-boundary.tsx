@@ -5,7 +5,7 @@ const RetryContext = createContext(() => {});
 
 interface CatchProps {
   fallback: React.ReactNode;
-  onCatch: () => void;
+  onRetry: () => void;
   children: React.ReactNode;
 }
 
@@ -20,19 +20,16 @@ class Catch extends Component<CatchProps, CatchState> {
     return { failed: true };
   }
 
-  override componentDidCatch() {
-    this.props.onCatch();
+  retry() {
+    this.props.onRetry();
+    this.setState({ failed: false });
   }
 
   override render() {
     if (!this.state.failed) {
       return this.props.children;
     }
-    return (
-      <RetryContext value={() => this.setState({ failed: false })}>
-        {this.props.fallback}
-      </RetryContext>
-    );
+    return <RetryContext value={() => this.retry()}>{this.props.fallback}</RetryContext>;
   }
 }
 
@@ -45,7 +42,7 @@ export function ErrorBoundary({ fallback, children }: ErrorBoundaryProps) {
   const { reset } = useQueryErrorResetBoundary();
 
   return (
-    <Catch fallback={fallback} onCatch={() => reset()}>
+    <Catch fallback={fallback} onRetry={() => reset()}>
       {children}
     </Catch>
   );
