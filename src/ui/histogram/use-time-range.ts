@@ -17,3 +17,5 @@ export function useTimeRange() {
     },
   };
 }
+
+export type TimeRange = ReturnType<typeof useTimeRange>;

@@ -4,6 +4,7 @@ import { useDeferredValue, useState } from "react";
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
+import { RangeKeys } from "#ui/histogram/range-keys.tsx";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
 import { useTimeRange } from "#ui/histogram/use-time-range.ts";
@@ -193,15 +194,7 @@ export function TracesPage({
               )
             ))}
           {timeline.occupied.length > 0 && (
-            <StepKeys
-              forward="right"
-              description="later range"
-              backwardDescription="earlier range"
-              backward="left"
-              onStep={(step) => timeRange.step(timeline.occupied, step)}
-            >
-              range
-            </StepKeys>
+            <RangeKeys timeRange={timeRange} occupied={timeline.occupied} />
           )}
           <Key name="s" onPress={() => setErrorsOnly((errorsOnly) => !errorsOnly)}>
             status
