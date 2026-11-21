@@ -54,6 +54,7 @@
   "devDependencies": {
     "@types/bun": "^1.4.3",
     "@types/react": "^19.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "lefthook": "^2.2.2",
     "oxfmt": "^0.73.0",
     "oxlint": "^1.88.0",
