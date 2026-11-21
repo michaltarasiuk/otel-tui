@@ -154,3 +154,20 @@ export function SortKeys<C>({ columns, ascending = [], onChange }: SortKeysProps
     </>
   );
 }
+
+interface ErrorKeysProps {
+  onStep: (step: 1 | -1) => void;
+}
+
+export function ErrorKeys({ onStep }: ErrorKeysProps) {
+  return (
+    <StepKeys
+      forward="e"
+      backward="shift+e"
+      backwardDescription="previous error"
+      onStep={(step) => onStep(step)}
+    >
+      next error
+    </StepKeys>
+  );
+}

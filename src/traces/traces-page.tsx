@@ -8,7 +8,7 @@ import { RangeKeys } from "#ui/histogram/range-keys.tsx";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
 import { HISTOGRAM_HEIGHT, TimeHistogram } from "#ui/histogram/time-histogram.tsx";
 import { useTimeRange } from "#ui/histogram/use-time-range.ts";
-import { Key, KeyHints, SortKeys, StepKeys } from "#ui/key-hints.tsx";
+import { ErrorKeys, Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
 import { Chip, Count, PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
@@ -162,18 +162,13 @@ export function TracesPage({
             </>
           )}
           {traces.some((trace) => hasErrors(trace)) && (
-            <StepKeys
-              forward="e"
-              backwardDescription="previous error"
-              backward="shift+e"
+            <ErrorKeys
               onStep={(step) =>
                 selection.select(
                   findNextIndex(traces, selection.index, step, (trace) => hasErrors(trace)),
                 )
               }
-            >
-              next error
-            </StepKeys>
+            />
           )}
         </FocusScope>
         <FocusScope focused={browsing}>

@@ -5,7 +5,7 @@ import { useDeferredValue, useRef, useState } from "react";
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
-import { Key, KeyHints, ListKeys, StepKeys } from "#ui/key-hints.tsx";
+import { ErrorKeys, Key, KeyHints, ListKeys, StepKeys } from "#ui/key-hints.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
@@ -208,18 +208,13 @@ export function WaterfallPage({
                   </StepKeys>
                 )}
                 {shown.some((span) => span.is_error) && (
-                  <StepKeys
-                    forward="e"
-                    backward="shift+e"
-                    backwardDescription="previous error"
+                  <ErrorKeys
                     onStep={(step) =>
                       selection.select(
                         findNextIndex(shown, selection.index, step, (span) => span.is_error),
                       )
                     }
-                  >
-                    next error
-                  </StepKeys>
+                  />
                 )}
                 {descendantCount(spans, spans.indexOf(selected)) > 0 && (
                   <Key
