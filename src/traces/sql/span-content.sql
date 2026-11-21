@@ -16,7 +16,8 @@ SELECT
   attribute_entries(resource_attributes) AS resource_attributes,
   list_transform(
     from_json(events_json, '[{"name":"VARCHAR","time_unix_nano":"BIGINT","attributes":"JSON"}]'),
-    lambda event: {
+    lambda event, ordinal: {
+      event_id: hash(ordinal, event.name, event.time_unix_nano)::VARCHAR,
       name: event.name,
       offset_ms: (nullif(event.time_unix_nano, 0) - epoch_ns(start_time_unix_nano)) / 1e6,
       attributes: attribute_entries(event.attributes)

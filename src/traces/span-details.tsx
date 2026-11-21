@@ -34,8 +34,8 @@ function SpanSections({ traceId, spanId, children }: SpanSectionsProps) {
     <>
       {content.events.length > 0 && (
         <Section title="Events">
-          {content.events.map((event, index) => (
-            <box key={index}>
+          {content.events.map((event) => (
+            <box key={event.event_id}>
               <text fg={THEME.text}>
                 {event.offset_ms !== null && (
                   <span fg={THEME.textMuted}>{formatOffset(event.offset_ms)} </span>

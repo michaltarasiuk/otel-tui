@@ -26,7 +26,14 @@ export const SpanContent = z.object({
   attributes: Attributes,
   resource_attributes: Attributes,
   events: z
-    .array(z.object({ name: z.string(), offset_ms: z.number().nullable(), attributes: Attributes }))
+    .array(
+      z.object({
+        event_id: z.string(),
+        name: z.string(),
+        offset_ms: z.number().nullable(),
+        attributes: Attributes,
+      }),
+    )
     .nullable()
     .transform((events) => events ?? []),
   links: z
