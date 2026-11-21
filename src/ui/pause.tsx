@@ -3,15 +3,16 @@ import { useSyncExternalStore } from "react";
 
 import { Key } from "./key-hints.tsx";
 
+function subscribe(onChange: () => void) {
+  return focusManager.subscribe(() => onChange());
+}
+
 function isPaused() {
   return !focusManager.isFocused();
 }
 
 export function usePaused() {
-  return useSyncExternalStore(
-    (onChange) => focusManager.subscribe(() => onChange()),
-    () => isPaused(),
-  );
+  return useSyncExternalStore(subscribe, () => isPaused());
 }
 
 export function PauseKey() {
