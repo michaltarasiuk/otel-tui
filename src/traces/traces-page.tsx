@@ -3,6 +3,7 @@ import { useDeferredValue, useState } from "react";
 
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
+import { Meta } from "#ui/details.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { RangeKeys } from "#ui/histogram/range-keys.tsx";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
@@ -101,22 +102,24 @@ export function TracesPage({
   return (
     <box flexGrow={1}>
       <PageHeader>
-        {service !== undefined && (
-          <Chip>
-            <ServiceName name={service} />
-          </Chip>
-        )}
-        {operation !== undefined && <Chip>{operation}</Chip>}
-        {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
-        {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
-        {markedRow !== undefined ? (
-          <Chip>
-            vs {markedRow.name} {formatDuration(markedRow.duration_ms)}
-          </Chip>
-        ) : (
-          marked !== undefined && <Chip>vs {marked.root.name}</Chip>
-        )}
-        <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
+        <Meta>
+          {service !== undefined && (
+            <Chip>
+              <ServiceName name={service} />
+            </Chip>
+          )}
+          {operation !== undefined && <Chip>{operation}</Chip>}
+          {errorsOnly && <Chip color={THEME.textError}>errors only</Chip>}
+          {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
+          {markedRow !== undefined ? (
+            <Chip>
+              vs {markedRow.name} {formatDuration(markedRow.duration_ms)}
+            </Chip>
+          ) : (
+            marked !== undefined && <Chip>vs {marked.root.name}</Chip>
+          )}
+          <Count>{formatShownCount(traces.length, totalCount, "trace")}</Count>
+        </Meta>
       </PageHeader>
       {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
         <TimeHistogram

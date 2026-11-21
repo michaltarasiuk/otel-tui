@@ -34,7 +34,7 @@ export function TraceCompareHeader({
   const afterErrors = errorCount(after);
 
   return (
-    <box paddingX={1}>
+    <>
       <DetailsHeader>
         <Title>{root.name}</Title>
         <Id>
@@ -60,6 +60,6 @@ export function TraceCompareHeader({
           </Fact>
         )}
       </Meta>
-    </box>
+    </>
   );
 }

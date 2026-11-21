@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useConnection } from "#query/connection.ts";
+import { Meta } from "#ui/details.tsx";
 import { Key, KeyHints } from "#ui/key-hints.tsx";
 import { Count, PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
@@ -29,9 +30,11 @@ export function ServiceMapPage({ onOpenTraces, onBack }: ServiceMapPageProps) {
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <Count>
-          {`${SERVICE_WINDOW_LABEL} · ${formatCount(calls.length, "dependency", "dependencies")}`}
-        </Count>
+        <Meta>
+          <Count>
+            {`${SERVICE_WINDOW_LABEL} · ${formatCount(calls.length, "dependency", "dependencies")}`}
+          </Count>
+        </Meta>
       </PageHeader>
       {isError ? (
         <Placeholder text="Failed to load the service map" variant="error" />

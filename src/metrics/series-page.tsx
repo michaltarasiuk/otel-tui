@@ -7,6 +7,7 @@ import { Description } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, ListKeys, StepKeys } from "#ui/key-hints.tsx";
+import { PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
@@ -70,9 +71,9 @@ export function SeriesPage({ metric, onBack, onOpenTrace }: SeriesPageProps) {
         <Placeholder text="This metric is no longer available" />
       ) : (
         <>
-          <box paddingX={1}>
+          <PageHeader>
             <MetricHeader metric={metric} seriesCount={series.length} />
-          </box>
+          </PageHeader>
           <Split>
             <FocusScope focused={region === "series"} onFocusRequest={() => setRegion("series")}>
               <SeriesTable series={rows} selection={selection} metric={metric} columns={columns} />

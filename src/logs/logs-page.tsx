@@ -4,6 +4,7 @@ import { useDeferredValue, useRef, useState } from "react";
 
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
+import { Meta } from "#ui/details.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { RangeKeys } from "#ui/histogram/range-keys.tsx";
 import { timeRangeLabel } from "#ui/histogram/time-columns.ts";
@@ -87,13 +88,15 @@ export function LogsPage({ traceId, spanId, onTraceChange, onOpenTrace, onBack }
   return (
     <box flexGrow={1}>
       <PageHeader>
-        {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_ID_LENGTH)}</Chip>}
-        {spanId !== undefined && <Chip>span {spanId.slice(0, SHORT_ID_LENGTH)}</Chip>}
-        {minSeverity !== undefined && (
-          <Chip color={severityColor(minSeverity)}>≥ {minSeverity}</Chip>
-        )}
-        {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
-        <Count>{formatShownCount(logs.length, totalCount, "log")}</Count>
+        <Meta>
+          {traceId !== undefined && <Chip>trace {traceId.slice(0, SHORT_ID_LENGTH)}</Chip>}
+          {spanId !== undefined && <Chip>span {spanId.slice(0, SHORT_ID_LENGTH)}</Chip>}
+          {minSeverity !== undefined && (
+            <Chip color={severityColor(minSeverity)}>≥ {minSeverity}</Chip>
+          )}
+          {timeRange.selected !== undefined && <Chip>{timeRangeLabel(timeRange.selected)}</Chip>}
+          <Count>{formatShownCount(logs.length, totalCount, "log")}</Count>
+        </Meta>
       </PageHeader>
       {height >= MIN_HEIGHT_FOR_HISTOGRAM && (
         <TimeHistogram

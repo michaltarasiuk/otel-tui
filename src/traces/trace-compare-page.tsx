@@ -5,6 +5,7 @@ import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, StepKeys } from "#ui/key-hints.tsx";
+import { PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
@@ -78,13 +79,15 @@ export function TraceComparePage({ before, after, onBack, onOpenTrace }: TraceCo
         <Placeholder text="A compared trace is no longer available" />
       ) : (
         <>
-          <TraceCompareHeader
-            beforeId={beforeId}
-            afterId={afterId}
-            root={root}
-            before={beforeSpans.data}
-            after={afterSpans.data}
-          />
+          <PageHeader>
+            <TraceCompareHeader
+              beforeId={beforeId}
+              afterId={afterId}
+              root={root}
+              before={beforeSpans.data}
+              after={afterSpans.data}
+            />
+          </PageHeader>
           <Split>
             <FocusScope focused={region === "spans"} onFocusRequest={() => setRegion("spans")}>
               {rows.length === 0 ? (

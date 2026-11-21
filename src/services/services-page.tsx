@@ -2,7 +2,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 
 import { useConnection } from "#query/connection.ts";
-import { Description } from "#ui/details.tsx";
+import { Description, Meta } from "#ui/details.tsx";
 import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
@@ -63,7 +63,9 @@ export function ServicesPage({ onOpenTraces, onOpenMap }: ServicesPageProps) {
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <Count>{`${SERVICE_WINDOW_LABEL} · ${formatCount(services.length, "service")}`}</Count>
+        <Meta>
+          <Count>{`${SERVICE_WINDOW_LABEL} · ${formatCount(services.length, "service")}`}</Count>
+        </Meta>
       </PageHeader>
       {serviceList.isError ? (
         <Placeholder text="Failed to load services" variant="error" />

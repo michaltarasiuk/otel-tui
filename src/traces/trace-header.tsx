@@ -22,7 +22,7 @@ export function TraceHeader({ traceId, root, spans, matchCount, durationMs }: Tr
   );
 
   return (
-    <box paddingX={1}>
+    <>
       <DetailsHeader>
         <Title>{root.name}</Title>
         <Id>{traceId}</Id>
@@ -38,6 +38,6 @@ export function TraceHeader({ traceId, root, spans, matchCount, durationMs }: Tr
         {errorCount > 0 && <Fact color={THEME.textError}>{formatCount(errorCount, "error")}</Fact>}
         <Fact>{formatDuration(durationMs)}</Fact>
       </Meta>
-    </box>
+    </>
   );
 }

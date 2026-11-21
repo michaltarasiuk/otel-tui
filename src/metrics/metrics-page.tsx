@@ -4,6 +4,7 @@ import { useDeferredValue, useRef, useState } from "react";
 
 import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
+import { Meta } from "#ui/details.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { Key, KeyHints, SortKeys } from "#ui/key-hints.tsx";
 import { Count, PageHeader } from "#ui/page-header.tsx";
@@ -47,7 +48,9 @@ export function MetricsPage({ onOpen }: MetricsPageProps) {
   return (
     <box flexGrow={1}>
       <PageHeader>
-        <Count>{formatShownCount(metrics.length, totalCount, "metric")}</Count>
+        <Meta>
+          <Count>{formatShownCount(metrics.length, totalCount, "metric")}</Count>
+        </Meta>
       </PageHeader>
       {metricList.isError ? (
         <Placeholder text="Failed to load metrics" variant="error" />

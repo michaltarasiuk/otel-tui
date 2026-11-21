@@ -6,6 +6,7 @@ import { useConnection } from "#query/connection.ts";
 import { CopyKey } from "#ui/clipboard.tsx";
 import { FocusScope } from "#ui/focus.tsx";
 import { ErrorKeys, Key, KeyHints, ListKeys, StepKeys } from "#ui/key-hints.tsx";
+import { PageHeader } from "#ui/page-header.tsx";
 import { PauseKey } from "#ui/pause.tsx";
 import { Placeholder } from "#ui/placeholder.tsx";
 import { RegionKeys, useRegion } from "#ui/region.tsx";
@@ -133,13 +134,15 @@ export function WaterfallPage({
         <Placeholder text="This trace is no longer available" />
       ) : (
         <>
-          <TraceHeader
-            traceId={traceId}
-            root={root}
-            spans={spans}
-            matchCount={matches?.size}
-            durationMs={durationMs}
-          />
+          <PageHeader>
+            <TraceHeader
+              traceId={traceId}
+              root={root}
+              spans={spans}
+              matchCount={matches?.size}
+              durationMs={durationMs}
+            />
+          </PageHeader>
           <Split>
             <FocusScope
               focused={browsing && region === "spans"}

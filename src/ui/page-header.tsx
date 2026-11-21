@@ -1,6 +1,5 @@
 import type { ColorInput } from "@opentui/core";
 
-import { COLUMN_GAP } from "./columns.ts";
 import { THEME } from "./theme.ts";
 
 interface PageHeaderProps {
@@ -8,11 +7,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ children }: PageHeaderProps) {
-  return (
-    <box flexDirection="row" gap={COLUMN_GAP} paddingX={1}>
-      {children}
-    </box>
-  );
+  return <box paddingX={1}>{children}</box>;
 }
 
 interface ChipProps {
