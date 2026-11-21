@@ -145,6 +145,52 @@ test("selects a span linked within the same trace", async () => {
   await app.waitForSelection("load");
 });
 
+test("opens a link once its trace arrives", async () => {
+  await using receiver = await startTestReceiver();
+  const linkedTraceId = "f".repeat(32);
+  const linkedSpanId = "fa".repeat(8);
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "worker",
+      spans: [
+        {
+          traceId: "e".repeat(32),
+          spanId: "ea".repeat(8),
+          name: "consume order",
+          start: at(0),
+          end: at(100),
+          links: [{ traceId: linkedTraceId, spanId: linkedSpanId }],
+        },
+      ],
+    }),
+  );
+  await using app = await renderPage(receiver, "traces");
+  await app.waitForFrame((frame) => keyHints(frame).includes("return open"));
+  app.mockInput.pressEnter();
+  await app.waitForText(`${linkedTraceId} ${linkedSpanId} (not stored)`);
+  app.mockInput.pressTab();
+
+  await receiver.sendHttp(
+    "/v1/traces",
+    tracesRequest({
+      service: "checkout",
+      spans: [
+        {
+          traceId: linkedTraceId,
+          spanId: linkedSpanId,
+          name: "place order",
+          start: at(-200),
+          end: at(-100),
+        },
+      ],
+    }),
+  );
+
+  const frame = await app.waitForFrame((frame) => keyHints(frame).includes("return open link"));
+  expect(detailsLines(frame)).toContain(`${linkedTraceId} ${linkedSpanId}`);
+});
+
 test("loads a span's details again after they failed to load", async () => {
   silenceConsoleError();
   await using receiver = await startTestReceiver();

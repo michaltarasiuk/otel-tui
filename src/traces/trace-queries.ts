@@ -62,6 +62,6 @@ export function spanContentQuery(
   return queryOptions({
     queryKey: ["traces", traceId, "spans", spanId],
     queryFn: () => (spanId === undefined ? null : readSpanContent(connection, traceId, spanId)),
-    staleTime: Infinity,
+    refetchInterval: POLL_INTERVAL_MS,
   });
 }
